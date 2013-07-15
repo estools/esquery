@@ -1,0 +1,188 @@
+<html>
+<head>
+    <title>ESQuery</title>
+    <script src="esquery.js"></script>
+</head>
+<body>
+    <p>
+        <textarea id="ast" wrap="off" style="width: 80%; height: 50%; font-family: monospace;">{
+    "type": "Program",
+    "body": [
+        {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                    "type": "Identifier",
+                    "name": "x"
+                },
+                "right": {
+                    "type": "Literal",
+                    "value": 1,
+                    "raw": "1"
+                }
+            }
+        },
+        {
+            "type": "FunctionDeclaration",
+            "id": {
+                "type": "Identifier",
+                "name": "foo"
+            },
+            "params": [],
+            "defaults": [],
+            "body": {
+                "type": "BlockStatement",
+                "body": [
+                    {
+                        "type": "VariableDeclaration",
+                        "declarations": [
+                            {
+                                "type": "VariableDeclarator",
+                                "id": {
+                                    "type": "Identifier",
+                                    "name": "i"
+                                },
+                                "init": null
+                            },
+                            {
+                                "type": "VariableDeclarator",
+                                "id": {
+                                    "type": "Identifier",
+                                    "name": "y"
+                                },
+                                "init": {
+                                    "type": "Literal",
+                                    "value": 2,
+                                    "raw": "2"
+                                }
+                            }
+                        ],
+                        "kind": "var"
+                    },
+                    {
+                        "type": "ForStatement",
+                        "init": {
+                            "type": "AssignmentExpression",
+                            "operator": "=",
+                            "left": {
+                                "type": "Identifier",
+                                "name": "i"
+                            },
+                            "right": {
+                                "type": "Literal",
+                                "value": 0,
+                                "raw": "0"
+                            }
+                        },
+                        "test": {
+                            "type": "BinaryExpression",
+                            "operator": "<",
+                            "left": {
+                                "type": "Identifier",
+                                "name": "i"
+                            },
+                            "right": {
+                                "type": "Literal",
+                                "value": 10,
+                                "raw": "10"
+                            }
+                        },
+                        "update": {
+                            "type": "UpdateExpression",
+                            "operator": "++",
+                            "argument": {
+                                "type": "Identifier",
+                                "name": "i"
+                            },
+                            "prefix": false
+                        },
+                        "body": {
+                            "type": "BlockStatement",
+                            "body": [
+                                {
+                                    "type": "ExpressionStatement",
+                                    "expression": {
+                                        "type": "AssignmentExpression",
+                                        "operator": "+=",
+                                        "left": {
+                                            "type": "Identifier",
+                                            "name": "y"
+                                        },
+                                        "right": {
+                                            "type": "Identifier",
+                                            "name": "i"
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "ExpressionStatement",
+                                    "expression": {
+                                        "type": "AssignmentExpression",
+                                        "operator": "=",
+                                        "left": {
+                                            "type": "Identifier",
+                                            "name": "x"
+                                        },
+                                        "right": {
+                                            "type": "Identifier",
+                                            "name": "i"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "ReturnStatement",
+                        "argument": {
+                            "type": "Identifier",
+                            "name": "y"
+                        }
+                    }
+                ]
+            },
+            "rest": null,
+            "generator": false,
+            "expression": false
+        }
+    ]
+}</textarea>
+    </p>
+
+    <p>
+        <input id="selector" style="width:80%;" type="text" value='[id.name="foo"]'/>
+    </p>
+
+    <pre id="output"></pre>
+
+    <script type="text/javascript">
+    var astNode = document.getElementById("ast");
+    var selectorNode = document.getElementById("selector");
+    var outputNode = document.getElementById("output");
+
+    function update() {
+        var ast;
+        eval("ast = " + astNode.value);
+        var selector = selectorNode.value;
+        outputNode.innerHTML = "";
+
+        var output;
+        try {
+            output = JSON.stringify(esquery(ast, selector), null, "  ");
+        } catch (e) {
+            output = e.message;
+        }
+        outputNode.appendChild(document.createTextNode(output));
+    }
+
+    update();
+
+    astNode.addEventListener("change", update);
+    selectorNode.addEventListener("change", update);
+    selectorNode.addEventListener("keyup", update);
+    outputNode.addEventListener("change", update);
+    </script>
+</body>
+</html>
