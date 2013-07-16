@@ -1,11 +1,28 @@
 <html>
 <head>
-    <title>ESQuery</title>
+    <title>esquery</title>
+
+    <style>
+        #ast {
+            width: 80%;
+            height: 50%;
+            font-family: monospace;
+        }
+
+        #selector {
+            width: 80%;
+        }
+
+        #tokens {
+            white-space: pre-wrap;
+        }
+    </style>
+
     <script src="esquery.js"></script>
 </head>
 <body>
     <p>
-        <textarea id="ast" wrap="off" style="width: 80%; height: 50%; font-family: monospace;">{
+        <textarea id="ast" wrap="off">{
     "type": "Program",
     "body": [
         {
@@ -152,29 +169,56 @@
     </p>
 
     <p>
-        <input id="selector" style="width:80%;" type="text" value='[id.name="foo"]'/>
+        <input id="selector" type="text" value='[id.name="foo"]'/>
     </p>
 
+    <pre id="tokens"></pre>
+    <hr>
+    <pre id="selectorAst"></pre>
+    <hr>
     <pre id="output"></pre>
 
     <script type="text/javascript">
     var astNode = document.getElementById("ast");
     var selectorNode = document.getElementById("selector");
+    var tokensNode = document.getElementById("tokens");
+    var selectorAstNode = document.getElementById("selectorAst");
     var outputNode = document.getElementById("output");
 
     function update() {
         var ast;
         eval("ast = " + astNode.value);
+
         var selector = selectorNode.value;
+        tokensNode.innerHTML = "";
+        selectorAstNode.innerHTML = "";
         outputNode.innerHTML = "";
 
-        var output;
+        var tokens, selectorAst, tokensOutput, selectorAstOutput, matchesOutput;
         try {
-            output = JSON.stringify(esquery(ast, selector), null, "  ");
+            tokens = esquery.tokenize(selector);
+            tokensOutput = JSON.stringify(tokens);
         } catch (e) {
-            output = e.message;
+            tokensOutput = e.message;
         }
-        outputNode.appendChild(document.createTextNode(output));
+
+        try {
+            selectorAst = esquery.processTokens(tokens);
+            selectorAstOutput = JSON.stringify(selectorAst, null, "  ");
+        } catch (e) {
+            selectorAstOutput = e.message;
+        }
+
+        try {
+            var matches = esquery.match(ast, selectorAst);
+            matchesOutput = JSON.stringify(matches, null, "  ");
+        } catch (e) {
+            matchesOutput = e.message;
+        }
+
+        tokensNode.appendChild(document.createTextNode(tokensOutput));
+        selectorAstNode.appendChild(document.createTextNode(selectorAstOutput));
+        outputNode.appendChild(document.createTextNode(matchesOutput));
     }
 
     update();
