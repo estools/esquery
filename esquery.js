@@ -332,17 +332,37 @@
 				visitPre(ast, function (node, context) {
 					Object.keys(node).forEach(function (key) {
 						if (node[key] && node[key].forEach) {
-							var rightNode, hasLeft = hasRight = false
-							node[key].forEach(function (child) {
-								hasLeft |= leftMatches.indexOf(child) > -1;
-								if (rightMatches.indexOf(child) > -1) {
-									rightNode = child;
-									hasRight = true;
+							var i, j;
+							for (i = 0; i < node[key].length; i++) {
+								if (leftMatches.indexOf(node[key][i]) > -1) {
+									for (j = i + 1; j < node[key].length; j++) {
+										if (rightMatches.indexOf(node[key][j]) > -1) {
+											matches.push(node[key][j]);
+											break;
+										}
+									}
 								}
-							});
+							}
+						}
+					});
+				});
 
-							if (hasLeft && hasRight) {
-								matches.push(rightNode);
+				break;
+
+			case "adjacent":
+				leftMatches = match(ast, selector.left);
+				rightMatches = match(ast, selector.right);
+
+				visitPre(ast, function (node, context) {
+					Object.keys(node).forEach(function (key) {
+						if (node[key] && node[key].forEach) {
+							var i;
+							for (i = 0; i < node[key].length - 1; i++) {
+								if (leftMatches.indexOf(node[key][i]) > -1) {
+									if (rightMatches.indexOf(node[key][i + 1]) > -1) {
+										matches.push(node[key][i + 1]);
+									}
+								}
 							}
 						}
 					});
@@ -360,33 +380,6 @@
 								matches.push(node[key][index]);
 							} else if (index < 0 && len + index < len && len + index >= 0) {
 								matches.push(node[key][len + index]);
-							}
-						}
-					});
-				});
-
-				break;
-
-			case "adjacent":
-				leftMatches = match(ast, selector.left);
-				rightMatches = match(ast, selector.right);
-
-				visitPre(ast, function (node, context) {
-					Object.keys(node).forEach(function (key) {
-						if (node[key] && node[key].forEach) {
-							var rightNode, leftIndex = rightIndex = -1;
-							node[key].forEach(function (child, i) {
-								if (leftMatches.indexOf(child) > -1) {
-									leftIndex = i;
-								}
-								if (rightMatches.indexOf(child) > -1) {
-									rightNode = child;
-									rightIndex = i;
-								}
-							});
-
-							if (Math.abs(leftIndex - rightIndex) === 1) {
-								matches.push(rightNode);
 							}
 						}
 					});
@@ -416,11 +409,13 @@
 						break;
 					}
 					break;
-
+				
 				case undefined:
-					if (getPath(node, selector.name) !== undefined) {
-						matches.push(node);
-					}
+					visitPre(ast, function (node) {
+						if (getPath(node, selector.name) !== undefined) {
+							matches.push(node);
+						}
+					});
 					break;
 				}
 				break;
