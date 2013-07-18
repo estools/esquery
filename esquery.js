@@ -7,7 +7,8 @@
 		 * contain a type and value field.
 		 */
 		function tokenize(selector) {
-	    	var tokens = selector.split(/(:)|\s*(\*|~|>|<=|>=|<|=|\+|\[|\]|\(|\)|\s)\s*/);
+			selector = selector.replace(/^\s*|^\s*$/g, "");
+	    	var tokens = selector.split(/([+\-]?[0-9]*\.?[0-9]+)|(:)|("(?:[^"]|\")*")|\s*(\*|~|>|<=|>=|<|=|\+|\[|\]|\(|\)|\s)\s*/);
 
 	    	tokens = tokens.filter(function (token) {
 	    		return token;
