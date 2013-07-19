@@ -285,7 +285,9 @@
 
 			switch (selector.type) {
 			case "wildcard":
-				visitPre(ast, matches.push.bind(matches));
+				visitPre(ast, function (node) {
+					matches.push(node);
+				});
 				break;
 
 			case "identifier":
