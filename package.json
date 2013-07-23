@@ -18,7 +18,7 @@
         "query"
     ],
 	"devDependencies": {
-		"jstestr": ">=0.3",
+		"jstestr": ">=0.4",
 		"bower": ">=1.0"
 	},
 	"license": "BSD",
