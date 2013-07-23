@@ -373,6 +373,9 @@
 
 				break;
 
+			// nth-child is used for first/last-child and is a bit different from the css
+			// nth-child. It is a zero based index where negative -1 means the last child,
+			// -2 is the second to last, and so forth.
 			case "nth-child":
 				visitPre(ast, function (node, context) {
 					var index = selector.index.value;

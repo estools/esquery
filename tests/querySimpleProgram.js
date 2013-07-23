@@ -3,35 +3,28 @@ define([
     "esquery",
     "jstestr/assert",
     "jstestr/test",
-    "./ast/simpleProgram",
-    "./ast/simpleFunction",
-    "./ast/forLoop",
-    "./ast/whileLoop",
-    "./ast/switchStatement",
-    "./ast/conditional",
-    "./ast/nestedFunctions"
-], function (esquery, assert, test, simpleProgram, simpleFunction, forLoop, whileLoop,
-        switchStatement, conditional, nestedFunctions) {
+    "./ast/simpleProgram"
+], function (esquery, assert, test, simpleProgram) {
 
-    test.defineSuite("Match AST", {
+    test.defineSuite("Query simple program", {
         "node types": function () {
             var matches = esquery(simpleProgram, "Program");
-            assert.isEqual([simpleProgram], matches);
+            assert.contains([simpleProgram], matches);
 
             matches = esquery(simpleProgram, "VariableDeclaration");
-            assert.isEqual([
+            assert.contains([
                 simpleProgram.body[0],
                 simpleProgram.body[1]
             ], matches);
 
             matches = esquery(simpleProgram, "AssignmentExpression");
-            assert.isEqual([
+            assert.contains([
                 simpleProgram.body[2].expression,
                 simpleProgram.body[3].consequent.body[0].expression
             ], matches);
 
             matches = esquery(simpleProgram, "Identifier");
-            assert.isEqual([
+            assert.contains([
                 simpleProgram.body[0].declarations[0].id,
                 simpleProgram.body[1].declarations[0].id,
                 simpleProgram.body[2].expression.left,
@@ -43,18 +36,18 @@ define([
 
         "node attributes": function () {
             var matches = esquery(simpleProgram, "[kind=\"var\"]");
-            assert.isEqual([
+            assert.contains([
                 simpleProgram.body[0],
                 simpleProgram.body[1]
             ], matches);
 
             matches = esquery(simpleProgram, "[id.name=\"y\"]");
-            assert.isEqual([
+            assert.contains([
                 simpleProgram.body[1].declarations[0]
             ], matches);
 
             matches = esquery(simpleProgram, "[body]");
-            assert.isEqual([
+            assert.contains([
                 simpleProgram,
                 simpleProgram.body[3].consequent
             ], matches);
@@ -70,22 +63,15 @@ define([
                     type: "VariableDeclaration",
                     declarations: [{
                         type: "VariableDeclarator",
-                        id: {
-                            type: "Identifier",
-                            name: "x"
-                        },
-                        init: {
-                            type: "Literal",
-                            value: 1,
-                            raw: "1"
-                        }
+                        id: {type: "Identifier", name: "x"},
+                        init: {type: "Literal", value: 1, raw: "1"}
                     }],
                     kind: "var"
                 }]
             };
             matches = esquery(program, "*");
 
-            assert.isEqual([
+            assert.contains([
                 program,
                 program.body[0],
                 program.body[0].declarations[0],
@@ -94,6 +80,41 @@ define([
             ], matches);
         },
 
-        "nth-child": function () {},
+        "first child": function () {
+            var matches = esquery(simpleProgram, ":first-child");
+            assert.contains([
+                simpleProgram.body[0],
+                simpleProgram.body[0].declarations[0],
+                simpleProgram.body[1].declarations[0],
+                simpleProgram.body[3].consequent.body[0]
+            ], matches);
+        },
+
+        "last child": function () {
+            var matches = esquery(simpleProgram, ":last-child");
+            assert.contains([
+                simpleProgram.body[3],
+                simpleProgram.body[0].declarations[0],
+                simpleProgram.body[1].declarations[0],
+                simpleProgram.body[3].consequent.body[0]
+            ], matches);
+        },
+
+        "nth child": function () {
+            var matches = esquery(simpleProgram, ":nth-child(1)");
+            assert.contains([
+                simpleProgram.body[1]
+            ], matches);
+
+            matches = esquery(simpleProgram, ":nth-child(2)");
+            assert.contains([
+                simpleProgram.body[2]
+            ], matches);
+
+            matches = esquery(simpleProgram, ":nth-child(-2)");
+            assert.contains([
+                simpleProgram.body[2]
+            ], matches);
+        },
     });
 });
