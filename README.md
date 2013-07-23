@@ -15,3 +15,5 @@ The following selectors are supported:
 * child: parent > child
 * sibling: firstElement ~ sibling
 * adjacent: firstElement + adjacent
+
+[![Build Status](https://travis-ci.org/jrfeenst/esquery.png?branch=master)](https://travis-ci.org/jrfeenst/esquery)
