@@ -7,8 +7,8 @@
 		 * contain a type and value field.
 		 */
 		function tokenize(selector) {
-			selector = selector.replace(/^\s*|^\s*$/g, "");
-	    	var tokens = selector.split(/([+\-]?[0-9]*\.?[0-9]+)|(:)|("(?:[^"]|\")*")|\s*(\*|~|>|<=|>=|<|=|\+|\[|\]|\(|\)|\s)\s*/);
+			selector = selector.replace(/^\s*|\s*$/g, "");
+	    	var tokens = selector.split(/\s*(\/(?:\\\/|[^\/])*\/)\s*|([+\-]?[0-9]*\.?[0-9]+)|(:)|("(?:\"|[^"])*")|(\[)\s*|\s*(\]|\))|\s*(\*|~|>|<=|>=|<|=|\+|\(|\s)\s*/);
 
 	    	tokens = tokens.filter(function (token) {
 	    		return token;
@@ -34,6 +34,11 @@
 	    			return {
 	    				type: "number",
 	    				value: parseFloat(token)
+	    			};
+	    		} else if (/\/.*\//.test(token)) {
+	    			return {
+	    				type: "regexp",
+	    				value: token.replace(/^\/|\/$/g, "").replace(/\\\//g, "/")
 	    			};
 	    		} else if (/~|<=|>=|<|>|=|:|\+|\[|\]|\(|\)|\s/.test(token)) {
 	    			return {
@@ -220,6 +225,11 @@
 					type: "literal",
 					value: token.value
 				};
+			} else if (token.type === "regexp") {
+				return {
+					type: "regexp",
+					value: new RegExp(token.value)
+				};
 			} else {
 				throw createError("Unexpected token for value: ", token, tokens, ast);
 			}
@@ -400,6 +410,7 @@
 				matches = leftMatches.filter(function (leftNode) {
 					return rightMatches.indexOf(leftNode) > -1;
 				});
+
 				break;
 
 			case "attribute":
@@ -409,6 +420,13 @@
 					case "literal":
 						visitPre(ast, function (node) {
 							if (getPath(node, selector.name) === selector.value.value) {
+								matches.push(node);
+							}
+						});
+						break;
+					case "regexp":
+						visitPre(ast, function (node) {
+							if (selector.value.value.test(getPath(node, selector.name))) {
 								matches.push(node);
 							}
 						});
@@ -424,6 +442,7 @@
 					});
 					break;
 				}
+
 				break;
 			}	
 
@@ -452,7 +471,7 @@
 	}
 
 
-	if (typeof define === "function") {
+	if (typeof define === "function" && define.amd) {
     	define(esqueryModule);
 	} else if (typeof module !== 'undefined' && module.exports) {
     	module.exports = esqueryModule();

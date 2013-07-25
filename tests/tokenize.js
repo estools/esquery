@@ -86,6 +86,14 @@ define([
             assert.matches([{type: "string", value: "asdf \" asdf"}], tokens);
         },
 
+        "individual regexp": function () {
+            var tokens = esquery.tokenize("/asdf/");
+            assert.matches([{type: "regexp", value: "asdf"}], tokens);
+
+            tokens = esquery.tokenize("/asdf \\/ asdf/");
+            assert.matches([{type: "regexp", value: "asdf / asdf"}], tokens);
+        },
+
         "pseudo selectors": function () {
             var tokens = esquery.tokenize(":first-child");
             assert.matches([
@@ -121,10 +129,21 @@ define([
                 {type: "number", value: 5},
                 {type: "operator", value: ")"}
             ], tokens);
+
+            tokens = esquery.tokenize("[attr] [attr]");
+            assert.matches([
+                {type: "operator", value: "["},
+                {type: "identifier", value: "attr"},
+                {type: "operator", value: "]"},
+                {type: "operator", value: " "},
+                {type: "operator", value: "["},
+                {type: "identifier", value: "attr"},
+                {type: "operator", value: "]"},
+            ], tokens);
         },
 
         "compound selector": function () {
-            var tokens = esquery.tokenize(" asdf  >  asdf  +  asdf:first-child[ attr = 2 ] ");
+            var tokens = esquery.tokenize(" asdf  >  asdf  +  asdf:first-child[ attr = 2 ] [attr = /asdf / ] ");
             assert.matches([
                 {type: "identifier", value: "asdf"},
                 {type: "operator", value: ">"},
@@ -137,6 +156,12 @@ define([
                 {type: "identifier", value: "attr"},
                 {type: "operator", value: "="},
                 {type: "number", value: 2},
+                {type: "operator", value: "]"},
+                {type: "operator", value: " "},
+                {type: "operator", value: "["},
+                {type: "identifier", value: "attr"},
+                {type: "operator", value: "="},
+                {type: "regexp", value: "asdf "},
                 {type: "operator", value: "]"}
             ], tokens);
         }

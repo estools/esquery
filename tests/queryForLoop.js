@@ -69,5 +69,17 @@ define([
                 forLoop.body[0].body.body[0]
             ], matches);
         },
+
+        "regexp": function () {
+            var matches = esquery(forLoop, "[name=/i|foo/]");
+            assert.contains([
+                forLoop.body[0].init.left,
+                forLoop.body[0].test.left,
+                forLoop.body[0].test.right.object,
+                forLoop.body[0].update.argument,
+                forLoop.body[0].body.body[0].expression.callee.object,
+                forLoop.body[0].body.body[0].expression.callee.property
+            ], matches);
+        }
     });
 });

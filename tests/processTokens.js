@@ -4,6 +4,7 @@ define([
     "jstestr/assert",
     "jstestr/test"
 ], function (esquery, assert, test) {
+
     var wildcard = {type: "wildcard", value: "*"};
     
     var idAsdf = {type: "identifier", value: "asdf"};
@@ -56,6 +57,9 @@ define([
 
             ast = esquery.processTokens([opLBracket, idAttr, opEq, {type: "string", value: "123"}, opRBracket]);
             assert.matches({type: "attribute", name: "attr", value: {type: "literal", value: "123"}}, ast);
+
+            ast = esquery.processTokens([opLBracket, idAttr, opEq, {type: "regexp", value: "asdf"}, opRBracket]);
+            assert.matches({type: "attribute", name: "attr", value: {type: "regexp", value: /asdf/}}, ast);
         },
 
         "descendant selector with identifiers": function () {

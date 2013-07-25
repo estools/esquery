@@ -116,5 +116,14 @@ define([
                 simpleProgram.body[2]
             ], matches);
         },
+
+        "regexp": function () {
+            var matches = esquery(simpleProgram, "[name=/[asdfy]/]");
+            assert.contains([
+                simpleProgram.body[1].declarations[0].id,
+                simpleProgram.body[3].test,
+                simpleProgram.body[3].consequent.body[0].expression.left
+            ], matches);
+        }
     });
 });

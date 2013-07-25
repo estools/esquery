@@ -95,5 +95,14 @@ define([
                 conditional.body[0]
             ], matches);
         },
+
+        "regexp": function () {
+            var matches = esquery(conditional, "[name=/x|foo/]");
+            assert.contains([
+                conditional.body[0].test.left,
+                conditional.body[0].consequent.body[0].expression.callee,
+                conditional.body[0].alternate.body[0].expression.left
+            ], matches);
+        }
     });
 });

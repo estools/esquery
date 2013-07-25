@@ -87,5 +87,14 @@ define([
                 simpleFunction.body[0].body.body[1]
             ], matches);
         },
+
+        "regexp": function () {
+            var matches = esquery(simpleFunction, "[name=/x|foo/]");
+            assert.contains([
+                simpleFunction.body[0].id,
+                simpleFunction.body[0].params[0],
+                simpleFunction.body[0].body.body[0].declarations[0].init.left
+            ], matches);
+        }
     });
 });
