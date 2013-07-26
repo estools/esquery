@@ -13,6 +13,9 @@ define([
 
     var opColon = {type: "operator", value: ":"};
     var opEq = {type: "operator", value: "="};
+    var opNotEq = {type: "operator", value: "!="};
+    var opLessEq = {type: "operator", value: "<="};
+    var opGreatEq = {type: "operator", value: ">="};
     var opSpace = {type: "operator", value: " "};
     var opGreater = {type: "operator", value: ">"};
     var opPlus = {type: "operator", value: "+"};
@@ -26,6 +29,10 @@ define([
     var num2 = {type: "number", value: 2};
     
     var keywordNthChild = {type: "keyword", value: "nth-child"};
+    var keywordType = {type: "keyword", value: "type"};
+
+    var strLit = {type: "string", value: "123"};
+    var litStr123 = {type: "literal", value: "123"};
     
 
     test.defineSuite("Process tokens", {
@@ -53,13 +60,32 @@ define([
             assert.matches({type: "attribute", name: "attr"}, ast);
 
             ast = esquery.processTokens([opLBracket, idAttr, opEq, num2, opRBracket]);
-            assert.matches({type: "attribute", name: "attr", value: {type: "literal", value: 2}}, ast);
+            assert.matches({type: "attribute", name: "attr", operator: "=", value: {type: "literal", value: 2}}, ast);
 
-            ast = esquery.processTokens([opLBracket, idAttr, opEq, {type: "string", value: "123"}, opRBracket]);
-            assert.matches({type: "attribute", name: "attr", value: {type: "literal", value: "123"}}, ast);
+            ast = esquery.processTokens([opLBracket, idAttr, opNotEq, strLit, opRBracket]);
+            assert.matches({type: "attribute", name: "attr", operator: "!=", value: litStr123}, ast);
+
+            ast = esquery.processTokens([opLBracket, idAttr, opLessEq, strLit, opRBracket]);
+            assert.matches({type: "attribute", name: "attr", operator: "<=", value: litStr123}, ast);
+
+            ast = esquery.processTokens([opLBracket, idAttr, opGreatEq, strLit, opRBracket]);
+            assert.matches({type: "attribute", name: "attr", operator: ">=", value: litStr123}, ast);
 
             ast = esquery.processTokens([opLBracket, idAttr, opEq, {type: "regexp", value: "asdf"}, opRBracket]);
-            assert.matches({type: "attribute", name: "attr", value: {type: "regexp", value: /asdf/}}, ast);
+            assert.matches({
+                type: "attribute",
+                name: "attr",
+                operator: "=",
+                value: {type: "regexp", value: /asdf/}
+            }, ast);
+
+            ast = esquery.processTokens([opLBracket, idAttr, opEq, keywordType, opLParen, idFoo, opRParen, opRBracket]);
+            assert.matches({
+                type: "attribute",
+                name: "attr",
+                operator: "=",
+                value: {type: "type", value: "foo"}
+            }, ast);
         },
 
         "descendant selector with identifiers": function () {

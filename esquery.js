@@ -8,7 +8,7 @@
 		 */
 		function tokenize(selector) {
 			selector = selector.replace(/^\s*|\s*$/g, "");
-	    	var tokens = selector.split(/\s*(\/(?:\\\/|[^\/])*\/)\s*|([+\-]?[0-9]*\.?[0-9]+)|(:)|("(?:\"|[^"])*")|(\[)\s*|\s*(\]|\))|\s*(\*|~|>|<=|>=|<|=|\+|\(|\s)\s*/);
+	    	var tokens = selector.split(/\s*(\/(?:\\\/|[^\/])*\/)\s*|([+\-]?[0-9]*\.?[0-9]+)|(:)|("(?:\"|[^"])*")|(\[)\s*|\s*(\]|\))|\s*(\*|~|!=|<=|>=|<|>|=|!|\+|\(|\s)\s*/);
 
 	    	tokens = tokens.filter(function (token) {
 	    		return token;
@@ -20,7 +20,7 @@
 	    				type: "wildcard",
 	    				value: "*"
 	    			};
-	    		} else if (/first\-child|nth\-child|last\-child|calc|length/.test(token)) {
+	    		} else if (/type|first\-child|nth\-child|last\-child|calc|length/.test(token)) {
 	    			return {
 	    				type: "keyword",
 	    				value: token
@@ -40,7 +40,7 @@
 	    				type: "regexp",
 	    				value: token.replace(/^\/|\/$/g, "").replace(/\\\//g, "/")
 	    			};
-	    		} else if (/~|<=|>=|<|>|=|:|\+|\[|\]|\(|\)|\s/.test(token)) {
+	    		} else if (/~|!=|<=|>=|<|>|=|!|:|\+|\[|\]|\(|\)|\s/.test(token)) {
 	    			return {
 	    				type: "operator",
 	    				value: token
@@ -114,6 +114,8 @@
 						left: ast,
 						right: attribute
 					} : attribute;
+				} else {
+					throw createError("Unexpected token: ", token, tokens, ast);
 				}
 			} else {
 				throw createError("Unexpected token: ", token, tokens, ast);
@@ -161,11 +163,15 @@
 		 */
 		function consumeAttribute(tokens, ast) {
 			var token = tokens.shift();
-			if (token.type === "identifier" && tokens.length > 0) {
+			if (token.type === "identifier" || token.type === "keyword" && tokens.length > 0) {
 				var op = tokens.shift();
-				if (op.type === "operator") {						
-					switch (op.value) {
-					case "=":
+				if (op.type === "operator") {
+					if (op.value === "]") {
+						return {
+							type: "attribute",
+							name: token.value
+						};
+					} else {
 						ast = {
 							type: "attribute",
 							name: token.value,
@@ -179,14 +185,6 @@
 						}
 
 						return ast;
-
-					case "]":
-						return {
-							type: "attribute",
-							name: token.value
-						};
-					default:
-						createError("Unexpected operator in attribute: ", op, tokens, ast);
 					}
 				} else {
 					throw createError("Unexpected token in attribute: ", op, tokens, ast);
@@ -229,6 +227,17 @@
 				return {
 					type: "regexp",
 					value: new RegExp(token.value)
+				};
+			} else if (token.type === "keyword" && token.value === "type" && tokens.length > 2 &&
+					tokens[0].type === "operator" && tokens[0].value === "(") {
+				return {
+					type: "type",
+					value: consumeArgs(tokens, ast).value
+				};
+			} else if (token.type === "keyword" || token.type === "identifier") {
+				return {
+					type: "literal",
+					value: token.value
 				};
 			} else {
 				throw createError("Unexpected token for value: ", token, tokens, ast);
@@ -413,36 +422,54 @@
 
 				break;
 
+			// attribute selector is also different from css, it allows use of regexp
+			// and =, <, >, <=, >=, != comparisons
 			case "attribute":
-				switch (selector.operator) {
-				case "=":
-					switch (selector.value.type) {
-					case "literal":
-						visitPre(ast, function (node) {
-							if (getPath(node, selector.name) === selector.value.value) {
-								matches.push(node);
-							}
-						});
-						break;
-					case "regexp":
-						visitPre(ast, function (node) {
-							if (selector.value.value.test(getPath(node, selector.name))) {
-								matches.push(node);
-							}
-						});
-						break;
-					}
-					break;
-				
-				case undefined:
+				switch (selector.value && selector.value.type || "literal") {
+				case "literal":
 					visitPre(ast, function (node) {
-						if (getPath(node, selector.name) !== undefined) {
+						var value = getPath(node, selector.name);
+						if (!selector.operator && value !== undefined) {
+							matches.push(node);
+						} else if (selector.operator === "=" && value === selector.value.value) {
+							matches.push(node);
+						} else if (selector.operator === "!=" && value != selector.value.value) {
+							matches.push(node);
+						} else if (selector.operator === "<=" && value <= selector.value.value) {
+							matches.push(node);
+						} else if (selector.operator === ">=" && value >= selector.value.value) {
+							matches.push(node);
+						} else if (selector.operator === "<" && value < selector.value.value) {
+							matches.push(node);
+						} else if (selector.operator === ">" && value > selector.value.value) {
+							matches.push(node);
+						}
+					});
+					break;
+
+				case "type":
+					visitPre(ast, function (node) {
+						var test = typeof getPath(node, selector.name) === selector.value.value;
+						if (selector.operator === "=" && test) {
+							matches.push(node);
+						} else if (selector.operator === "!=" && !test) {
+							matches.push(node);
+						}
+					});
+					break;
+
+				case "regexp":
+					visitPre(ast, function (node) {
+						var test = selector.value.value.test(getPath(node, selector.name));
+						if (selector.operator === "=" && test) {
+							matches.push(node);
+						} else if (selector.operator === "!=" && !test) {
 							matches.push(node);
 						}
 					});
 					break;
 				}
-
+				
 				break;
 			}	
 

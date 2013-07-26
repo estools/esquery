@@ -103,6 +103,68 @@ define([
                 conditional.body[0].consequent.body[0].expression.callee,
                 conditional.body[0].alternate.body[0].expression.left
             ], matches);
+        },
+
+        "not string": function () {
+            var matches = esquery(conditional, '[name!="x"]');
+            assert.contains([
+                conditional.body[0].consequent.body[0].expression.callee,
+                conditional.body[1].consequent.body[0].expression.left
+            ], matches);
+        },
+
+        "less than": function () {
+            var matches = esquery(conditional, "[body.length<2]");
+            assert.contains([
+                conditional.body[0].consequent,
+                conditional.body[0].alternate,
+                conditional.body[1].consequent,
+                conditional.body[1].alternate.consequent
+            ], matches);
+        },
+
+        "greater than": function () {
+            var matches = esquery(conditional, "[body.length>1]");
+            assert.contains([
+                conditional
+            ], matches);
+        },
+
+        "less than or equal": function () {
+            var matches = esquery(conditional, "[body.length<=2]");
+            assert.contains([
+                conditional,
+                conditional.body[0].consequent,
+                conditional.body[0].alternate,
+                conditional.body[1].consequent,
+                conditional.body[1].alternate.consequent
+            ], matches);
+        },
+
+        "greater than or equal": function () {
+            var matches = esquery(conditional, "[body.length>=1]");
+            assert.contains([
+                conditional,
+                conditional.body[0].consequent,
+                conditional.body[0].alternate,
+                conditional.body[1].consequent,
+                conditional.body[1].alternate.consequent
+            ], matches);
+        },
+
+        "attribute type": function () {
+            var matches = esquery(conditional, "[test=type(object)]");
+            assert.contains([
+                conditional.body[0],
+                conditional.body[1],
+                conditional.body[1].alternate
+            ], matches);
+
+            matches = esquery(conditional, "[value=type(boolean)]");
+            assert.contains([
+                conditional.body[1].test.left.right,
+                conditional.body[1].alternate.test
+            ], matches);
         }
     });
 });

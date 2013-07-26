@@ -43,8 +43,20 @@ define([
             tokens = esquery.tokenize("+");
             assert.matches([{type: "operator", value: "+"}], tokens);
 
+            tokens = esquery.tokenize("!");
+            assert.matches([{type: "operator", value: "!"}], tokens);
+
             tokens = esquery.tokenize(">");
             assert.matches([{type: "operator", value: ">"}], tokens);
+
+            tokens = esquery.tokenize(">=");
+            assert.matches([{type: "operator", value: ">="}], tokens);
+
+            tokens = esquery.tokenize("<=");
+            assert.matches([{type: "operator", value: "<="}], tokens);
+
+            tokens = esquery.tokenize("!=");
+            assert.matches([{type: "operator", value: "!="}], tokens);
         }, 
 
         "individual keywords": function () {
