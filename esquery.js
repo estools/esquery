@@ -100,6 +100,17 @@
 						left: ast,
 						right: selector
 					} : selector;
+				} else if (token.value === "!") {
+					var selector = consumeSelector(tokens);
+					var negative = {
+						type: "negate",
+						selector: selector
+					};
+					return ast ? {
+						type: "and",
+						left: ast,
+						right: negative
+					} : negative;
 				} else if (token.value === ":") {
 					var pseudo = consumePseudo(tokens);
 					return ast ? {
@@ -314,6 +325,15 @@
 					if (node.type === selector.value) {
 						matches.push(node);
 					}
+				});
+				break;
+
+			case "negate":
+				leftMatches = match(ast, {type: "wildcard"});
+				rightMatches = match(ast, selector.selector);
+
+				matches = leftMatches.filter(function (leftNode) {
+					return rightMatches.indexOf(leftNode) < 0;
 				});
 				break;
 
