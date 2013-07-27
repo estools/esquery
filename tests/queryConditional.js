@@ -85,12 +85,12 @@ define([
         },
 
         "nth child": function () {
-            var matches = esquery(conditional, ":nth-child(1)");
+            var matches = esquery(conditional, ":nth-child(2)");
             assert.contains([
                 conditional.body[1]
             ], matches);
 
-            matches = esquery(conditional, ":nth-child(-2)");
+            matches = esquery(conditional, ":nth-last-child(2)");
             assert.contains([
                 conditional.body[0]
             ], matches);

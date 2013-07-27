@@ -63,7 +63,7 @@ define([
         },
 
         "nth child": function () {
-            var matches = esquery(forLoop, ":nth-child(-1)");
+            var matches = esquery(forLoop, ":nth-last-child(1)");
             assert.contains([
                 forLoop.body[0],
                 forLoop.body[0].body.body[0]

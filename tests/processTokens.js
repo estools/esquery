@@ -49,10 +49,10 @@ define([
             assert.matches({type: "nth-child", index: {type: "literal", value: 2}}, ast);
 
             ast = esquery.processTokens([opColon, {type: "keyword", value: "first-child"}]);
-            assert.matches({type: "nth-child", index: {type: "literal", value: 0}}, ast);
+            assert.matches({type: "nth-child", index: {type: "literal", value: 1}}, ast);
 
             ast = esquery.processTokens([opColon, {type: "keyword", value: "last-child"}]);
-            assert.matches({type: "nth-child", index: {type: "literal", value: -1}}, ast);
+            assert.matches({type: "nth-last-child", index: {type: "literal", value: 1}}, ast);
         },
 
         "attribute nodes": function () {

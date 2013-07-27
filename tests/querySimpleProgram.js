@@ -101,17 +101,17 @@ define([
         },
 
         "nth child": function () {
-            var matches = esquery(simpleProgram, ":nth-child(1)");
+            var matches = esquery(simpleProgram, ":nth-child(2)");
             assert.contains([
                 simpleProgram.body[1]
             ], matches);
 
-            matches = esquery(simpleProgram, ":nth-child(2)");
+            matches = esquery(simpleProgram, ":nth-child(3)");
             assert.contains([
                 simpleProgram.body[2]
             ], matches);
 
-            matches = esquery(simpleProgram, ":nth-child(-2)");
+            matches = esquery(simpleProgram, ":nth-last-child(2)");
             assert.contains([
                 simpleProgram.body[2]
             ], matches);

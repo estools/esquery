@@ -70,18 +70,18 @@ define([
         },
 
         "nth child": function () {
-            var matches = esquery(simpleFunction, ":nth-child(1)");
+            var matches = esquery(simpleFunction, ":nth-child(2)");
             assert.contains([
                 simpleFunction.body[0].params[1],
                 simpleFunction.body[0].body.body[1]
             ], matches);
 
-            matches = esquery(simpleFunction, ":nth-child(2)");
+            matches = esquery(simpleFunction, ":nth-child(3)");
             assert.contains([
                 simpleFunction.body[0].body.body[2]
             ], matches);
 
-            matches = esquery(simpleFunction, ":nth-child(-2)");
+            matches = esquery(simpleFunction, ":nth-last-child(2)");
             assert.contains([
                 simpleFunction.body[0].params[0],
                 simpleFunction.body[0].body.body[1]

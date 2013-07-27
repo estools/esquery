@@ -94,7 +94,7 @@ define([
             var tokens = esquery.tokenize('"asdf asdf"');
             assert.matches([{type: "string", value: "asdf asdf"}], tokens);
 
-            tokens = esquery.tokenize('"asdf \" asdf"');
+            tokens = esquery.tokenize('"asdf \\\" asdf"');
             assert.matches([{type: "string", value: "asdf \" asdf"}], tokens);
         },
 

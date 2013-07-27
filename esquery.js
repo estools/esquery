@@ -8,7 +8,7 @@
 		 */
 		function tokenize(selector) {
 			selector = selector.replace(/^\s*|\s*$/g, "");
-	    	var tokens = selector.split(/\s*(\/(?:\\\/|[^\/])*\/)\s*|([+\-]?[0-9]*\.?[0-9]+)|(:)|("(?:\\\"|[^"])*")|(\[)\s*|\s*(\]|\))|\s*(!=|<=|>=|\,|\*|~|<|>|=|!|\+|\||\(|\s)\s*/);
+	    	var tokens = selector.split(/\s*(\/(?:\\\/|[^\/])*\/)\s*|([+\-]?[0-9]*\.?[0-9]+)|(:)|("(?:\\"|[^"])*")|(\[)\s*|\s*(\]|\))|\s*(!=|<=|>=|\,|\*|~|<|>|=|!|\+|\||\(|\s)\s*/);
 
 	    	tokens = tokens.filter(function (token) {
 	    		return token;
@@ -20,7 +20,7 @@
 	    				type: "wildcard",
 	    				value: "*"
 	    			};
-	    		} else if (/type|not|matches|first\-child|nth\-child|nth\-last\-child|last\-child|length/.test(token)) {
+	    		} else if (/type|not|matches|first\-child|nth\-child|nth\-last\-child|last\-child|length|calc/.test(token)) {
 	    			return {
 	    				type: "keyword",
 	    				value: token
@@ -28,7 +28,7 @@
 	    		} else if (/".*"/.test(token)) {
 	    			return {
 	    				type: "string",
-	    				value: token.replace(/^"|"$/g, "")
+	    				value: token.replace(/^"|"$/g, "").replace(/\\"/, "\"")
 	    			};
 	    		} else if (/[+\-]?[0-9]*.?[0-9]+/.test(token)) {
 	    			return {
@@ -467,19 +467,31 @@
 
 				break;
 
-			// nth-child is used for first/last-child and is a bit different from the css
-			// nth-child. It is a zero based index where negative -1 means the last child,
-			// -2 is the second to last, and so forth.
+			// nth-child is used for first/nth-child it only supports integers for now
 			case "nth-child":
 				visitPre(ast, function (node, context) {
 					var index = selector.index.value;
 					Object.keys(node).forEach(function (key) {
 						if (node[key] && node[key].forEach) {
 							var len = node[key].length;
-							if (index >= 0 && index < len) {
-								matches.push(node[key][index]);
-							} else if (index < 0 && len + index < len && len + index >= 0) {
-								matches.push(node[key][len + index]);
+							if (index > 0 && index <= len) {
+								matches.push(node[key][index - 1]);
+							}
+						}
+					});
+				});
+
+				break;
+
+			// nth-last-child is used for last/nth-last-child it only supports integers for now
+			case "nth-last-child":
+				visitPre(ast, function (node, context) {
+					var index = selector.index.value;
+					Object.keys(node).forEach(function (key) {
+						if (node[key] && node[key].forEach) {
+							var len = node[key].length;
+							if (len - index < len && len - index >= 0) {
+								matches.push(node[key][len - index]);
 							}
 						}
 					});
