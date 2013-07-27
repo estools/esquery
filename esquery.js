@@ -8,7 +8,7 @@
 		 */
 		function tokenize(selector) {
 			selector = selector.replace(/^\s*|\s*$/g, "");
-	    	var tokens = selector.split(/\s*(\/(?:\\\/|[^\/])*\/)\s*|([+\-]?[0-9]*\.?[0-9]+)|(:)|("(?:\"|[^"])*")|(\[)\s*|\s*(\]|\))|\s*(\*|~|!=|<=|>=|<|>|=|!|\+|\(|\s)\s*/);
+	    	var tokens = selector.split(/\s*(\/(?:\\\/|[^\/])*\/)\s*|([+\-]?[0-9]*\.?[0-9]+)|(:)|("(?:\\\"|[^"])*")|(\[)\s*|\s*(\]|\))|\s*(!=|<=|>=|\,|\*|~|<|>|=|!|\+|\||\(|\s)\s*/);
 
 	    	tokens = tokens.filter(function (token) {
 	    		return token;
@@ -20,7 +20,7 @@
 	    				type: "wildcard",
 	    				value: "*"
 	    			};
-	    		} else if (/type|first\-child|nth\-child|last\-child|calc|length/.test(token)) {
+	    		} else if (/type|not|matches|first\-child|nth\-child|nth\-last\-child|last\-child|length/.test(token)) {
 	    			return {
 	    				type: "keyword",
 	    				value: token
@@ -40,7 +40,7 @@
 	    				type: "regexp",
 	    				value: token.replace(/^\/|\/$/g, "").replace(/\\\//g, "/")
 	    			};
-	    		} else if (/~|!=|<=|>=|<|>|=|!|:|\+|\[|\]|\(|\)|\s/.test(token)) {
+	    		} else if (/!=|<=|>=|<|>|,|~|=|!|:|\+|\[|\]|\(|\)|\s/.test(token)) {
 	    			return {
 	    				type: "operator",
 	    				value: token
@@ -69,11 +69,28 @@
 		 * * [attribute]
 		 */
 		function processTokens(tokens) {
-			var ast;
+			var result, ast;
 			while (tokens.length > 0) {
 				ast = consumeSelector(tokens, ast);
+				if (tokens.length > 0) {
+					var peek = tokens[0];
+					if (peek.type === "operator" && peek.value === ",") {
+						tokens.shift();
+						if (!result) {
+							result = {
+								type: "matches",
+								selectors: [ast]
+							};
+						} else {
+							result.selectors.push(ast);
+						}
+						ast = undefined;
+					}
+				} else if (ast && result) {
+					result.selectors.push(ast);
+				}
 			}
-			return ast;
+			return result || ast;
 		}
 
 		var operatorMap = {
@@ -100,17 +117,6 @@
 						left: ast,
 						right: selector
 					} : selector;
-				} else if (token.value === "!") {
-					var selector = consumeSelector(tokens);
-					var negative = {
-						type: "negate",
-						selector: selector
-					};
-					return ast ? {
-						type: "and",
-						left: ast,
-						right: negative
-					} : negative;
 				} else if (token.value === ":") {
 					var pseudo = consumePseudo(tokens);
 					return ast ? {
@@ -145,7 +151,7 @@
 						type: "nth-child",
 						index: {
 							type: "literal",
-							value: 0
+							value: 1
 						}
 					};
 				case "nth-child":
@@ -153,13 +159,28 @@
 						type: "nth-child",
 						index: consumeArgs(tokens, ast)
 					};
+				case "nth-last-child":
+					return {
+						type: "nth-last-child",
+						index: consumeArgs(tokens, ast)
+					};
 				case "last-child":
 					return {
-						type: "nth-child",
+						type: "nth-last-child",
 						index: {
 							type: "literal",
-							value: -1
+							value: 1
 						}
+					};
+				case "matches":
+					return {
+						type: "matches",
+						selectors: consumeArgList(tokens, ast)
+					};
+				case "not":
+					return {
+						type: "not",
+						selectors: consumeArgList(tokens, ast)
 					};
 				default:
 					throw createError("Unexpected keyword: ", token, tokens, ast);
@@ -202,6 +223,37 @@
 				}
 			} else {
 				throw createError("Unexpected token in attribute: ", token, tokens, ast);
+			}
+		}
+
+		function consumeArgList(tokens, ast) {
+			var arg, token = tokens.shift();
+			if (token.type === "operator" && token.value === "(" && tokens.length > 1) {
+				
+				var result = [];
+
+				while (tokens.length > 0 && (token.type !== "operator" || token.value !== ")")) {
+					arg = consumeSelector(tokens, arg);
+					if (tokens.length > 0) {
+						token = tokens[0];
+						if (token.type === "operator" && token.value === ",") {
+							tokens.shift();
+						}
+					}
+					if (arg) {
+						result.push(arg);
+						arg = undefined;
+					}
+				}
+
+				tokens.shift();
+				if (token.type !== "operator" || token.value !== ")") {
+					throw createError("Unexpected token in argument list: ", paren, tokens, ast);
+				}
+
+				return result;
+			} else {
+				throw createError("Unexpected token in argument list: ", token, tokens, ast);
 			}
 		}
 
@@ -328,9 +380,12 @@
 				});
 				break;
 
-			case "negate":
+			case "not":
 				leftMatches = match(ast, {type: "wildcard"});
-				rightMatches = match(ast, selector.selector);
+				rightMatches = [];
+				selector.selectors.forEach(function (selector) {
+					rightMatches = rightMatches.concat(match(ast, selector));
+				});
 
 				matches = leftMatches.filter(function (leftNode) {
 					return rightMatches.indexOf(leftNode) < 0;
@@ -440,6 +495,12 @@
 					return rightMatches.indexOf(leftNode) > -1;
 				});
 
+				break;
+
+			case "matches":
+				selector.selectors.forEach(function (selector) {
+					matches = matches.concat(match(ast, selector));
+				});
 				break;
 
 			// attribute selector is also different from css, it allows use of regexp
