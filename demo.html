@@ -254,6 +254,7 @@
 
         try {
             var matches = esquery.match(ast, selectorAst);
+            matches = esquery.finalMatches(matches);
             matchesOutput = JSON.stringify(matches, null, "  ");
         } catch (e) {
             matchesOutput = e.message;

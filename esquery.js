@@ -558,12 +558,21 @@
                     if (rightI > -1) {
                         matches.push(leftNode);
 
+                        var newSubject = [];
                         if (leftResults.subject[leftI]) {
-                            subject.push(leftResults.subject[leftI]);
-                        } else if (rightResults.subject[rightI]) {
-                            subject.push(rightResults.subject[rightI]);
-                        } else if (selector.subject) {
-                            subject.push([leftNode]);
+                            newSubject = newSubject.concat(leftResults.subject[leftI]);
+                        }
+
+                        if (rightResults.subject[rightI]) {
+                            newSubject = newSubject.concat(rightResults.subject[rightI]);
+                        }
+
+                        if (selector.subject) {
+                            newSubject.push(leftNode);
+                        }
+
+                        if (newSubject.length) {
+                            subject.push(newSubject);
                         }
                     }
                 });
@@ -726,6 +735,7 @@
         query.processTokens = processTokens;
         query.parse = parse;
         query.match = match;
+        query.finalMatches = finalMatches;
         return query;
     }
 
