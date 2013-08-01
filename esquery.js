@@ -4,12 +4,13 @@
         var REG = "\\s*(\\/(?:\\\\/|[^\\/])*\\/)\\s*";
         var NUM = "([+\\-]?[0-9]*\\.?[0-9]+)";
         var STR = '("(?:\\"|[^"])*")';
+        var OP = "(\\*)";
         var S_DOP_S = "\\s*(!=|<=|>=)\\s*";
         var S_OP = "\\s*(\\]|\\)|!)";
         var OP_S = "(\\[|:)\\s*";
-        var S_OP_S = "\\s*(\\,|\\*|~|<|>|=|\\+|\\||\\(|\\s)\\s*";
-        var OP = S_DOP_S + "|" + S_OP + "|" + S_OP_S + "|" + OP_S;
-        var TOKEN_SPLIT = new RegExp(REG + "|" + NUM + "|" + STR + "|" + OP);
+        var S_OP_S = "\\s*(\\,|~|<|>|=|\\+|\\||\\(|\\s)\\s*";
+        var OPS = OP + "|" + S_DOP_S + "|" + S_OP + "|" + S_OP_S + "|" + OP_S;
+        var TOKEN_SPLIT = new RegExp(REG + "|" + NUM + "|" + STR + "|" + OPS);
 
         /**
          * Tokenize a selector string into an array of tokens. Tokens
@@ -142,7 +143,7 @@
                         right: attribute
                     } : attribute;
                 } else {
-                    throw createError("Unexpected token: ", token, tokens, ast);
+                    throw createError("Unexpected operator: ", token, tokens, ast);
                 }
             } else {
                 throw createError("Unexpected token: ", token, tokens, ast);
@@ -521,8 +522,8 @@
 
 
             case "matches":
-                selector.selectors.forEach(function (selector) {
-                    finalMatches(match(ast, selector)).forEach(function (node) {
+                selector.selectors.forEach(function (matchesSelector) {
+                    finalMatches(match(ast, matchesSelector)).forEach(function (node) {
                         matches.push(node);
 
                         if (selector.subject) {
@@ -580,32 +581,26 @@
 
             case "descendant":
                 leftResults = match(ast, selector.left);
-                rightResults = match(ast, selector.right);
 
-                visitPre(ast, function (node, context) {
-                    var i = rightResults.matches.indexOf(node);
-                    if (context > -1 && i > -1) {
+                leftResults.matches.forEach(function (subAst, leftI) {
+                    rightResults = match(subAst, selector.right);
+
+                    rightResults.matches.forEach(function (node, rightI) {
                         matches.push(node);
                         
                         var newSubject = [];
-                        if (leftResults.subject[context]) {
-                            newSubject = leftResults.subject[context];
+                        if (leftResults.subject[leftI]) {
+                            newSubject = leftResults.subject[leftI];
                         }
 
-                        if (rightResults.subject[i]) {
-                            newSubject = newSubject.concat(rightResults.subject[i]);
+                        if (rightResults.subject[rightI]) {
+                            newSubject = newSubject.concat(rightResults.subject[rightI]);
                         }
 
                         if (newSubject.length) {
                             subject.push(newSubject);
                         }
-                    }
-
-                    // check the ancestor index and return it as the context
-                    i = leftResults.matches.indexOf(node);
-                    if (i > -1) {
-                        return i;
-                    }
+                    });
                 });
                 break;
 

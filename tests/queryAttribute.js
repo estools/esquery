@@ -137,6 +137,22 @@ define([
             ], matches);
         },
 
+        "not type": function () {
+            var matches = esquery(conditional, '[value!=type(number)]');
+            assert.contains([
+                conditional.body[1].test.left.left.right,
+                conditional.body[1].test.left.right,
+                conditional.body[1].alternate
+            ], matches);
+        },
+
+        "not regexp": function () {
+            var matches = esquery(conditional, '[name!=/x|y/]');
+            assert.contains([
+                conditional.body[0].consequent.body[0].expression.callee
+            ], matches);
+        },
+
         "less than": function () {
             var matches = esquery(conditional, "[body.length<2]");
             assert.contains([

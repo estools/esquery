@@ -176,6 +176,15 @@ define([
                 {type: "regexp", value: "asdf "},
                 {type: "operator", value: "]"}
             ], tokens);
+        },
+
+        "* asdf": function () {
+            var tokens = esquery.tokenize("* asdf");
+            assert.matches([
+                {type: "wildcard", value: "*"},
+                {type: "operator", value: " "},
+                {type: "identifier", value: "asdf"}
+            ], tokens);
         }
     });
 });

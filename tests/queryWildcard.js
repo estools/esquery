@@ -11,24 +11,29 @@ define([
 
     test.defineSuite("Wildcard query", {
 
+        "empty": function () {
+            var matches = esquery(conditional, "");
+            assert.isEqual(0, matches.length);
+        },
+
         "conditional": function () {
             var matches = esquery(conditional, "*");
-            assert.isEqual(35, matches.length, "found all the elements");
+            assert.isEqual(35, matches.length);
         },
 
         "for loop": function () {
             var matches = esquery(forLoop, "*");
-            assert.isEqual(18, matches.length, "found all the elements");
+            assert.isEqual(18, matches.length);
         },
 
         "simple function": function () {
             var matches = esquery(simpleFunction, "*");
-            assert.isEqual(17, matches.length, "found all the elements");
+            assert.isEqual(17, matches.length);
         },
 
         "simple program": function () {
             var matches = esquery(simpleProgram, "*");
-            assert.isEqual(22, matches.length, "found all the elements");
+            assert.isEqual(22, matches.length);
         },
 
         "small program": function () {

@@ -35,13 +35,22 @@ define([
             ], matches);
     	},
 
-    	"simple program matches": function () {
+        "simple program matches": function () {
             var matches = esquery(simpleProgram, ":matches(AssignmentExpression, BinaryExpression)");
             assert.contains([
                 simpleProgram.body[2].expression,
                 simpleProgram.body[3].consequent.body[0].expression,
                 simpleProgram.body[2].expression.right
             ], matches);
-    	}
+        },
+
+        "implicit matches": function () {
+            var matches = esquery(simpleProgram, "AssignmentExpression, BinaryExpression, NonExistant");
+            assert.contains([
+                simpleProgram.body[2].expression,
+                simpleProgram.body[3].consequent.body[0].expression,
+                simpleProgram.body[2].expression.right
+            ], matches);
+        }
     });
 });

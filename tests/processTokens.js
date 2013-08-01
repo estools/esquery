@@ -242,6 +242,22 @@ define([
                 },
                 right: idFoo
             }, ast);
+        },
+
+        "invalid operator after selector": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opPlus, opColon]));
+        },
+
+        "operator instead of selector": function () {
+            assert.doesThrow(Error, esquery.tokenize.bind(this, [opPlus]));
+        },
+
+        "invalid pseudo with identifier": function () {
+            assert.doesThrow(Error, esquery.tokenize.bind(this, [opColon, idFoo]));
+        },
+
+        "invalid pseudo with keyword": function () {
+            assert.doesThrow(Error, esquery.tokenize.bind(this, [opColon, keywordType]));
         }
     });
 });
