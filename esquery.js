@@ -79,28 +79,29 @@
          * * [attribute]
          */
         function processTokens(tokens) {
-            var result, ast;
+            var result, selector;
             while (tokens.length > 0) {
-                ast = consumeSelector(tokens, ast);
+                selector = consumeComplexSelector(tokens);
                 if (tokens.length > 0) {
-                    var peek = tokens[0];
-                    if (peek.type === "operator" && peek.value === ",") {
-                        tokens.shift();
+                    var token = tokens.shift();
+                    if (token.type === "operator" && token.value === ",") {
                         if (!result) {
                             result = {
                                 type: "matches",
-                                selectors: [ast]
+                                selectors: [selector]
                             };
                         } else {
-                            result.selectors.push(ast);
+                            result.selectors.push(selector);
                         }
-                        ast = undefined;
+                        selector = undefined;
+                    } else {
+                        throw createError("Invalid token, expected ',': ", token, tokens);
                     }
-                } else if (ast && result) {
-                    result.selectors.push(ast);
+                } else if (selector && result) {
+                    result.selectors.push(selector);
                 }
             }
-            return result || ast;
+            return result || selector;
         }
 
         var operatorMap = {
@@ -110,52 +111,101 @@
             "+": "adjacent"
         };
 
+        function peekOp(tokens, opValue) {
+            if (tokens.length > 0 && peekType(tokens, "operator") &&
+                    (opValue instanceof RegExp && opValue.test(tokens[0].value) ||
+                    tokens[0].value === opValue)) {
+                return tokens[0];
+            }
+        }
+
+        function consumeOp(tokens, opValue) {
+            if (peekOp(tokens, opValue)) {
+                return tokens.shift();
+            } else {
+                throw createError("Expected operator " + opValue + ", but found: ", tokens[0], tokens);
+            }
+        }
+
+        function peekType(tokens, type) {
+            if (tokens.length > 0 && (tokens[0].type === type ||
+                    type instanceof RegExp && type.test(tokens[0].type))) {
+                return tokens[0];
+            }
+        }
+
+        function consumeType(tokens, type) {
+            if (peekType(tokens, type)) {
+                return tokens.shift();
+            } else {
+                throw createError("Expected type " + type + ", but found: ", tokens[0], tokens);
+            }
+        }
+
+        function consumeComplexSelector(tokens) {
+            var selector;
+            selector = consumeCompoundSelector(tokens);
+            if (tokens.length > 0) {
+                if (peekOp(tokens, /[\s+~>]/)) {
+                    var op = tokens.shift()
+                    var right = consumeComplexSelector(tokens)
+                    if (right) {
+                        selector = {
+                            type: operatorMap[op.value],
+                            left: selector,
+                            right: right 
+                        };
+                    } else {
+                        throw createError("Invalid right side of complex selector: ", op, tokens);
+                    }
+                }
+            }
+            return selector;
+        }
+
         /**
          * Core token processor
          */
-        function consumeSelector(tokens, ast) {
-            var selector;
-            var token = tokens.shift();
-            if (token.type === "wildcard" && !ast) {
-                selector = token;
-            } else if (token.type === "identifier" && !ast) {
-                selector = token;
-            } else if (token.type === "operator" && tokens.length > 0 && ast) {
-                if (/[\s>~+]/.test(token.value)) {
-                    selector = {
-                        type: operatorMap[token.value],
-                        left: ast,
-                        right: consumeSelector(tokens)
-                    };
-                } else if (token.value === ":") {
-                    selector = {
-                        type: "and",
-                        left: ast,
-                        right: consumePseudo(tokens)
-                    };
-                } else if (token.value === "[") {
-                    selector = {
-                        type: "and",
-                        left: ast,
-                        right: consumeAttribute(tokens)
-                    };
+        function consumeCompoundSelector(tokens) {
+            var result, selector;
+
+            result = consumeSelector(tokens);
+
+            while (tokens.length > 0) {
+                selector = consumeSelector(tokens);
+                if (selector) {
+                    if (result.type !== "compound") {
+                        result = {
+                            type: "compound",
+                            selectors: [result]
+                        };
+                    }
+
+                    result.selectors.push(selector);
                 } else {
-                    throw createError("Unexpected token: ", token, tokens, ast);
+                    break;
                 }
-            } else if (token.type === "operator" && tokens.length > 0) {
-                if (token.value === ":") {
-                    selector = consumePseudo(tokens);
-                } else if (token.value === "[") {
-                    selector = consumeAttribute(tokens);
-                } else {
-                    throw createError("Unexpected operator: ", token, tokens, ast);
-                }
-            } else {
-                throw createError("Unexpected token: ", token, tokens, ast);
             }
 
-            if (tokens.length > 0 && tokens[0].type === "operator" &&
-                    tokens[0].value === "!") {
+            return result || selector;
+        }
+
+        function consumeSelector(tokens) {
+            var selector;
+            if (peekType(tokens, "wildcard")) {
+                selector = tokens.shift();
+            } else if (peekType(tokens, /keyword|identifier/)) {
+                selector = {
+                    type: "identifier",
+                    value: tokens.shift().value
+                };
+            } else if (peekOp(tokens, ":")) {
+                selector = consumePseudo(tokens);
+            } else if (peekOp(tokens, "[")) {
+                selector = consumeAttribute(tokens);
+            }
+
+            if (selector && peekOp(tokens, "!")) {
                 tokens.shift();
                 selector.subject = true;
             }
@@ -166,148 +216,116 @@
         /**
          * Consume the various types of pseudo selectors (:*-child).
          */
-        function consumePseudo(tokens, ast) {
-            var token = tokens.shift();
-            if (token.type === "keyword") {
-                switch (token.value) {
-                case "first-child":
-                    return {
-                        type: "nth-child",
-                        index: {
-                            type: "literal",
-                            value: 1
-                        }
-                    };
-                case "nth-child":
-                    return {
-                        type: "nth-child",
-                        index: consumeArgs(tokens, ast)
-                    };
-                case "nth-last-child":
-                    return {
-                        type: "nth-last-child",
-                        index: consumeArgs(tokens, ast)
-                    };
-                case "last-child":
-                    return {
-                        type: "nth-last-child",
-                        index: {
-                            type: "literal",
-                            value: 1
-                        }
-                    };
-                case "matches":
-                    return {
-                        type: "matches",
-                        selectors: consumeArgList(tokens, ast)
-                    };
-                case "not":
-                    return {
-                        type: "not",
-                        selectors: consumeArgList(tokens, ast)
-                    };
-                default:
-                    throw createError("Unexpected keyword: ", token, tokens, ast);
-                }
-            } else {
-                throw createError("Unexpected token in pseudo: ", token, tokens, ast);
+        function consumePseudo(tokens) {
+            var op = consumeOp(tokens, ":");
+            var id = consumeType(tokens, "keyword");
+            switch (id.value) {
+            case "first-child":
+                return {
+                    type: "nth-child",
+                    index: {
+                        type: "literal",
+                        value: 1
+                    }
+                };
+            case "nth-child":
+                return {
+                    type: "nth-child",
+                    index: consumeArg(tokens)
+                };
+            case "nth-last-child":
+                return {
+                    type: "nth-last-child",
+                    index: consumeArg(tokens)
+                };
+            case "last-child":
+                return {
+                    type: "nth-last-child",
+                    index: {
+                        type: "literal",
+                        value: 1
+                    }
+                };
+            case "matches":
+                return {
+                    type: "matches",
+                    selectors: consumeArgList(tokens)
+                };
+            case "not":
+                return {
+                    type: "not",
+                    selectors: consumeArgList(tokens)
+                };
+            default:
+                throw createError("Unexpected keyword: ", id, tokens);
             }
         }
 
         /**
          * Consume an attribute selector ([])
          */
-        function consumeAttribute(tokens, ast) {
-            var token = tokens.shift();
-            if ((token.type === "identifier" || token.type === "keyword") && tokens.length > 0) {
-                var op = tokens.shift();
-                if (op.type === "operator") {
-                    if (op.value === "]") {
-                        return {
-                            type: "attribute",
-                            name: token.value
-                        };
-                    } else if (tokens.length > 0) {
-                        ast = {
-                            type: "attribute",
-                            name: token.value,
-                            operator: op.value,
-                            value: consumeValue(tokens, ast)
-                        };
-
-                        token = tokens.shift();
-                        if (!token || token.type !== "operator" || token.value !== "]") {
-                            throw createError("Unexpected token in attribute: ", token, tokens, ast);
-                        }
-
-                        return ast;
-                    } else {
-                        throw createError("Unexpected end of tokens: ", op, tokens, ast);
-                    }
-                } else {
-                    throw createError("Unexpected token in attribute: ", op, tokens, ast);
-                }
+        function consumeAttribute(tokens) {
+            var op = consumeOp(tokens, "[");
+            var id = consumeType(tokens, /keyword|identifier/);
+        
+            op = consumeType(tokens, "operator");
+            if (op.value === "]") {
+                return {
+                    type: "attribute",
+                    name: id.value
+                };
             } else {
-                throw createError("Unexpected token in attribute: ", token, tokens, ast);
+                var selector = {
+                    type: "attribute",
+                    name: id.value,
+                    operator: op.value,
+                    value: consumeValue(tokens)
+                };
+
+                consumeOp(tokens, "]");
+                return selector;
             }
         }
 
-        function consumeArgList(tokens, ast) {
-            var arg, token = tokens.shift();
-            if (token && token.type === "operator" && token.value === "(" && tokens.length > 1) {
-                
-                var result = [];
-
-                while (tokens.length > 0 && (token.type !== "operator" || token.value !== ")")) {
-                    arg = consumeSelector(tokens, arg);
-                    if (tokens.length > 0) {
-                        token = tokens[0];
-                        if (token.type === "operator" && token.value === ",") {
-                            tokens.shift();
-                        }
-                    }
-                    if (arg) {
-                        result.push(arg);
-                        arg = undefined;
-                    }
+        function consumeArgList(tokens) {
+            consumeOp(tokens, "(");
+            
+            var arg, result = [];
+            while (tokens.length > 0) {
+                arg = consumeComplexSelector(tokens);
+                if (arg) {
+                    result.push(arg);
+                } else {
+                    throw createError("Expect selector argument: ", tokens[0], tokens);
                 }
 
-                token = tokens.shift();
-                if (!token || token.type !== "operator" || token.value !== ")") {
-                    throw createError("Unexpected token in argument list: ", token, tokens, ast);
+                if (peekOp(tokens, ",")) {
+                    tokens.shift();
+                } else {
+                    break;
                 }
-
-                return result;
-            } else {
-                throw createError("Unexpected token in argument list: ", token, tokens, ast);
             }
+
+            consumeOp(tokens, ")");
+            return result;
         }
 
         /**
          * Consume operator argumetns inside parens
          */
-        function consumeArgs(tokens, ast) {
-            var token = tokens.shift();
-            if (token && token.value === "(" && tokens.length > 1) {
-                var literal = consumeValue(tokens, ast);
-
-                var paren = tokens.shift();
-                if (!paren || paren.type !== "operator" || paren.value !== ")") {
-                    throw createError("Unexpected token in value: ", paren, tokens, ast);
-                }
-
-                return literal;
-            } else {
-                throw createError("Unexpected token in args: ", token, tokens, ast);
-            }
+        function consumeArg(tokens) {
+            consumeOp(tokens, "(");
+            var value = consumeValue(tokens);
+            consumeOp(tokens, ")");
+            return value;
         }
 
         /**
          * Consume values (literals and computed values)
          */
-        function consumeValue(tokens, ast) {
+        function consumeValue(tokens) {
             var token = tokens.shift();
-            if (token.type === "number" || token.type === "string") {
+            if (/number|string/.test(token.type)) {
                 return {
                     type: "literal",
                     value: token.value
@@ -317,47 +335,60 @@
                     type: "regexp",
                     value: new RegExp(token.value)
                 };
-            } else if (token.type === "keyword" && token.value === "type" && tokens.length > 2 &&
-                    tokens[0].type === "operator" && tokens[0].value === "(") {
+            } else if (/keyword|type/.test(token.type) && peekOp(tokens, "(")) {
                 return {
                     type: "type",
-                    value: consumeArgs(tokens, ast).value
+                    value: consumeArg(tokens).value
                 };
-            } else if (token.type === "keyword" || token.type === "identifier") {
+            } else if (/keyword|identifier/.test(token.type)) {
                 return {
                     type: "literal",
                     value: token.value
                 };
             } else {
-                throw createError("Unexpected token for value: ", token, tokens, ast);
+                throw createError("Unexpected token for value: ", token, tokens);
             }
         }
 
         /**
          * Create an error object with the supplied information.
          */
-        function createError(message, token, tokens, ast) {
+        function createError(message, token, tokens) {
             return new Error(message + JSON.stringify(token) + "\n" +
-                    "Remaining tokens: " + JSON.stringify(tokens, null, "  ") + "\n" +
-                    "Current ast: " + JSON.stringify(ast, null, "  "));
+                    "Remaining tokens: " + JSON.stringify(tokens, null, "  "));
         }
 
         /**
          * Walk the ECMAScript AST with a pre-order traversal. If the callback function
          * returns something, then that will be passed to the subtree node visits.
          */
-        function visitPre(ast, fn, context) {
-            var newContext = fn(ast, context);
-            context = newContext !== undefined ? newContext : context;
-
+        function visitPre(ast, fn) {
+            fn(ast);
+            
             var key;
             for (key in ast) {
                 if (ast[key] && ast[key].forEach) {
                     ast[key].forEach(function (node) {
-                        visitPre(node, fn, context);
+                        visitPre(node, fn);
                     });
                 } else if (ast[key] && ast[key].type) {
-                    visitPre(ast[key], fn, context);
+                    visitPre(ast[key], fn);
+                }
+            }
+        }
+
+        /**
+         * Visit all children of the node, but don't recurse
+         */
+        function visitChildren(ast, fn) {
+            var key;
+            for (key in ast) {
+                if (ast[key] && ast[key].forEach) {
+                    ast[key].forEach(function (node) {
+                        fn(node);
+                    });
+                } else if (ast[key] && ast[key].type) {
+                    fn(ast[key]);
                 }
             }
         }
@@ -541,7 +572,7 @@
                 break;
 
             case "not":
-                var rightResults = [];
+                rightResults = [];
                 selector.selectors.forEach(function (selector) {
                     rightResults = rightResults.concat(finalMatches(match(ast, selector)));
                 });
@@ -557,30 +588,25 @@
                 });
                 break;
 
-            case "and":
-                leftResults = match(ast, selector.left);
-                rightResults = match(ast, selector.right);
+            case "compound":
+                rightResults = [];
+                selector.selectors.forEach(function (selector) {
+                    rightResults.push(finalMatches(match(ast, selector)));
+                });
 
-                leftResults.matches.forEach(function (leftNode, leftI) {
-                    var rightI = rightResults.matches.indexOf(leftNode);
-                    if (rightI > -1) {
-                        matches.push(leftNode);
+                var isSubject = selector.subject || selector.selectors.some(function (selector) {
+                    return selector.subject;
+                });
 
-                        var newSubject = [];
-                        if (leftResults.subject[leftI]) {
-                            newSubject = newSubject.concat(leftResults.subject[leftI]);
-                        }
+                rightResults[0].forEach(function (node) {
+                    var i;
+                    for (i = 1; i < rightResults.length; i++) {
+                        if (rightResults[i].indexOf(node) > -1) {
+                            matches.push(node);
 
-                        if (rightResults.subject[rightI]) {
-                            newSubject = newSubject.concat(rightResults.subject[rightI]);
-                        }
-
-                        if (selector.subject) {
-                            newSubject.push(leftNode);
-                        }
-
-                        if (newSubject.length) {
-                            subject.push(newSubject);
+                            if (isSubject) {
+                                subject.push([node]);
+                            }
                         }
                     }
                 });
@@ -588,24 +614,26 @@
 
             case "descendant":
                 leftResults = match(ast, selector.left);
+                rightResults = match(ast, selector.right)
 
-                leftResults.matches.forEach(function (subAst, leftI) {
-                    rightResults = match(subAst, selector.right);
+                leftResults.matches.forEach(function (leftNode, leftI) {
+                    visitPre(leftNode, function (rightNode) {
+                        var rightI = rightResults.matches.indexOf(rightNode);
+                        if (rightI > -1) {
+                            matches.push(rightNode);
 
-                    rightResults.matches.forEach(function (node, rightI) {
-                        matches.push(node);
-                        
-                        var newSubject = [];
-                        if (leftResults.subject[leftI]) {
-                            newSubject = leftResults.subject[leftI];
-                        }
+                            var newSubject = [];
+                            if (leftResults.subject[leftI]) {
+                                newSubject = leftResults.subject[leftI];
+                            }
 
-                        if (rightResults.subject[rightI]) {
-                            newSubject = newSubject.concat(rightResults.subject[rightI]);
-                        }
+                            if (rightResults.subject[rightI]) {
+                                newSubject = newSubject.concat(rightResults.subject[rightI]);
+                            }
 
-                        if (newSubject.length) {
-                            subject.push(newSubject);
+                            if (newSubject.length > 0) {
+                                subject.push(newSubject);
+                            }
                         }
                     });
                 });
@@ -615,30 +643,26 @@
                 leftResults = match(ast, selector.left);
                 rightResults = match(ast, selector.right);
 
-                visitPre(ast, function (node, context) {
-                    var i = rightResults.matches.indexOf(node);
-                    if (context > -1 && i > -1) {
-                        matches.push(node);
+                leftResults.matches.forEach(function (leftNode, leftI) {
+                    visitChildren(leftNode, function (rightNode) {
+                        var rightI = rightResults.matches.indexOf(rightNode);
+                        if (rightI > -1) {
+                            matches.push(rightNode);
 
-                        var newSubject = [];
-                        if (leftResults.subject[context]) {
-                            newSubject = leftResults.subject[context];
+                            var newSubject = [];
+                            if (leftResults.subject[leftI]) {
+                                newSubject = leftResults.subject[leftI];
+                            }
+
+                            if (rightResults.subject[rightI]) {
+                                newSubject = newSubject.concat(rightResults.subject[rightI]);
+                            }
+
+                            if (newSubject.length > 0) {
+                                subject.push(newSubject);
+                            }
                         }
-
-                        if (rightResults.subject[i]) {
-                            newSubject = newSubject.concat(rightResults.subject[i]);
-                        }
-
-                        if (newSubject.length > 0) {
-                            subject.push(newSubject);
-                        }
-                    }
-
-                    // check the ancestor index and return it as the context
-                    i = leftResults.matches.indexOf(node);
-                    if (i > -1) {
-                        return i;
-                    }
+                    });
                 });
                 break;
 

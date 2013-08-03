@@ -100,7 +100,7 @@ define([
         	], matches);
         },
 
-        "//compound attributes right subject": function () {
+        "compound attributes right subject": function () {
             var matches = esquery(conditional, '[left.name="x"][right.value=1]!*');
             assert.contains([
             	conditional.body[0].test

@@ -200,24 +200,28 @@ define([
         "compound selector with identifiers": function () {
             var ast = esquery.processTokens([idFoo, opLBracket, idFoo, opRBracket]);
             assert.matches({
-                type: "and",
-                left: idFoo,
-                right: {
-                    type: "attribute",
-                    name: "foo"
-                }
+                type: "compound",
+                selectors: [
+                    idFoo,
+                    {
+                        type: "attribute",
+                        name: "foo"
+                    }
+                ]
             }, ast);
         },
 
-        "//compound selector with wildcard": function () {
+        "compound selector with wildcard": function () {
             var ast = esquery.processTokens([idFoo, wildcard]);
             assert.matches({
-                type: "and",
-                left: idFoo,
-                right: {
-                    type: "attribute",
-                    name: "foo"
-                }
+                type: "compound",
+                selectors: [
+                    idFoo,
+                    {
+                        type: "wildcard",
+                        value: "*"
+                    }
+                ]
             }, ast);
         },
 
@@ -226,34 +230,34 @@ define([
                     opLParen, num1, opRParen, opSpace, opLBracket, idAttr, opEq, num2, opRBracket,
                     opGreater, idFoo]);
             assert.matches({
-                type: "child",
+                type: "adjacent",
                 left: {
+                    type: "identifier",
+                    value: "foo"
+                },
+                right: {
                     type: "descendant",
                     left: {
-                        type: "adjacent",
-                        left: {
-                            type: "identifier",
-                            value: "foo"
-                        },
-                        right: {
-                            type: "nth-child",
-                            index: {
-                                type: "literal",
-                                value: 1
-                            }
+                        type: "nth-child",
+                        index: {
+                            type: "literal",
+                            value: 1
                         }
                     },
                     right: {
-                        type: "attribute",
-                        name: "attr",
-                        operator: "=",
-                        value: {
-                            type: "literal",
-                            value: 2
-                        }
+                        type: "child",
+                        left: {
+                            type: "attribute",
+                            name: "attr",
+                            operator: "=",
+                            value: {
+                                type: "literal",
+                                value: 2
+                            }
+                        },
+                        right: idFoo
                     }
-                },
-                right: idFoo
+                }
             }, ast);
         },
 
@@ -315,6 +319,10 @@ define([
 
         "no argument list": function () {
             assert.doesThrow(Error, esquery.processTokens.bind(this, [opColon, keywordNot]));
+        },
+
+        "argument list empty": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opColon, keywordNot, opLParen, opRParen]));
         },
 
         "argument list not closed": function () {
