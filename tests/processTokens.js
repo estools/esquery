@@ -30,6 +30,7 @@ define([
     
     var keywordNthChild = {type: "keyword", value: "nth-child"};
     var keywordType = {type: "keyword", value: "type"};
+    var keywordNot = {type: "keyword", value: "not"};
 
     var strLit = {type: "string", value: "123"};
     var litStr123 = {type: "literal", value: "123"};
@@ -196,7 +197,7 @@ define([
             }, ast);
         },
 
-        "and selector with identifiers": function () {
+        "compound selector with identifiers": function () {
             var ast = esquery.processTokens([idFoo, opLBracket, idFoo, opRBracket]);
             assert.matches({
                 type: "and",
@@ -208,7 +209,19 @@ define([
             }, ast);
         },
 
-        "compound selector": function () {
+        "//compound selector with wildcard": function () {
+            var ast = esquery.processTokens([idFoo, wildcard]);
+            assert.matches({
+                type: "and",
+                left: idFoo,
+                right: {
+                    type: "attribute",
+                    name: "foo"
+                }
+            }, ast);
+        },
+
+        "complex selector": function () {
             var ast = esquery.processTokens([idFoo, opPlus, opColon, keywordNthChild,
                     opLParen, num1, opRParen, opSpace, opLBracket, idAttr, opEq, num2, opRBracket,
                     opGreater, idFoo]);
@@ -244,20 +257,68 @@ define([
             }, ast);
         },
 
-        "invalid operator after selector": function () {
-            assert.doesThrow(Error, esquery.processTokens.bind(this, [opPlus, opColon]));
+        "invalid operator": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opLParen]));
+        },
+
+        "invalid operator after wildcard": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [wildcard, opLParen]));
+        },
+
+        "invalid operator after space": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opSpace, opLParen]));
+        },
+
+        "invalid operator after selector with more tokens": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [wildcard, opLParen, opRParen]));
         },
 
         "operator instead of selector": function () {
-            assert.doesThrow(Error, esquery.tokenize.bind(this, [opPlus]));
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opPlus]));
         },
 
         "invalid pseudo with identifier": function () {
-            assert.doesThrow(Error, esquery.tokenize.bind(this, [opColon, idFoo]));
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opColon, idFoo]));
         },
 
         "invalid pseudo with keyword": function () {
-            assert.doesThrow(Error, esquery.tokenize.bind(this, [opColon, keywordType]));
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opColon, keywordType]));
+        },
+
+        "invalid attribute missing closing bracket": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opLBracket, idFoo]));
+        },
+
+        "invalid attribute missing value": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opLBracket, idFoo, opEq]));
+        },
+
+        "invalid attribute invalid value": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opLBracket, idFoo, opEq, opLParen]));
+        },
+
+        "invalid attribute with invalid token": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opLBracket, idFoo, strLit]));
+        },
+
+        "invalid attribute with invalid value": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opLBracket, idFoo, opEq, strLit]));
+        },
+
+        "argument no args": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opColon, keywordNthChild]));
+        },
+
+        "argument no closing": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opColon, keywordNthChild, opLParen, strLit, strLit]));
+        },
+
+        "no argument list": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opColon, keywordNot]));
+        },
+
+        "argument list not closed": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opColon, keywordNot, opLParen, wildcard, wildcard]));
         }
     });
 });

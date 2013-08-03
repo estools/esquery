@@ -16,6 +16,13 @@ define([
             assert.contains([
             	conditional.body[0].test
         	], matches);
+        },
+
+        "type and pseudo": function () {
+            var matches = esquery(conditional, '[left.name="x"]:matches(*)');
+            assert.contains([
+            	conditional.body[0].test
+        	], matches);
         }
     });
 });

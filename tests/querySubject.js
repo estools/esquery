@@ -100,6 +100,13 @@ define([
         	], matches);
         },
 
+        "//compound attributes right subject": function () {
+            var matches = esquery(conditional, '[left.name="x"][right.value=1]!*');
+            assert.contains([
+            	conditional.body[0].test
+        	], matches);
+        },
+
         "decendent right subject": function () {
             var matches = esquery(forLoop, '* AssignmentExpression!');
             assert.contains([
@@ -137,9 +144,6 @@ define([
             	simpleProgram.body[1],
             	simpleProgram.body[2]
         	], matches);
-    	},
-
-        "multiple subjects": function () {
-        }
+    	}
     });
 });

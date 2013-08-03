@@ -120,28 +120,33 @@
                 selector = token;
             } else if (token.type === "identifier" && !ast) {
                 selector = token;
-            } else if (token.type === "operator" && tokens.length > 0) {
+            } else if (token.type === "operator" && tokens.length > 0 && ast) {
                 if (/[\s>~+]/.test(token.value)) {
-                    var right = consumeSelector(tokens);
-                    selector = ast ? {
+                    selector = {
                         type: operatorMap[token.value],
                         left: ast,
-                        right: right
-                    } : right;
+                        right: consumeSelector(tokens)
+                    };
                 } else if (token.value === ":") {
-                    var pseudo = consumePseudo(tokens);
-                    selector = ast ? {
+                    selector = {
                         type: "and",
                         left: ast,
-                        right: pseudo
-                    } : pseudo;
+                        right: consumePseudo(tokens)
+                    };
                 } else if (token.value === "[") {
-                    var attribute = consumeAttribute(tokens);
-                    selector = ast ? {
+                    selector = {
                         type: "and",
                         left: ast,
-                        right: attribute
-                    } : attribute;
+                        right: consumeAttribute(tokens)
+                    };
+                } else {
+                    throw createError("Unexpected token: ", token, tokens, ast);
+                }
+            } else if (token.type === "operator" && tokens.length > 0) {
+                if (token.value === ":") {
+                    selector = consumePseudo(tokens);
+                } else if (token.value === "[") {
+                    selector = consumeAttribute(tokens);
                 } else {
                     throw createError("Unexpected operator: ", token, tokens, ast);
                 }
@@ -214,7 +219,7 @@
          */
         function consumeAttribute(tokens, ast) {
             var token = tokens.shift();
-            if (token.type === "identifier" || token.type === "keyword" && tokens.length > 0) {
+            if ((token.type === "identifier" || token.type === "keyword") && tokens.length > 0) {
                 var op = tokens.shift();
                 if (op.type === "operator") {
                     if (op.value === "]") {
@@ -222,7 +227,7 @@
                             type: "attribute",
                             name: token.value
                         };
-                    } else {
+                    } else if (tokens.length > 0) {
                         ast = {
                             type: "attribute",
                             name: token.value,
@@ -231,11 +236,13 @@
                         };
 
                         token = tokens.shift();
-                        if (token.type !== "operator" || token.value !== "]") {
+                        if (!token || token.type !== "operator" || token.value !== "]") {
                             throw createError("Unexpected token in attribute: ", token, tokens, ast);
                         }
 
                         return ast;
+                    } else {
+                        throw createError("Unexpected end of tokens: ", op, tokens, ast);
                     }
                 } else {
                     throw createError("Unexpected token in attribute: ", op, tokens, ast);
@@ -247,7 +254,7 @@
 
         function consumeArgList(tokens, ast) {
             var arg, token = tokens.shift();
-            if (token.type === "operator" && token.value === "(" && tokens.length > 1) {
+            if (token && token.type === "operator" && token.value === "(" && tokens.length > 1) {
                 
                 var result = [];
 
@@ -265,9 +272,9 @@
                     }
                 }
 
-                tokens.shift();
-                if (token.type !== "operator" || token.value !== ")") {
-                    throw createError("Unexpected token in argument list: ", paren, tokens, ast);
+                token = tokens.shift();
+                if (!token || token.type !== "operator" || token.value !== ")") {
+                    throw createError("Unexpected token in argument list: ", token, tokens, ast);
                 }
 
                 return result;
@@ -281,11 +288,11 @@
          */
         function consumeArgs(tokens, ast) {
             var token = tokens.shift();
-            if (token.value === "(" && tokens.length > 1) {
+            if (token && token.value === "(" && tokens.length > 1) {
                 var literal = consumeValue(tokens, ast);
 
                 var paren = tokens.shift();
-                if (paren.type !== "operator" || paren.value !== ")") {
+                if (!paren || paren.type !== "operator" || paren.value !== ")") {
                     throw createError("Unexpected token in value: ", paren, tokens, ast);
                 }
 
