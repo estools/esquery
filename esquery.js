@@ -203,6 +203,8 @@
                 selector = consumePseudo(tokens);
             } else if (peekOp(tokens, "[")) {
                 selector = consumeAttribute(tokens);
+            } else if (peekOp(tokens, ".")) {
+                selector = consumeField(tokens);
             }
 
             if (selector && peekOp(tokens, "!")) {
@@ -263,18 +265,15 @@
 
         function consumeName(tokens) {
             var name = "";
-            while (tokens.length > 0) {
-                name += consumeType(tokens, /keyword|identifier/).value;
-                if (peekOp(tokens, ".")) {
-                    name += tokens.shift().value;
-                } else {
-                    break;
+            while (!name || peekOp(tokens, ".")) {
+                if (name) {
+                    consumeOp(tokens, ".");
+                    name += ".";
                 }
+                name += consumeType(tokens, /keyword|identifier/).value;
             }
 
-            if (name) {
-                return name;
-            }
+            return name;
         }
 
         /**
@@ -288,7 +287,8 @@
             if (op.value === "]") {
                 return {
                     type: "attribute",
-                    name: name                };
+                    name: name
+                };
             } else {
                 var selector = {
                     type: "attribute",
@@ -300,6 +300,18 @@
                 consumeOp(tokens, "]");
                 return selector;
             }
+        }
+
+        /**
+         * Consume the various types of pseudo selectors (:*-child).
+         */
+        function consumeField(tokens) {
+            var op = consumeOp(tokens, ".");
+            var name = consumeName(tokens, /keyword|identifier/);
+            return {
+                type: "field",
+                name: name
+            };
         }
 
         function consumeArgList(tokens) {
@@ -377,17 +389,18 @@
          * Walk the ECMAScript AST with a pre-order traversal. If the callback function
          * returns something, then that will be passed to the subtree node visits.
          */
-        function visitPre(ast, fn) {
-            fn(ast);
+        function visitPre(ast, fn, path) {
+            fn(ast, path);
             
-            var key;
+            var key, newPath;
             for (key in ast) {
+                newPath = path ? path + "." + key : key;
                 if (ast[key] && ast[key].forEach) {
                     ast[key].forEach(function (node) {
-                        visitPre(node, fn);
+                        visitPre(node, fn, newPath);
                     });
                 } else if (ast[key] && ast[key].type) {
-                    visitPre(ast[key], fn);
+                    visitPre(ast[key], fn, newPath);
                 }
             }
         }
@@ -481,7 +494,7 @@
 
             // nth-child is used for first/nth-child it only supports integers for now
             case "nth-child":
-                visitPre(ast, function (node, context) {
+                visitPre(ast, function (node) {
                     var index = selector.index.value;
                     Object.keys(node).forEach(function (key) {
                         if (node[key] && node[key].forEach) {
@@ -500,7 +513,7 @@
 
             // nth-last-child is used for last/nth-last-child it only supports integers for now
             case "nth-last-child":
-                visitPre(ast, function (node, context) {
+                visitPre(ast, function (node) {
                     var index = selector.index.value;
                     Object.keys(node).forEach(function (key) {
                         if (node[key] && node[key].forEach) {
@@ -571,6 +584,21 @@
                     });
                     break;
                 }
+                break;
+
+            case "field":
+                visitPre(ast, function (node, path) {
+                    if (path) {
+                        var i = path.indexOf(selector.name);
+                        if (i > -1 && i === path.length - selector.name.length) {
+                            matches.push(node);
+
+                            if (selector.subject) {
+                                subject.push([node]);
+                            }
+                        }
+                    }
+                });
                 break;
 
 

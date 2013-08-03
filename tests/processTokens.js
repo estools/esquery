@@ -336,6 +336,10 @@ define([
 
         "argument list not closed": function () {
             assert.doesThrow(Error, esquery.processTokens.bind(this, [opColon, keywordNot, opLParen, wildcard, wildcard]));
+        },
+
+        "invalid field": function () {
+            assert.doesThrow(Error, esquery.processTokens.bind(this, [opDot]));
         }
     });
 });

@@ -71,6 +71,13 @@ define([
         	], matches);
         },
 
+        "field subject": function () {
+            var matches = esquery(forLoop, '.test!');
+            assert.contains([
+                forLoop.body[0].test
+            ], matches);
+        },
+
         ":matches subject": function () {
             var matches = esquery(forLoop, ':matches(*)! > [name="foo"]');
             assert.contains([
