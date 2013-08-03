@@ -10,7 +10,11 @@ define([
             assert.matches([{type: "identifier", value: "SomeIdentifier"}], tokens);
 
             tokens = esquery.tokenize("id.name");
-            assert.matches([{type: "identifier", value: "id.name"}], tokens);
+            assert.matches([
+                {type: "identifier", value: "id"},
+                {type: "operator", value: "."},
+                {type: "identifier", value: "name"}
+            ], tokens);
         },
 
         "single wildcard": function () {
@@ -19,7 +23,10 @@ define([
         },
 
         "individual operators": function () {
-            var tokens = esquery.tokenize(":");
+            var tokens = esquery.tokenize(".");
+            assert.matches([{type: "operator", value: "."}], tokens);
+
+            tokens = esquery.tokenize(":");
             assert.matches([{type: "operator", value: ":"}], tokens);
 
             tokens = esquery.tokenize("[");

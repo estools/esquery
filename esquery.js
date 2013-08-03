@@ -4,7 +4,7 @@
         var REG = "\\s*(\\/(?:\\\\/|[^\\/])*\\/)\\s*";
         var NUM = "([+\\-]?[0-9]*\\.?[0-9]+)";
         var STR = '("(?:\\"|[^"])*")';
-        var OP = "(\\*)";
+        var OP = "(\\*|\\.)";
         var S_DOP_S = "\\s*(!=|<=|>=)\\s*";
         var S_OP = "\\s*(\\]|\\)|!)";
         var OP_S = "(\\[|:)\\s*";
@@ -50,7 +50,7 @@
                         type: "regexp",
                         value: token.replace(/^\/|\/$/g, "").replace(/\\\//g, "/")
                     };
-                } else if (/!=|<=|>=|<|>|,|~|=|!|:|\+|\[|\]|\(|\)|\s/.test(token)) {
+                } else if (/!=|<=|>=|<|>|,|~|=|!|:|\.|\+|\[|\]|\(|\)|\s/.test(token)) {
                     return {
                         type: "operator",
                         value: token
@@ -261,23 +261,38 @@
             }
         }
 
+        function consumeName(tokens) {
+            var name = "";
+            while (tokens.length > 0) {
+                name += consumeType(tokens, /keyword|identifier/).value;
+                if (peekOp(tokens, ".")) {
+                    name += tokens.shift().value;
+                } else {
+                    break;
+                }
+            }
+
+            if (name) {
+                return name;
+            }
+        }
+
         /**
          * Consume an attribute selector ([])
          */
         function consumeAttribute(tokens) {
             var op = consumeOp(tokens, "[");
-            var id = consumeType(tokens, /keyword|identifier/);
+            var name = consumeName(tokens);
         
             op = consumeType(tokens, "operator");
             if (op.value === "]") {
                 return {
                     type: "attribute",
-                    name: id.value
-                };
+                    name: name                };
             } else {
                 var selector = {
                     type: "attribute",
-                    name: id.value,
+                    name: name,
                     operator: op.value,
                     value: consumeValue(tokens)
                 };

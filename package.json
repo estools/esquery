@@ -4,8 +4,9 @@
     "version": "0.1.0",
     "author": "Joel Feenstra <jrfeenst+esquery@gmail.com>",
     "description": "A query library for ECMAScript AST using a CSS selector like query language.",
+    "main": "esquery.js",
     "scripts": {
-        "test": "node_modules/jstestr/bin/jstestr.js path=tests"
+        "test": "node node_modules/jstestr/bin/jstestr.js path=tests",
     },
     "repository": {
         "type": "git",

@@ -24,6 +24,7 @@ define([
     var opRParen = {type: "operator", value: ")"};
     var opLBracket = {type: "operator", value: "["};
     var opRBracket = {type: "operator", value: "]"};
+    var opDot = {type: "operator", value: "."};
 
     var num1 = {type: "number", value: 1};
     var num2 = {type: "number", value: 2};
@@ -86,6 +87,14 @@ define([
                 name: "attr",
                 operator: "=",
                 value: {type: "type", value: "foo"}
+            }, ast);
+        },
+
+        "attribute with dot access": function () {
+            var ast = esquery.processTokens([opLBracket, idAttr, opDot, idAttr, opRBracket]);
+            assert.matches({
+                type: "attribute",
+                name: "attr.attr"
             }, ast);
         },
 
