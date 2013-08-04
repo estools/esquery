@@ -98,5 +98,22 @@ define([
                 simpleProgram.body[3].consequent.body[0].expression.left
             ], matches);
         },
+
+        "# type": function () {
+            var matches = esquery(forLoop, "#Program");
+            assert.contains([
+                forLoop
+            ], matches);
+
+            matches = esquery(forLoop, "#ForStatement");
+            assert.contains([
+                forLoop.body[0]
+            ], matches);
+
+            matches = esquery(forLoop, "#BinaryExpression");
+            assert.contains([
+                forLoop.body[0].test
+            ], matches);
+        }
     });
 });

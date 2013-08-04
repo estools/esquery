@@ -4,7 +4,7 @@
         var REG = "\\s*(\\/(?:\\\\/|[^\\/])*\\/)\\s*";
         var NUM = "([+\\-]?[0-9]*\\.?[0-9]+)";
         var STR = '("(?:\\"|[^"])*")';
-        var OP = "(\\*|\\.)";
+        var OP = "(\\*|\\.|#)";
         var S_DOP_S = "\\s*(!=|<=|>=)\\s*";
         var S_OP = "\\s*(\\]|\\)|!)";
         var OP_S = "(\\[|:)\\s*";
@@ -50,7 +50,7 @@
                         type: "regexp",
                         value: token.replace(/^\/|\/$/g, "").replace(/\\\//g, "/")
                     };
-                } else if (/!=|<=|>=|<|>|,|~|=|!|:|\.|\+|\[|\]|\(|\)|\s/.test(token)) {
+                } else if (/!=|<=|>=|<|>|,|~|=|!|:|#|\.|\+|\[|\]|\(|\)|\s/.test(token)) {
                     return {
                         type: "operator",
                         value: token
@@ -205,6 +205,13 @@
                 selector = consumeAttribute(tokens);
             } else if (peekOp(tokens, ".")) {
                 selector = consumeField(tokens);
+            } else if (peekOp(tokens, "#")) {
+                tokens.shift();
+                selector = consumeType(tokens, /keyword|identifier/);
+                selector = {
+                    type: "identifier",
+                    value: selector.value
+                };
             }
 
             if (selector && peekOp(tokens, "!")) {
