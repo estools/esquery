@@ -19,6 +19,13 @@ define([
         	], matches);
     	},
 
+        "three types child": function () {
+            var matches = esquery(conditional, "IfStatement > BinaryExpression > Identifier");
+            assert.contains([
+                conditional.body[0].test.left
+            ], matches);
+        },
+
     	"two types descendant": function () {
             var matches = esquery(conditional, "IfStatement BinaryExpression");
             assert.contains([

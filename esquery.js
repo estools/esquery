@@ -104,13 +104,6 @@
             return result || selector;
         }
 
-        var operatorMap = {
-            " ": "descendant",
-            ">": "child",
-            "~": "sibling",
-            "+": "adjacent"
-        };
-
         function peekOp(tokens, opValue) {
             if (tokens.length > 0 && peekType(tokens, "operator") &&
                     (opValue instanceof RegExp && opValue.test(tokens[0].value) ||
@@ -142,25 +135,35 @@
             }
         }
 
+        var operatorMap = {
+            " ": "descendant",
+            ">": "child",
+            "~": "sibling",
+            "+": "adjacent"
+        };
+
         function consumeComplexSelector(tokens) {
-            var selector;
-            selector = consumeCompoundSelector(tokens);
-            if (tokens.length > 0) {
-                if (peekOp(tokens, /[\s+~>]/)) {
-                    var op = tokens.shift()
-                    var right = consumeComplexSelector(tokens)
-                    if (right) {
-                        selector = {
-                            type: operatorMap[op.value],
-                            left: selector,
-                            right: right 
-                        };
-                    } else {
-                        throw createError("Invalid right side of complex selector: ", op, tokens);
-                    }
+            var result, selector;
+
+            result = consumeCompoundSelector(tokens);
+
+            while (peekOp(tokens, /[\s+~>]/)) {
+                op = tokens.shift();
+                selector = consumeCompoundSelector(tokens);
+                
+                if (selector) {
+                    result = {
+                        type: operatorMap[op.value],
+                        operator: op.value,
+                        left: result,
+                        right: selector
+                    };
+                } else {
+                    throw createError("Expected compound selector: ", op, tokens);
                 }
             }
-            return selector;
+
+            return result || selector;
         }
 
         /**

@@ -239,34 +239,34 @@ define([
                     opLParen, num1, opRParen, opSpace, opLBracket, idAttr, opEq, num2, opRBracket,
                     opGreater, idFoo]);
             assert.matches({
-                type: "adjacent",
+                type: "child",
                 left: {
-                    type: "identifier",
-                    value: "foo"
-                },
-                right: {
                     type: "descendant",
                     left: {
-                        type: "nth-child",
-                        index: {
-                            type: "literal",
-                            value: 1
+                        type: "adjacent",
+                        left: {
+                            type: "identifier",
+                            value: "foo"
+                        },
+                        right: {
+                            type: "nth-child",
+                            index: {
+                                type: "literal",
+                                value: 1
+                            }
                         }
                     },
                     right: {
-                        type: "child",
-                        left: {
-                            type: "attribute",
-                            name: "attr",
-                            operator: "=",
-                            value: {
-                                type: "literal",
-                                value: 2
-                            }
-                        },
-                        right: idFoo
+                        type: "attribute",
+                        name: "attr",
+                        operator: "=",
+                        value: {
+                            type: "literal",
+                            value: 2
+                        }
                     }
-                }
+                },
+                right: idFoo
             }, ast);
         },
 
