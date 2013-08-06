@@ -237,32 +237,40 @@
         selectorAstNode.innerHTML = "";
         outputNode.innerHTML = "";
 
-        var tokens, selectorAst, tokensOutput, selectorAstOutput, matchesOutput;
+        var start, end, tokens, tokensOutput, selectorAst, selectorAstOutput, matches, matchesOutput;
+
+        start = performance.now();
+
         try {
             tokens = esquery.tokenize(selector);
-            tokensOutput = JSON.stringify(tokens);
         } catch (e) {
             tokensOutput = e.message;
         }
 
         try {
             selectorAst = esquery.processTokens(tokens);
-            selectorAstOutput = JSON.stringify(selectorAst, null, "  ");
         } catch (e) {
             selectorAstOutput = e.message;
         }
 
         try {
-            var matches = esquery.match(ast, selectorAst);
+            var matches = esquery.match(ast, selectorAst, new esquery.Cache(ast));
             matches = esquery.finalMatches(matches);
-            matchesOutput = JSON.stringify(matches, null, "  ");
+
         } catch (e) {
             matchesOutput = e.message;
         }
+        
+        end = performance.now();
+
+        tokensOutput = tokensOutput || JSON.stringify(tokens);
+        selectorAstOutput = selectorAstOutput || JSON.stringify(selectorAst, null, "  ");
+        matchesOutput = matchesOutput || JSON.stringify(matches, null, "  ");
 
         tokensNode.appendChild(document.createTextNode(tokensOutput));
         selectorAstNode.appendChild(document.createTextNode(selectorAstOutput));
-        outputNode.appendChild(document.createTextNode(matchesOutput));
+        outputNode.appendChild(document.createTextNode((matches ? matches.length : 0) +
+                " nodes found in " + (end - start) + "ms\n" + matchesOutput));
     }
 
     update();

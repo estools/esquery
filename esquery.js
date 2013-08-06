@@ -439,7 +439,7 @@
             var i;
             value = obj;
             for (i = 0; i < keys.length; i++) {
-                if (value[keys[i]] !== undefined) {
+                if (value && value[keys[i]] !== undefined) {
                     value = value[keys[i]];
                 } else {
                     return undefined;
@@ -468,7 +468,7 @@
          * This is the core match method. It takes the code AST and the selector AST
          * and returns the matching nodes of the code.
          */
-        function match(ast, selector) {
+        function match(ast, selector, cache) {
             var leftResults, rightResults, subject = [], matches = [];
             var results = {
                 subject: subject,
@@ -481,7 +481,7 @@
 
             switch (selector.type) {
             case "wildcard":
-                visitPre(ast, function (node) {
+                cache.nodes.forEach(function (node) {
                     matches.push(node);
 
                     if (selector.subject) {
@@ -491,15 +491,15 @@
                 break;
 
             case "identifier":
-                visitPre(ast, function (node) {
-                    if (node.type === selector.value) {
+                if (cache.types.hasOwnProperty(selector.value)) {
+                    cache.types[selector.value].forEach(function (node) {
                         matches.push(node);
 
                         if (selector.subject) {
                             subject.push([node]);
                         }
-                    }
-                });
+                    });
+                }
                 break;
 
             // nth-child is used for first/nth-child it only supports integers for now
@@ -614,7 +614,7 @@
 
             case "matches":
                 selector.selectors.forEach(function (matchesSelector) {
-                    finalMatches(match(ast, matchesSelector)).forEach(function (node) {
+                    finalMatches(match(ast, matchesSelector, cache)).forEach(function (node) {
                         matches.push(node);
 
                         if (selector.subject) {
@@ -627,7 +627,7 @@
             case "not":
                 rightResults = [];
                 selector.selectors.forEach(function (selector) {
-                    rightResults = rightResults.concat(finalMatches(match(ast, selector)));
+                    rightResults = rightResults.concat(finalMatches(match(ast, selector, cache)));
                 });
 
                 visitPre(ast, function (node) {
@@ -644,7 +644,7 @@
             case "compound":
                 rightResults = [];
                 selector.selectors.forEach(function (selector) {
-                    rightResults.push(finalMatches(match(ast, selector)));
+                    rightResults.push(finalMatches(match(ast, selector, cache)));
                 });
 
                 var isSubject = selector.subject || selector.selectors.some(function (selector) {
@@ -666,8 +666,8 @@
                 break;
 
             case "descendant":
-                leftResults = match(ast, selector.left);
-                rightResults = match(ast, selector.right)
+                leftResults = match(ast, selector.left, cache);
+                rightResults = match(ast, selector.right, cache);
 
                 leftResults.matches.forEach(function (leftNode, leftI) {
                     visitPre(leftNode, function (rightNode) {
@@ -693,8 +693,8 @@
                 break;
 
             case "child":
-                leftResults = match(ast, selector.left);
-                rightResults = match(ast, selector.right);
+                leftResults = match(ast, selector.left, cache);
+                rightResults = match(ast, selector.right, cache);
 
                 leftResults.matches.forEach(function (leftNode, leftI) {
                     visitChildren(leftNode, function (rightNode) {
@@ -720,8 +720,8 @@
                 break;
 
             case "sibling":
-                leftResults = match(ast, selector.left);
-                rightResults = match(ast, selector.right);
+                leftResults = match(ast, selector.left, cache);
+                rightResults = match(ast, selector.right, cache);
 
                 visitPre(ast, function (node, context) {
                     Object.keys(node).forEach(function (key) {
@@ -758,8 +758,8 @@
                 break;
 
             case "adjacent":
-                leftResults = match(ast, selector.left);
-                rightResults = match(ast, selector.right);
+                leftResults = match(ast, selector.left, cache);
+                rightResults = match(ast, selector.right, cache);
 
                 visitPre(ast, function (node, context) {
                     Object.keys(node).forEach(function (key) {
@@ -796,6 +796,26 @@
             return results;
         }
 
+        // Holds cached info to speed up matches
+        function Cache(ast) {
+            this.ast = ast;
+            
+            var nodes = [];
+            var types = {};
+            visitPre(ast, function (node) {
+                nodes.push(node);
+
+                if (!types.hasOwnProperty(node.type)) {
+                    types[node.type] = [];
+                }
+
+                types[node.type].push(node);
+            });
+
+            this.nodes = nodes;
+            this.types = types;
+        }
+
         /**
          * Parse a selector string and return it's AST.
          */
@@ -806,8 +826,8 @@
         /**
          * Query the code AST using the selector string.
          */
-        function query(ast, selector) {
-            return finalMatches(match(ast, parse(selector)));
+        function query(ast, selector, cache) {
+            return finalMatches(match(ast, parse(selector), cache || new Cache(ast)));
         }
 
         query.tokenize = tokenize;
@@ -815,6 +835,7 @@
         query.parse = parse;
         query.match = match;
         query.finalMatches = finalMatches;
+        query.Cache = Cache;
         return query;
     }
 
