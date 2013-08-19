@@ -200,7 +200,7 @@
             } else if (peekType(tokens, /keyword|identifier/)) {
                 selector = {
                     type: "identifier",
-                    value: tokens.shift().value
+                    value: tokens.shift().value.toLowerCase()
                 };
             } else if (peekOp(tokens, ":")) {
                 selector = consumePseudo(tokens);
@@ -213,7 +213,7 @@
                 selector = consumeType(tokens, /keyword|identifier/);
                 selector = {
                     type: "identifier",
-                    value: selector.value
+                    value: selector.value.toLowerCase()
                 };
             }
 
@@ -799,17 +799,20 @@
         // Holds cached info to speed up matches
         function Cache(ast) {
             this.ast = ast;
+
             
             var nodes = [];
             var types = {};
             visitPre(ast, function (node) {
+                var type = node.type.toLowerCase();
+
                 nodes.push(node);
 
-                if (!types.hasOwnProperty(node.type)) {
-                    types[node.type] = [];
+                if (!types.hasOwnProperty(type)) {
+                    types[type] = [];
                 }
 
-                types[node.type].push(node);
+                types[type].push(node);
             });
 
             this.nodes = nodes;

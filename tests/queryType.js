@@ -114,6 +114,23 @@ define([
             assert.contains([
                 forLoop.body[0].test
             ], matches);
+        },
+
+        "case insensitive type": function () {
+            var matches = esquery(forLoop, "Program");
+            assert.contains([
+                forLoop
+            ], matches);
+
+            matches = esquery(forLoop, "forStatement");
+            assert.contains([
+                forLoop.body[0]
+            ], matches);
+
+            matches = esquery(forLoop, "binaryexpression");
+            assert.contains([
+                forLoop.body[0].test
+            ], matches);
         }
     });
 });
