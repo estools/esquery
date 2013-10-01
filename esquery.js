@@ -434,7 +434,7 @@
             }
         }
 
-        function matches(selector, node, ancestry) {
+        function matches(node, selector, ancestry) {
             if(!selector) return true;
             if(!node) return false;
             if(!ancestry) ancestry = [];
@@ -453,31 +453,31 @@
 
                 case 'matches':
                     for(var i = 0, l = selector.selectors.length; i < l; ++i)
-                        if(matches(selector.selectors[i], node, ancestry))
+                        if(matches(node, selector.selectors[i], ancestry))
                             return true;
                     return false;
 
                 case 'compound':
                     for(var i = 0, l = selector.selectors.length; i < l; ++i)
-                        if(!matches(selector.selectors[i], node, ancestry))
+                        if(!matches(node, selector.selectors[i], ancestry))
                             return false;
                     return true;
 
                 case 'not':
                     for(var i = 0, l = selector.selectors.length; i < l; ++i)
-                        if(matches(selector.selectors[i], node, ancestry))
+                        if(matches(node, selector.selectors[i], ancestry))
                             return false;
                     return true;
 
                 case 'child':
-                    if(matches(selector.right, node, ancestry))
-                        return matches(selector.left, ancestry[0], ancestry.slice(1));
+                    if(matches(node, selector.right, ancestry))
+                        return matches(ancestry[0], selector.left, ancestry.slice(1));
                     return false;
 
                 case 'descendant':
-                    if(matches(selector.right, node, ancestry))
+                    if(matches(node, selector.right, ancestry))
                         for(var i = 0, l = ancestry.length; i < l; ++i)
-                            if(matches(selector.left, ancestry[i], ancestry.slice(i + 1)))
+                            if(matches(ancestry[i], selector.left, ancestry.slice(i + 1)))
                                 return true;
                     return false;
 
@@ -509,11 +509,11 @@
                     var parent = ancestry[0], listProp;
                     if(!parent) return false;
                     var keys = estraverse.VisitorKeys[parent.type];
-                    if(matches(selector.right, node, ancestry))
+                    if(matches(node, selector.right, ancestry))
                         for(var i = 0, l = keys.length; i < l; ++i)
                             if(isArray(listProp = parent[keys[i]]))
                                 for(var k = 0, m = listProp.length; k < m; ++k)
-                                    if(listProp[k] !== node && matches(selector.left, listProp[k], ancestry))
+                                    if(listProp[k] !== node && matches(listProp[k], selector.left, ancestry))
                                         return true;
                     return false;
 
@@ -521,14 +521,14 @@
                     var parent = ancestry[0], listProp;
                     if(!parent) return false;
                     var keys = estraverse.VisitorKeys[parent.type];
-                    if(matches(selector.right, node, ancestry))
+                    if(matches(node, selector.right, ancestry))
                         for(var i = 0, l = keys.length; i < l; ++i)
                             if(isArray(listProp = parent[keys[i]])) {
                                 var idx = listProp.indexOf(node);
                                 if(idx < 0) continue;
-                                if(idx > 0 && matches(selector.left, listProp[idx - 1], ancestry))
+                                if(idx > 0 && matches(listProp[idx - 1], selector.left, ancestry))
                                     return true;
-                                if(idx < listProp.length - 1 && matches(selector.left, listProp[idx + 1], ancestry))
+                                if(idx < listProp.length - 1 && matches(listProp[idx + 1], selector.left, ancestry))
                                     return true;
                             }
                     return false;
@@ -537,7 +537,7 @@
                     var parent = ancestry[0], listProp;
                     if(!parent) return false;
                     var keys = estraverse.VisitorKeys[parent.type];
-                    if(matches(selector.right, node, ancestry))
+                    if(matches(node, selector.right, ancestry))
                         for(var i = 0, l = keys.length; i < l; ++i)
                             if(isArray(listProp = parent[keys[i]])) {
                                 var idx = listProp.indexOf(node);
@@ -550,7 +550,7 @@
                     var parent = ancestry[0], listProp;
                     if(!parent) return false;
                     var keys = estraverse.VisitorKeys[parent.type];
-                    if(matches(selector.right, node, ancestry))
+                    if(matches(node, selector.right, ancestry))
                         for(var i = 0, l = keys.length; i < l; ++i)
                             if(isArray(listProp = parent[keys[i]])) {
                                 var idx = listProp.indexOf(node);
@@ -566,14 +566,13 @@
          * This is the core match method. It takes the code AST and the selector AST
          * and returns the matching nodes of the code.
          */
-        // TODO: reverse parameter order
         function match(ast, selector) {
             var ancestry = [], results = [];
             if(!selector) return results;
             estraverse.traverse(ast, {
                 enter: function(node, parent){
                     ancestry.unshift(parent);
-                    if(matches(selector, node, ancestry)) results.push(node);
+                    if(matches(node, selector, ancestry)) results.push(node);
                 },
                 leave: function(){ ancestry.shift(); }
             });
@@ -599,7 +598,7 @@
         query.parse = parse;
         query.match = match;
         query.matches = matches;
-        return query;
+        return query.query = query;
     }
 
 
