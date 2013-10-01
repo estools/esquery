@@ -406,27 +406,22 @@
          * Get the value of a property which may be multiple levels down in the object.
          */
         function getPath(obj, key) {
-            var keys = key.split(".");
-            var i;
-            value = obj;
+            var i, keys = key.split(".");
             for (i = 0; i < keys.length; i++) {
-                if (value && value[keys[i]] !== undefined) {
-                    value = value[keys[i]];
-                } else {
-                    return undefined;
-                }
+                if (obj == null) return obj;
+                obj = obj[keys[i]];
             }
-            return value;
+            return obj;
         }
 
         function inPath(node, ancestor, path) {
-            if(path.length === 0) return node === ancestor;
-            if(ancestor == null) return false;
-            var field = ancestor[path[0]];
-            var remainingPath = path.slice(1);
-            if(isArray(field)) {
-                for(var i = 0, l = field.length; i < l; ++i)
-                    if(inPath(node, field[i], remainingPath))
+            if (path.length === 0) return node === ancestor;
+            if (ancestor == null) return false;
+            var field = ancestor[path[0]],
+                remainingPath = path.slice(1);
+            if (isArray(field)) {
+                for (var i = 0, l = field.length; i < l; ++i)
+                    if (inPath(node, field[i], remainingPath))
                         return true;
                 return false;
             } else {
@@ -435,9 +430,9 @@
         }
 
         function matches(node, selector, ancestry) {
-            if(!selector) return true;
-            if(!node) return false;
-            if(!ancestry) ancestry = [];
+            if (!selector) return true;
+            if (!node) return false;
+            if (!ancestry) ancestry = [];
 
             switch(selector.type) {
                 case 'wildcard':
@@ -452,49 +447,49 @@
                     return inPath(node, ancestor, path);
 
                 case 'matches':
-                    for(var i = 0, l = selector.selectors.length; i < l; ++i)
-                        if(matches(node, selector.selectors[i], ancestry))
+                    for (var i = 0, l = selector.selectors.length; i < l; ++i)
+                        if (matches(node, selector.selectors[i], ancestry))
                             return true;
                     return false;
 
                 case 'compound':
-                    for(var i = 0, l = selector.selectors.length; i < l; ++i)
-                        if(!matches(node, selector.selectors[i], ancestry))
+                    for (var i = 0, l = selector.selectors.length; i < l; ++i)
+                        if (!matches(node, selector.selectors[i], ancestry))
                             return false;
                     return true;
 
                 case 'not':
-                    for(var i = 0, l = selector.selectors.length; i < l; ++i)
-                        if(matches(node, selector.selectors[i], ancestry))
+                    for (var i = 0, l = selector.selectors.length; i < l; ++i)
+                        if (matches(node, selector.selectors[i], ancestry))
                             return false;
                     return true;
 
                 case 'child':
-                    if(matches(node, selector.right, ancestry))
+                    if (matches(node, selector.right, ancestry))
                         return matches(ancestry[0], selector.left, ancestry.slice(1));
                     return false;
 
                 case 'descendant':
-                    if(matches(node, selector.right, ancestry))
-                        for(var i = 0, l = ancestry.length; i < l; ++i)
-                            if(matches(ancestry[i], selector.left, ancestry.slice(i + 1)))
+                    if (matches(node, selector.right, ancestry))
+                        for (var i = 0, l = ancestry.length; i < l; ++i)
+                            if (matches(ancestry[i], selector.left, ancestry.slice(i + 1)))
                                 return true;
                     return false;
 
                 case 'attribute':
                     var p = getPath(node, selector.name);
-                    switch(selector.operator) {
+                    switch (selector.operator) {
                         case null:
                         case void 0:
                             return p != null;
                         case '=':
-                            switch(selector.value.type){
+                            switch (selector.value.type){
                                 case 'regexp': return selector.value.value.test(p);
                                 case 'literal': return selector.value.value === p;
                                 case 'type': return selector.value.value === typeof p;
                             }
                         case '!=':
-                            switch(selector.value.type){
+                            switch (selector.value.type){
                                 case 'regexp': return !selector.value.value.test(p);
                                 case 'literal': return selector.value.value !== p;
                                 case 'type': return selector.value.value !== typeof p;
@@ -507,59 +502,61 @@
 
                 case 'sibling':
                     var parent = ancestry[0], listProp;
-                    if(!parent) return false;
+                    if (!parent) return false;
                     var keys = estraverse.VisitorKeys[parent.type];
-                    if(matches(node, selector.right, ancestry))
-                        for(var i = 0, l = keys.length; i < l; ++i)
-                            if(isArray(listProp = parent[keys[i]]))
-                                for(var k = 0, m = listProp.length; k < m; ++k)
-                                    if(listProp[k] !== node && matches(listProp[k], selector.left, ancestry))
+                    if (matches(node, selector.right, ancestry))
+                        for (var i = 0, l = keys.length; i < l; ++i)
+                            if (isArray(listProp = parent[keys[i]]))
+                                for (var k = 0, m = listProp.length; k < m; ++k)
+                                    if (listProp[k] !== node && matches(listProp[k], selector.left, ancestry))
                                         return true;
                     return false;
 
                 case 'adjacent':
                     var parent = ancestry[0], listProp;
-                    if(!parent) return false;
+                    if (!parent) return false;
                     var keys = estraverse.VisitorKeys[parent.type];
-                    if(matches(node, selector.right, ancestry))
-                        for(var i = 0, l = keys.length; i < l; ++i)
-                            if(isArray(listProp = parent[keys[i]])) {
+                    if (matches(node, selector.right, ancestry))
+                        for (var i = 0, l = keys.length; i < l; ++i)
+                            if (isArray(listProp = parent[keys[i]])) {
                                 var idx = listProp.indexOf(node);
-                                if(idx < 0) continue;
-                                if(idx > 0 && matches(listProp[idx - 1], selector.left, ancestry))
+                                if (idx < 0) continue;
+                                if (idx > 0 && matches(listProp[idx - 1], selector.left, ancestry))
                                     return true;
-                                if(idx < listProp.length - 1 && matches(listProp[idx + 1], selector.left, ancestry))
+                                if (idx < listProp.length - 1 && matches(listProp[idx + 1], selector.left, ancestry))
                                     return true;
                             }
                     return false;
 
                 case 'nth-child':
                     var parent = ancestry[0], listProp;
-                    if(!parent) return false;
+                    if (!parent) return false;
                     var keys = estraverse.VisitorKeys[parent.type];
-                    if(matches(node, selector.right, ancestry))
-                        for(var i = 0, l = keys.length; i < l; ++i)
-                            if(isArray(listProp = parent[keys[i]])) {
+                    if (matches(node, selector.right, ancestry))
+                        for (var i = 0, l = keys.length; i < l; ++i)
+                            if (isArray(listProp = parent[keys[i]])) {
                                 var idx = listProp.indexOf(node);
-                                if(idx >= 0 && idx === selector.index.value - 1)
+                                if (idx >= 0 && idx === selector.index.value - 1)
                                     return true;
                             }
                     return false;
 
                 case 'nth-last-child':
                     var parent = ancestry[0], listProp;
-                    if(!parent) return false;
+                    if (!parent) return false;
                     var keys = estraverse.VisitorKeys[parent.type];
-                    if(matches(node, selector.right, ancestry))
-                        for(var i = 0, l = keys.length; i < l; ++i)
-                            if(isArray(listProp = parent[keys[i]])) {
+                    if (matches(node, selector.right, ancestry))
+                        for (var i = 0, l = keys.length; i < l; ++i)
+                            if (isArray(listProp = parent[keys[i]])) {
                                 var idx = listProp.indexOf(node);
-                                if(idx >= 0 && listProp.length - idx === selector.index.value)
+                                if (idx >= 0 && listProp.length - idx === selector.index.value)
                                     return true;
                             }
                     return false;
-            }
 
+                default:
+                    throw new Error('Unknown selector type: ' + selector.type);
+            }
         }
 
         /**
@@ -568,13 +565,13 @@
          */
         function match(ast, selector) {
             var ancestry = [], results = [];
-            if(!selector) return results;
+            if (!selector) return results;
             estraverse.traverse(ast, {
-                enter: function(node, parent){
+                enter: function (node, parent) {
                     ancestry.unshift(parent);
-                    if(matches(node, selector, ancestry)) results.push(node);
+                    if (matches(node, selector, ancestry)) results.push(node);
                 },
-                leave: function(){ ancestry.shift(); }
+                leave: function () { ancestry.shift(); }
             });
             return results;
         }
