@@ -1,4 +1,3 @@
-
 define([
     "esquery",
     "jstestr/assert",
@@ -12,6 +11,7 @@ define([
 
     test.defineSuite("Query subject", {
 
+/*
         "type subject": function () {
             var matches = esquery(conditional, "IfStatement! Identifier");
             assert.contains([
@@ -152,5 +152,6 @@ define([
             	simpleProgram.body[2]
         	], matches);
     	}
+*/
     });
 });

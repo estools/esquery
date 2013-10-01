@@ -1,4 +1,7 @@
+/* vim: set sw=4 sts=4 : */
 (function () {
+
+    var estraverse = require('estraverse');
 
     function esqueryModule() {
         var REG = "\\s*(\\/(?:\\\\/|[^\\/])*\\/)\\s*";
@@ -11,6 +14,10 @@
         var S_OP_S = "\\s*(\\,|~|<|>|=|\\+|\\||\\(|\\s)\\s*";
         var OPS = OP + "|" + S_DOP_S + "|" + S_OP + "|" + S_OP_S + "|" + OP_S;
         var TOKEN_SPLIT = new RegExp(REG + "|" + NUM + "|" + STR + "|" + OPS);
+
+        var isArray = Array.isArray || function isArray(array) {
+            return Object.prototype.toString.call(array) === '[object Array]';
+        };
 
         /**
          * Tokenize a selector string into an array of tokens. Tokens
@@ -150,7 +157,7 @@
             while (peekOp(tokens, /[\s+~>]/)) {
                 op = tokens.shift();
                 selector = consumeCompoundSelector(tokens);
-                
+
                 if (selector) {
                     result = {
                         type: operatorMap[op.value],
@@ -292,7 +299,7 @@
         function consumeAttribute(tokens) {
             var op = consumeOp(tokens, "[");
             var name = consumeName(tokens);
-        
+
             op = consumeType(tokens, "operator");
             if (op.value === "]") {
                 return {
@@ -326,7 +333,7 @@
 
         function consumeArgList(tokens) {
             consumeOp(tokens, "(");
-            
+
             var arg, result = [];
             while (tokens.length > 0) {
                 arg = consumeComplexSelector(tokens);
@@ -396,42 +403,6 @@
         }
 
         /**
-         * Walk the ECMAScript AST with a pre-order traversal. If the callback function
-         * returns something, then that will be passed to the subtree node visits.
-         */
-        function visitPre(ast, fn, path) {
-            fn(ast, path);
-            
-            var key, newPath;
-            for (key in ast) {
-                newPath = path ? path + "." + key : key;
-                if (ast[key] && ast[key].forEach) {
-                    ast[key].forEach(function (node) {
-                        visitPre(node, fn, newPath);
-                    });
-                } else if (ast[key] && ast[key].type) {
-                    visitPre(ast[key], fn, newPath);
-                }
-            }
-        }
-
-        /**
-         * Visit all children of the node, but don't recurse
-         */
-        function visitChildren(ast, fn) {
-            var key;
-            for (key in ast) {
-                if (ast[key] && ast[key].forEach) {
-                    ast[key].forEach(function (node) {
-                        fn(node);
-                    });
-                } else if (ast[key] && ast[key].type) {
-                    fn(ast[key]);
-                }
-            }
-        }
-
-        /**
          * Get the value of a property which may be multiple levels down in the object.
          */
         function getPath(obj, key) {
@@ -448,397 +419,169 @@
             return value;
         }
 
-        /**
-         * Get the final set of matches given a match results object.
-         */
-        function finalMatches(results) {
-            var matches = [];
-            if (results.subject.length > 0) {
-                results.subject.forEach(function (subjects) {
-                    matches = matches.concat(subjects);
-                });
-            } else {
-                matches = results.matches;
+        function matches(selector, node, ancestry) {
+            if(!selector) return true;
+            if(!node) return false;
+            if(!ancestry) ancestry = [];
+
+            switch(selector.type) {
+                case 'wildcard':
+                    return true;
+
+                case 'identifier':
+                    return selector.value.toLowerCase() == node.type.toLowerCase();
+
+                case 'field':
+                    return getPath(node, selector.name) != null;
+
+                case 'matches':
+                    for(var i = 0, l = selector.selectors.length; i < l; ++i)
+                        if(matches(selector.selectors[i], node, ancestry))
+                            return true;
+                    return false;
+
+                case 'compound':
+                    for(var i = 0, l = selector.selectors.length; i < l; ++i)
+                        if(!matches(selector.selectors[i], node, ancestry))
+                            return false;
+                    return true;
+
+                case 'not':
+                    for(var i = 0, l = selector.selectors.length; i < l; ++i)
+                        if(matches(selector.selectors[i], node, ancestry))
+                            return false;
+                    return true;
+
+                case 'child':
+                    if(matches(selector.right, node, ancestry))
+                        return matches(selector.left, ancestry[0], ancestry.slice(1));
+                    return false;
+
+                case 'descendant':
+                    if(matches(selector.right, node, ancestry))
+                        for(var i = 0, l = ancestry.length; i < l; ++i)
+                            if(matches(selector.left, ancestry[i], ancestry.slice(i + 1)))
+                                return true;
+                    return false;
+
+                case 'attribute':
+                    var p = getPath(node, selector.name);
+                    switch(selector.operator) {
+                        case null:
+                        case void 0:
+                            return p != null;
+                        case '=':
+                            switch(selector.value.type){
+                                case 'regexp': return selector.value.value.test(p);
+                                case 'literal': return selector.value.value === p;
+                                case 'type': return selector.value.value === typeof p;
+                            }
+                        case '!=':
+                            switch(selector.value.type){
+                                case 'regexp': return !selector.value.value.test(p);
+                                case 'literal': return selector.value.value !== p;
+                                case 'type': return selector.value.value !== typeof p;
+                            }
+                        case '<=': return p <= selector.value.value;
+                        case '<': return p < selector.value.value;
+                        case '>': return p > selector.value.value;
+                        case '>=': return p >= selector.value.value;
+                    }
+
+                case 'sibling':
+                    var parent = ancestry[0], listProp;
+                    if(!parent) return false;
+                    var keys = estraverse.VisitorKeys[parent.type];
+                    if(matches(selector.right, node, ancestry))
+                        for(var i = 0, l = keys.length; i < l; ++i)
+                            if(isArray(listProp = parent[keys[i]]))
+                                for(var k = 0, m = listProp.length; k < m; ++k)
+                                    if(listProp[k] !== node && matches(selector.left, listProp[k], ancestry))
+                                        return true;
+                    return false;
+
+                case 'adjacent':
+                    var parent = ancestry[0], listProp;
+                    if(!parent) return false;
+                    var keys = estraverse.VisitorKeys[parent.type];
+                    if(matches(selector.right, node, ancestry))
+                        for(var i = 0, l = keys.length; i < l; ++i)
+                            if(isArray(listProp = parent[keys[i]])) {
+                                var idx = listProp.indexOf(node);
+                                if(idx < 0) continue;
+                                if(idx > 0 && matches(selector.left, listProp[idx - 1], ancestry))
+                                    return true;
+                                if(idx < listProp.length - 1 && matches(selector.left, listProp[idx + 1], ancestry))
+                                    return true;
+                            }
+                    return false;
+
+                case 'nth-child':
+                    var parent = ancestry[0], listProp;
+                    if(!parent) return false;
+                    var keys = estraverse.VisitorKeys[parent.type];
+                    if(matches(selector.right, node, ancestry))
+                        for(var i = 0, l = keys.length; i < l; ++i)
+                            if(isArray(listProp = parent[keys[i]])) {
+                                var idx = listProp.indexOf(node);
+                                if(idx >= 0 && idx === selector.index.value - 1)
+                                    return true;
+                            }
+                    return false;
+
+                case 'nth-last-child':
+                    var parent = ancestry[0], listProp;
+                    if(!parent) return false;
+                    var keys = estraverse.VisitorKeys[parent.type];
+                    if(matches(selector.right, node, ancestry))
+                        for(var i = 0, l = keys.length; i < l; ++i)
+                            if(isArray(listProp = parent[keys[i]])) {
+                                var idx = listProp.indexOf(node);
+                                if(idx >= 0 && listProp.length - idx === selector.index.value)
+                                    return true;
+                            }
+                    return false;
             }
 
-            return matches;
         }
 
         /**
          * This is the core match method. It takes the code AST and the selector AST
          * and returns the matching nodes of the code.
          */
-        function match(ast, selector, cache) {
-            var leftResults, rightResults, subject = [], matches = [];
-            var results = {
-                subject: subject,
-                matches: matches
-            };
-
-            if (!selector) {
-                return results;
-            }
-
-            switch (selector.type) {
-            case "wildcard":
-                cache.nodes.forEach(function (node) {
-                    matches.push(node);
-
-                    if (selector.subject) {
-                        subject.push([node]);
-                    }
-                });
-                break;
-
-            case "identifier":
-                if (cache.types.hasOwnProperty(selector.value)) {
-                    cache.types[selector.value].forEach(function (node) {
-                        matches.push(node);
-
-                        if (selector.subject) {
-                            subject.push([node]);
-                        }
-                    });
-                }
-                break;
-
-            // nth-child is used for first/nth-child it only supports integers for now
-            case "nth-child":
-                visitPre(ast, function (node) {
-                    var index = selector.index.value;
-                    Object.keys(node).forEach(function (key) {
-                        if (node[key] && node[key].forEach) {
-                            var len = node[key].length;
-                            if (index > 0 && index <= len) {
-                                matches.push(node[key][index - 1]);
-
-                                if (selector.subject) {
-                                    subject.push([node[key][index - 1]]);
-                                }
-                            }
-                        }
-                    });
-                });
-                break;
-
-            // nth-last-child is used for last/nth-last-child it only supports integers for now
-            case "nth-last-child":
-                visitPre(ast, function (node) {
-                    var index = selector.index.value;
-                    Object.keys(node).forEach(function (key) {
-                        if (node[key] && node[key].forEach) {
-                            var len = node[key].length;
-                            if (len - index < len && len - index >= 0) {
-                                matches.push(node[key][len - index]);
-
-                                if (selector.subject) {
-                                    subject.push([node[key][len - index]]);
-                                }
-                            }
-                        }
-                    });
-                });
-                break;
-
-            // attribute selector is also different from css, it allows use of regexp
-            // and =, <, >, <=, >=, != comparisons
-            case "attribute":
-                switch (selector.value && selector.value.type || "literal") {
-                case "literal":
-                    visitPre(ast, function (node) {
-                        var value = getPath(node, selector.name);
-                        if (!selector.operator && value !== undefined ||
-                                selector.operator === "=" && value === selector.value.value ||
-                                selector.operator === "!=" && value != selector.value.value ||
-                                selector.operator === "<=" && value <= selector.value.value ||
-                                selector.operator === ">=" && value >= selector.value.value ||
-                                selector.operator === "<" && value < selector.value.value ||
-                                selector.operator === ">" && value > selector.value.value) {
-
-                            matches.push(node);
-
-                            if (selector.subject) {
-                                subject.push([node]);
-                            }
-                        }
-                    });
-                    break;
-
-                case "type":
-                    visitPre(ast, function (node) {
-                        var test = typeof getPath(node, selector.name) === selector.value.value;
-                        if (selector.operator === "=" && test ||
-                                selector.operator === "!=" && !test) {
-
-                            matches.push(node);
-
-                            if (selector.subject) {
-                                subject.push([node]);
-                            }
-                        }
-                    });
-                    break;
-
-                case "regexp":
-                    visitPre(ast, function (node) {
-                        var test = selector.value.value.test(getPath(node, selector.name));
-                        if (selector.operator === "=" && test ||
-                                selector.operator === "!=" && !test) {
-
-                            matches.push(node);
-
-                            if (selector.subject) {
-                                subject.push([node]);
-                            }
-                        }
-                    });
-                    break;
-                }
-                break;
-
-            case "field":
-                visitPre(ast, function (node, path) {
-                    if (path) {
-                        var i = path.indexOf(selector.name);
-                        if (i > -1 && i === path.length - selector.name.length) {
-                            matches.push(node);
-
-                            if (selector.subject) {
-                                subject.push([node]);
-                            }
-                        }
-                    }
-                });
-                break;
-
-
-            case "matches":
-                selector.selectors.forEach(function (matchesSelector) {
-                    finalMatches(match(ast, matchesSelector, cache)).forEach(function (node) {
-                        matches.push(node);
-
-                        if (selector.subject) {
-                            subject.push([node]);
-                        }
-                    });
-                });
-                break;
-
-            case "not":
-                rightResults = [];
-                selector.selectors.forEach(function (selector) {
-                    rightResults = rightResults.concat(finalMatches(match(ast, selector, cache)));
-                });
-
-                visitPre(ast, function (node) {
-                    if (rightResults.indexOf(node) < 0) {
-                        matches.push(node);
-
-                        if (selector.subject) {
-                            subject.push([node]);
-                        }
-                    }
-                });
-                break;
-
-            case "compound":
-                rightResults = [];
-                selector.selectors.forEach(function (selector) {
-                    rightResults.push(finalMatches(match(ast, selector, cache)));
-                });
-
-                var isSubject = selector.subject || selector.selectors.some(function (selector) {
-                    return selector.subject;
-                });
-
-                rightResults[0].forEach(function (node) {
-                    var i;
-                    for (i = 1; i < rightResults.length; i++) {
-                        if (rightResults[i].indexOf(node) > -1) {
-                            matches.push(node);
-
-                            if (isSubject) {
-                                subject.push([node]);
-                            }
-                        }
-                    }
-                });
-                break;
-
-            case "descendant":
-                leftResults = match(ast, selector.left, cache);
-                rightResults = match(ast, selector.right, cache);
-
-                leftResults.matches.forEach(function (leftNode, leftI) {
-                    visitPre(leftNode, function (rightNode) {
-                        var rightI = rightResults.matches.indexOf(rightNode);
-                        if (rightI > -1) {
-                            matches.push(rightNode);
-
-                            var newSubject = [];
-                            if (leftResults.subject[leftI]) {
-                                newSubject = leftResults.subject[leftI];
-                            }
-
-                            if (rightResults.subject[rightI]) {
-                                newSubject = newSubject.concat(rightResults.subject[rightI]);
-                            }
-
-                            if (newSubject.length > 0) {
-                                subject.push(newSubject);
-                            }
-                        }
-                    });
-                });
-                break;
-
-            case "child":
-                leftResults = match(ast, selector.left, cache);
-                rightResults = match(ast, selector.right, cache);
-
-                leftResults.matches.forEach(function (leftNode, leftI) {
-                    visitChildren(leftNode, function (rightNode) {
-                        var rightI = rightResults.matches.indexOf(rightNode);
-                        if (rightI > -1) {
-                            matches.push(rightNode);
-
-                            var newSubject = [];
-                            if (leftResults.subject[leftI]) {
-                                newSubject = leftResults.subject[leftI];
-                            }
-
-                            if (rightResults.subject[rightI]) {
-                                newSubject = newSubject.concat(rightResults.subject[rightI]);
-                            }
-
-                            if (newSubject.length > 0) {
-                                subject.push(newSubject);
-                            }
-                        }
-                    });
-                });
-                break;
-
-            case "sibling":
-                leftResults = match(ast, selector.left, cache);
-                rightResults = match(ast, selector.right, cache);
-
-                visitPre(ast, function (node, context) {
-                    Object.keys(node).forEach(function (key) {
-                        if (node[key] && node[key].forEach) {
-                            var i, j;
-                            for (i = 0; i < node[key].length; i++) {
-                                var leftI = leftResults.matches.indexOf(node[key][i]);
-                                if (leftI > -1) {
-                                    for (j = i + 1; j < node[key].length; j++) {
-                                        var rightI = rightResults.matches.indexOf(node[key][j]);
-                                        if (rightI > -1) {
-                                            matches.push(node[key][j]);
-
-                                            var newSubject = [];
-                                            if (leftResults.subject[leftI]) {
-                                                newSubject = leftResults.subject[leftI];
-                                            }
-
-                                            if (rightResults.subject[rightI]) {
-                                                newSubject = newSubject.concat(rightResults.subject[rightI]);
-                                            }
-
-                                            if (newSubject.length > 0) {
-                                                subject.push(newSubject);
-                                            }
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                });
-                break;
-
-            case "adjacent":
-                leftResults = match(ast, selector.left, cache);
-                rightResults = match(ast, selector.right, cache);
-
-                visitPre(ast, function (node, context) {
-                    Object.keys(node).forEach(function (key) {
-                        if (node[key] && node[key].forEach) {
-                            var i;
-                            for (i = 0; i < node[key].length - 1; i++) {
-                                var leftI = leftResults.matches.indexOf(node[key][i]);
-                                if (leftI > -1) {
-                                    var rightI = rightResults.matches.indexOf(node[key][i + 1]);
-                                    if (rightI > -1) {
-                                        matches.push(node[key][i + 1]);
-
-                                            var newSubject = [];
-                                            if (leftResults.subject[leftI]) {
-                                                newSubject = leftResults.subject[leftI];
-                                            }
-
-                                            if (rightResults.subject[rightI]) {
-                                                newSubject = newSubject.concat(rightResults.subject[rightI]);
-                                            }
-
-                                            if (newSubject.length > 0) {
-                                                subject.push(newSubject);
-                                            }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                });
-                break;
-            }   
-
+        // TODO: reverse parameter order
+        function match(ast, selector) {
+            var ancestry = [], results = [];
+            if(!selector) return results;
+            estraverse.traverse(ast, {
+                enter: function(node, parent){
+                    ancestry.unshift(parent);
+                    if(matches(selector, node, ancestry)) results.push(node);
+                },
+                leave: function(){ ancestry.shift(); }
+            });
             return results;
         }
 
-        // Holds cached info to speed up matches
-        function Cache(ast) {
-            this.ast = ast;
-
-            
-            var nodes = [];
-            var types = {};
-            visitPre(ast, function (node) {
-                var type = node.type.toLowerCase();
-
-                nodes.push(node);
-
-                if (!types.hasOwnProperty(type)) {
-                    types[type] = [];
-                }
-
-                types[type].push(node);
-            });
-
-            this.nodes = nodes;
-            this.types = types;
-        }
-
         /**
-         * Parse a selector string and return it's AST.
+         * Parse a selector string and return its AST.
          */
         function parse(selector) {
             return processTokens(tokenize(selector));
         }
-        
+
         /**
          * Query the code AST using the selector string.
          */
-        function query(ast, selector, cache) {
-            return finalMatches(match(ast, parse(selector), cache || new Cache(ast)));
+        function query(ast, selector) {
+            return match(ast, parse(selector));
         }
 
         query.tokenize = tokenize;
         query.processTokens = processTokens;
         query.parse = parse;
         query.match = match;
-        query.finalMatches = finalMatches;
-        query.Cache = Cache;
+        query.matches = matches;
         return query;
     }
 
