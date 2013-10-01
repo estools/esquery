@@ -419,6 +419,21 @@
             return value;
         }
 
+        function inPath(node, ancestor, path) {
+            if(path.length === 0) return node === ancestor;
+            if(ancestor == null) return false;
+            var field = ancestor[path[0]];
+            var remainingPath = path.slice(1);
+            if(isArray(field)) {
+                for(var i = 0, l = field.length; i < l; ++i)
+                    if(inPath(node, field[i], remainingPath))
+                        return true;
+                return false;
+            } else {
+                return inPath(node, field, remainingPath);
+            }
+        }
+
         function matches(selector, node, ancestry) {
             if(!selector) return true;
             if(!node) return false;
@@ -432,7 +447,9 @@
                     return selector.value.toLowerCase() == node.type.toLowerCase();
 
                 case 'field':
-                    return getPath(node, selector.name) != null;
+                    var path = selector.name.split('.');
+                    var ancestor = ancestry[path.length - 1];
+                    return inPath(node, ancestor, path);
 
                 case 'matches':
                     for(var i = 0, l = selector.selectors.length; i < l; ++i)

@@ -11,7 +11,6 @@ define([
 
     test.defineSuite("Field query", {
 
-/*
     	"single field": function () {
             var matches = esquery(conditional, ".test");
             assert.contains([
@@ -28,6 +27,5 @@ define([
                 simpleProgram.body[1].declarations[0].init
             ], matches);
     	}
-*/
 	});
 });
