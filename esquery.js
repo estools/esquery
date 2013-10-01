@@ -16,7 +16,7 @@
         var TOKEN_SPLIT = new RegExp(REG + "|" + NUM + "|" + STR + "|" + OPS);
 
         var isArray = Array.isArray || function isArray(array) {
-            return Object.prototype.toString.call(array) === '[object Array]';
+            return {}.toString.call(array) === '[object Array]';
         };
 
         /**
@@ -414,6 +414,9 @@
             return obj;
         }
 
+        /**
+         * Determine whether `node` can be reached by following `path`, starting at `ancestor`.
+         */
         function inPath(node, ancestor, path) {
             if (path.length === 0) return node === ancestor;
             if (ancestor == null) return false;
@@ -429,6 +432,9 @@
             }
         }
 
+        /**
+         * Given a `node` and its ancestors, determine if `node` is matched by `selector`.
+         */
         function matches(node, selector, ancestry) {
             if (!selector) return true;
             if (!node) return false;
@@ -553,15 +559,13 @@
                                     return true;
                             }
                     return false;
-
-                default:
-                    throw new Error('Unknown selector type: ' + selector.type);
             }
+
+            throw new Error('Unknown selector type: ' + selector.type);
         }
 
         /**
-         * This is the core match method. It takes the code AST and the selector AST
-         * and returns the matching nodes of the code.
+         * From a JS AST and a selector AST, collect all JS AST nodes that match the selector.
          */
         function match(ast, selector) {
             var ancestry = [], results = [];
