@@ -507,77 +507,69 @@
                     }
 
                 case 'sibling':
-                    var parent = ancestry[0], listProp;
-                    if (!parent) return false;
-                    var keys = estraverse.VisitorKeys[parent.type];
-                    if (matches(node, selector.right, ancestry))
-                        for (var i = 0, l = keys.length; i < l; ++i)
-                            if (isArray(listProp = parent[keys[i]]))
-                                for (var k = 0, m = listProp.length; k < m; ++k)
-                                    if (listProp[k] !== node && matches(listProp[k], selector.left, ancestry))
-                                        return true;
-                    if (matches(node, selector.left, ancestry))
-                        for (var i = 0, l = keys.length; i < l; ++i)
-                            if (isArray(listProp = parent[keys[i]]))
-                                for (var k = 0, m = listProp.length; k < m; ++k)
-                                    if (listProp[k] !== node && matches(listProp[k], selector.right, ancestry))
-                                        return true;
-                    return false;
+                    return sibling(node, selector.right, selector.left, ancestry)
+                        || sibling(node, selector.left, selector.right, ancestry);
 
                 case 'adjacent':
-                    var parent = ancestry[0], listProp;
-                    if (!parent) return false;
-                    var keys = estraverse.VisitorKeys[parent.type];
-                    if (matches(node, selector.right, ancestry))
-                        for (var i = 0, l = keys.length; i < l; ++i)
-                            if (isArray(listProp = parent[keys[i]])) {
-                                var idx = listProp.indexOf(node);
-                                if (idx < 0) continue;
-                                if (idx > 0 && matches(listProp[idx - 1], selector.left, ancestry))
-                                    return true;
-                                if (idx < listProp.length - 1 && matches(listProp[idx + 1], selector.left, ancestry))
-                                    return true;
-                            }
-                    if (matches(node, selector.left, ancestry))
-                        for (var i = 0, l = keys.length; i < l; ++i)
-                            if (isArray(listProp = parent[keys[i]])) {
-                                var idx = listProp.indexOf(node);
-                                if (idx < 0) continue;
-                                if (idx > 0 && matches(listProp[idx - 1], selector.right, ancestry))
-                                    return true;
-                                if (idx < listProp.length - 1 && matches(listProp[idx + 1], selector.right, ancestry))
-                                    return true;
-                            }
-                    return false;
+                    return adjacent(node, selector.right, selector.left, ancestry)
+                        || adjacent(node, selector.left, selector.right, ancestry);
 
                 case 'nth-child':
-                    var parent = ancestry[0], listProp;
-                    if (!parent) return false;
-                    var keys = estraverse.VisitorKeys[parent.type];
-                    if (matches(node, selector.right, ancestry))
-                        for (var i = 0, l = keys.length; i < l; ++i)
-                            if (isArray(listProp = parent[keys[i]])) {
-                                var idx = listProp.indexOf(node);
-                                if (idx >= 0 && idx === selector.index.value - 1)
-                                    return true;
-                            }
-                    return false;
+                    return nthChild(node, selector, ancestry, function(length) {
+                        return selector.index.value - 1;
+                    });
 
                 case 'nth-last-child':
-                    var parent = ancestry[0], listProp;
-                    if (!parent) return false;
-                    var keys = estraverse.VisitorKeys[parent.type];
-                    if (matches(node, selector.right, ancestry))
-                        for (var i = 0, l = keys.length; i < l; ++i)
-                            if (isArray(listProp = parent[keys[i]])) {
-                                var idx = listProp.indexOf(node);
-                                if (idx >= 0 && listProp.length - idx === selector.index.value)
-                                    return true;
-                            }
-                    return false;
+                    return nthChild(node, selector, ancestry, function(length) {
+                        return length - selector.index.value;
+                    });
             }
 
             throw new Error('Unknown selector type: ' + selector.type);
+        }
+
+        function nthChild(node, selector, ancestry, idxFn) {
+            var parent = ancestry[0], listProp;
+            if (!parent) return false;
+            var keys = estraverse.VisitorKeys[parent.type];
+            if (matches(node, selector.right, ancestry))
+                for (var i = 0, l = keys.length; i < l; ++i)
+                    if (isArray(listProp = parent[keys[i]])) {
+                        var idx = listProp.indexOf(node);
+                        if (idx >= 0 && idx === idxFn(listProp.length))
+                            return true;
+                    }
+            return false;
+        }
+
+        function sibling(node, leftSelector, rightSelector, ancestry) {
+            var parent = ancestry[0], listProp;
+            if (!parent) return false;
+            var keys = estraverse.VisitorKeys[parent.type];
+            if (matches(node, leftSelector, ancestry))
+                for (var i = 0, l = keys.length; i < l; ++i)
+                    if (isArray(listProp = parent[keys[i]]))
+                        for (var k = 0, m = listProp.length; k < m; ++k)
+                            if (listProp[k] !== node && matches(listProp[k], rightSelector, ancestry))
+                                return true;
+            return false;
+        }
+
+        function adjacent(node, leftSelector, rightSelector, ancestry) {
+            var parent = ancestry[0], listProp;
+            if (!parent) return false;
+            var keys = estraverse.VisitorKeys[parent.type];
+            if (matches(node, leftSelector, ancestry))
+                for (var i = 0, l = keys.length; i < l; ++i)
+                    if (isArray(listProp = parent[keys[i]])) {
+                        var idx = listProp.indexOf(node);
+                        if (idx < 0) continue;
+                        if (idx > 0 && matches(listProp[idx - 1], rightSelector, ancestry))
+                            return true;
+                        if (idx < listProp.length - 1 && matches(listProp[idx + 1], rightSelector, ancestry))
+                            return true;
+                    }
+            return false;
         }
 
         function subjects(selector, ancestor) {
@@ -635,7 +627,6 @@
         query.parse = parse;
         query.match = match;
         query.matches = matches;
-        query.subjects = subjects;
         return query.query = query;
     }
 
