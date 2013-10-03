@@ -507,79 +507,94 @@
                     }
 
                 case 'sibling':
-                    return sibling(node, selector.right, selector.left, ancestry)
-                        || sibling(node, selector.left, selector.right, ancestry);
+                    return matches(node, selector.right, ancestry)
+                        && sibling(node, selector.left, ancestry)
+                        || matches(node, selector.left, ancestry)
+                        && sibling(node, selector.right, ancestry);
 
                 case 'adjacent':
-                    return adjacent(node, selector.right, selector.left, ancestry)
-                        || adjacent(node, selector.left, selector.right, ancestry);
+                    return matches(node, selector.right, ancestry)
+                        && adjacent(node, selector.left, ancestry)
+                        || matches(node, selector.left, ancestry)
+                        && adjacent(node, selector.right, ancestry);
 
                 case 'nth-child':
-                    return nthChild(node, selector, ancestry, function(length) {
-                        return selector.index.value - 1;
-                    });
+                    return matches(node, selector.right, ancestry)
+                        && nthChild(node, ancestry, function(length) {
+                            return selector.index.value - 1;
+                        });
 
                 case 'nth-last-child':
-                    return nthChild(node, selector, ancestry, function(length) {
-                        return length - selector.index.value;
-                    });
+                    return matches(node, selector.right, ancestry)
+                        && nthChild(node, ancestry, function(length) {
+                            return length - selector.index.value;
+                        });
             }
 
             throw new Error('Unknown selector type: ' + selector.type);
         }
 
-        function nthChild(node, selector, ancestry, idxFn) {
+        /*
+         * Determines if the given node has a sibling that matches the given selector.
+         */
+        function sibling(node, selector, ancestry) {
             var parent = ancestry[0], listProp;
             if (!parent) return false;
             var keys = estraverse.VisitorKeys[parent.type];
-            if (matches(node, selector.right, ancestry))
-                for (var i = 0, l = keys.length; i < l; ++i)
-                    if (isArray(listProp = parent[keys[i]])) {
-                        var idx = listProp.indexOf(node);
-                        if (idx >= 0 && idx === idxFn(listProp.length))
+            for (var i = 0, l = keys.length; i < l; ++i)
+                if (isArray(listProp = parent[keys[i]]))
+                    for (var k = 0, m = listProp.length; k < m; ++k)
+                        if (listProp[k] !== node && matches(listProp[k], selector, ancestry))
                             return true;
-                    }
             return false;
         }
 
-        function sibling(node, leftSelector, rightSelector, ancestry) {
+        /*
+         * Determines if the given node has an asjacent sibling that matches the given selector.
+         */
+        function adjacent(node, selector, ancestry) {
             var parent = ancestry[0], listProp;
             if (!parent) return false;
             var keys = estraverse.VisitorKeys[parent.type];
-            if (matches(node, leftSelector, ancestry))
-                for (var i = 0, l = keys.length; i < l; ++i)
-                    if (isArray(listProp = parent[keys[i]]))
-                        for (var k = 0, m = listProp.length; k < m; ++k)
-                            if (listProp[k] !== node && matches(listProp[k], rightSelector, ancestry))
-                                return true;
+            for (var i = 0, l = keys.length; i < l; ++i)
+                if (isArray(listProp = parent[keys[i]])) {
+                    var idx = listProp.indexOf(node);
+                    if (idx < 0) continue;
+                    if (idx > 0 && matches(listProp[idx - 1], selector, ancestry))
+                        return true;
+                    if (idx < listProp.length - 1 && matches(listProp[idx + 1], selector, ancestry))
+                        return true;
+                }
             return false;
         }
 
-        function adjacent(node, leftSelector, rightSelector, ancestry) {
+        /*
+         * Determines if the given node is the nth child, determined by idxFn, which is given the containing list's length.
+         */
+        function nthChild(node, ancestry, idxFn) {
             var parent = ancestry[0], listProp;
             if (!parent) return false;
             var keys = estraverse.VisitorKeys[parent.type];
-            if (matches(node, leftSelector, ancestry))
-                for (var i = 0, l = keys.length; i < l; ++i)
-                    if (isArray(listProp = parent[keys[i]])) {
-                        var idx = listProp.indexOf(node);
-                        if (idx < 0) continue;
-                        if (idx > 0 && matches(listProp[idx - 1], rightSelector, ancestry))
-                            return true;
-                        if (idx < listProp.length - 1 && matches(listProp[idx + 1], rightSelector, ancestry))
-                            return true;
-                    }
+            for (var i = 0, l = keys.length; i < l; ++i)
+                if (isArray(listProp = parent[keys[i]])) {
+                    var idx = listProp.indexOf(node);
+                    if (idx >= 0 && idx === idxFn(listProp.length))
+                        return true;
+                }
             return false;
         }
 
+        /*
+         * For each selector node marked as a subject, find the portion of the selector that the subject must match.
+         */
         function subjects(selector, ancestor) {
             if(selector == null || typeof selector != 'object') return [];
             if(ancestor == null) ancestor = selector;
-            var ss = selector.subject ? [ancestor] : [];
+            var results = selector.subject ? [ancestor] : [];
             Object.keys(selector).forEach(function(p) {
-                [].push.apply(ss, subjects(selector[p], p === 'left' ? selector[p] : ancestor));
+                [].push.apply(results, subjects(selector[p], p === 'left' ? selector[p] : ancestor));
             });
-            return ss;
+            return results;
         }
 
         /**
