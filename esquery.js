@@ -516,6 +516,12 @@
                                 for (var k = 0, m = listProp.length; k < m; ++k)
                                     if (listProp[k] !== node && matches(listProp[k], selector.left, ancestry))
                                         return true;
+                    if (matches(node, selector.left, ancestry))
+                        for (var i = 0, l = keys.length; i < l; ++i)
+                            if (isArray(listProp = parent[keys[i]]))
+                                for (var k = 0, m = listProp.length; k < m; ++k)
+                                    if (listProp[k] !== node && matches(listProp[k], selector.right, ancestry))
+                                        return true;
                     return false;
 
                 case 'adjacent':
@@ -530,6 +536,16 @@
                                 if (idx > 0 && matches(listProp[idx - 1], selector.left, ancestry))
                                     return true;
                                 if (idx < listProp.length - 1 && matches(listProp[idx + 1], selector.left, ancestry))
+                                    return true;
+                            }
+                    if (matches(node, selector.left, ancestry))
+                        for (var i = 0, l = keys.length; i < l; ++i)
+                            if (isArray(listProp = parent[keys[i]])) {
+                                var idx = listProp.indexOf(node);
+                                if (idx < 0) continue;
+                                if (idx > 0 && matches(listProp[idx - 1], selector.right, ancestry))
+                                    return true;
+                                if (idx < listProp.length - 1 && matches(listProp[idx + 1], selector.right, ancestry))
                                     return true;
                             }
                     return false;
@@ -564,16 +580,36 @@
             throw new Error('Unknown selector type: ' + selector.type);
         }
 
+        function subjects(selector, ancestor) {
+            if(selector == null || typeof selector != 'object') return [];
+            if(ancestor == null) ancestor = selector;
+            var ss = selector.subject ? [ancestor] : [];
+            Object.keys(selector).forEach(function(p) {
+                [].push.apply(ss, subjects(selector[p], p === 'left' ? selector[p] : ancestor));
+            });
+            return ss;
+        }
+
         /**
          * From a JS AST and a selector AST, collect all JS AST nodes that match the selector.
          */
         function match(ast, selector) {
             var ancestry = [], results = [];
             if (!selector) return results;
+            var altSubjects = subjects(selector);
             estraverse.traverse(ast, {
                 enter: function (node, parent) {
-                    ancestry.unshift(parent);
-                    if (matches(node, selector, ancestry)) results.push(node);
+                    if(parent != null) ancestry.unshift(parent);
+                    if (matches(node, selector, ancestry))
+                        if(altSubjects.length)
+                            for(var i = 0, l = altSubjects.length; i < l; ++i) {
+                                if(matches(node, altSubjects[i], ancestry)) results.push(node);
+                                for(var k = 0, m = ancestry.length; k < m; ++k)
+                                    if(matches(ancestry[k], altSubjects[i], ancestry.slice(k + 1)))
+                                        results.push(ancestry[k]);
+                            }
+                        else
+                            results.push(node);
                 },
                 leave: function () { ancestry.shift(); }
             });
@@ -599,6 +635,7 @@
         query.parse = parse;
         query.match = match;
         query.matches = matches;
+        query.subjects = subjects;
         return query.query = query;
     }
 
