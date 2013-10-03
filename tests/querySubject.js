@@ -1,4 +1,3 @@
-
 define([
     "esquery",
     "jstestr/assert",
