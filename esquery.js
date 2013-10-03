@@ -408,7 +408,7 @@
         function getPath(obj, key) {
             var i, keys = key.split(".");
             for (i = 0; i < keys.length; i++) {
-                if (obj == null) return obj;
+                if (obj == null) { return obj; }
                 obj = obj[keys[i]];
             }
             return obj;
@@ -418,14 +418,14 @@
          * Determine whether `node` can be reached by following `path`, starting at `ancestor`.
          */
         function inPath(node, ancestor, path) {
-            if (path.length === 0) return node === ancestor;
-            if (ancestor == null) return false;
+            if (path.length === 0) { return node === ancestor; }
+            if (ancestor == null) { return false; }
             var field = ancestor[path[0]],
                 remainingPath = path.slice(1);
             if (isArray(field)) {
-                for (var i = 0, l = field.length; i < l; ++i)
-                    if (inPath(node, field[i], remainingPath))
-                        return true;
+                for (var i = 0, l = field.length; i < l; ++i) {
+                    if (inPath(node, field[i], remainingPath)) { return true; }
+                }
                 return false;
             } else {
                 return inPath(node, field, remainingPath);
@@ -436,16 +436,16 @@
          * Given a `node` and its ancestors, determine if `node` is matched by `selector`.
          */
         function matches(node, selector, ancestry) {
-            if (!selector) return true;
-            if (!node) return false;
-            if (!ancestry) ancestry = [];
+            if (!selector) { return true; }
+            if (!node) { return false; }
+            if (!ancestry) { ancestry = []; }
 
             switch(selector.type) {
                 case 'wildcard':
                     return true;
 
                 case 'identifier':
-                    return selector.value.toLowerCase() == node.type.toLowerCase();
+                    return selector.value.toLowerCase() === node.type.toLowerCase();
 
                 case 'field':
                     var path = selector.name.split('.');
@@ -453,33 +453,37 @@
                     return inPath(node, ancestor, path);
 
                 case 'matches':
-                    for (var i = 0, l = selector.selectors.length; i < l; ++i)
-                        if (matches(node, selector.selectors[i], ancestry))
-                            return true;
+                    for (var i = 0, l = selector.selectors.length; i < l; ++i) {
+                        if (matches(node, selector.selectors[i], ancestry)) { return true; }
+                    }
                     return false;
 
                 case 'compound':
-                    for (var i = 0, l = selector.selectors.length; i < l; ++i)
-                        if (!matches(node, selector.selectors[i], ancestry))
-                            return false;
+                    for (var i = 0, l = selector.selectors.length; i < l; ++i) {
+                        if (!matches(node, selector.selectors[i], ancestry)) { return false; }
+                    }
                     return true;
 
                 case 'not':
-                    for (var i = 0, l = selector.selectors.length; i < l; ++i)
-                        if (matches(node, selector.selectors[i], ancestry))
-                            return false;
+                    for (var i = 0, l = selector.selectors.length; i < l; ++i) {
+                        if (matches(node, selector.selectors[i], ancestry)) { return false; }
+                    }
                     return true;
 
                 case 'child':
-                    if (matches(node, selector.right, ancestry))
+                    if (matches(node, selector.right, ancestry)) {
                         return matches(ancestry[0], selector.left, ancestry.slice(1));
+                    }
                     return false;
 
                 case 'descendant':
-                    if (matches(node, selector.right, ancestry))
-                        for (var i = 0, l = ancestry.length; i < l; ++i)
-                            if (matches(ancestry[i], selector.left, ancestry.slice(i + 1)))
+                    if (matches(node, selector.right, ancestry)) {
+                        for (var i = 0, l = ancestry.length; i < l; ++i) {
+                            if (matches(ancestry[i], selector.left, ancestry.slice(i + 1))) {
                                 return true;
+                            }
+                        }
+                    }
                     return false;
 
                 case 'attribute':
@@ -489,13 +493,13 @@
                         case void 0:
                             return p != null;
                         case '=':
-                            switch (selector.value.type){
+                            switch (selector.value.type) {
                                 case 'regexp': return selector.value.value.test(p);
                                 case 'literal': return selector.value.value === p;
                                 case 'type': return selector.value.value === typeof p;
                             }
                         case '!=':
-                            switch (selector.value.type){
+                            switch (selector.value.type) {
                                 case 'regexp': return !selector.value.value.test(p);
                                 case 'literal': return selector.value.value !== p;
                                 case 'type': return selector.value.value !== typeof p;
@@ -507,26 +511,26 @@
                     }
 
                 case 'sibling':
-                    return matches(node, selector.right, ancestry)
-                        && sibling(node, selector.left, ancestry)
-                        || matches(node, selector.left, ancestry)
-                        && sibling(node, selector.right, ancestry);
+                    return matches(node, selector.right, ancestry) &&
+                        sibling(node, selector.left, ancestry) ||
+                        matches(node, selector.left, ancestry) &&
+                        sibling(node, selector.right, ancestry);
 
                 case 'adjacent':
-                    return matches(node, selector.right, ancestry)
-                        && adjacent(node, selector.left, ancestry)
-                        || matches(node, selector.left, ancestry)
-                        && adjacent(node, selector.right, ancestry);
+                    return matches(node, selector.right, ancestry) &&
+                        adjacent(node, selector.left, ancestry) ||
+                        matches(node, selector.left, ancestry) &&
+                        adjacent(node, selector.right, ancestry);
 
                 case 'nth-child':
-                    return matches(node, selector.right, ancestry)
-                        && nthChild(node, ancestry, function(length) {
+                    return matches(node, selector.right, ancestry) &&
+                        nthChild(node, ancestry, function (length) {
                             return selector.index.value - 1;
                         });
 
                 case 'nth-last-child':
-                    return matches(node, selector.right, ancestry)
-                        && nthChild(node, ancestry, function(length) {
+                    return matches(node, selector.right, ancestry) &&
+                        nthChild(node, ancestry, function (length) {
                             return length - selector.index.value;
                         });
             }
@@ -539,13 +543,17 @@
          */
         function sibling(node, selector, ancestry) {
             var parent = ancestry[0], listProp;
-            if (!parent) return false;
+            if (!parent) { return false; }
             var keys = estraverse.VisitorKeys[parent.type];
-            for (var i = 0, l = keys.length; i < l; ++i)
-                if (isArray(listProp = parent[keys[i]]))
-                    for (var k = 0, m = listProp.length; k < m; ++k)
-                        if (listProp[k] !== node && matches(listProp[k], selector, ancestry))
+            for (var i = 0, l = keys.length; i < l; ++i) {
+                if (isArray(listProp = parent[keys[i]])) {
+                    for (var k = 0, m = listProp.length; k < m; ++k) {
+                        if (listProp[k] !== node && matches(listProp[k], selector, ancestry)) {
                             return true;
+                        }
+                    }
+                }
+            }
             return false;
         }
 
@@ -554,17 +562,20 @@
          */
         function adjacent(node, selector, ancestry) {
             var parent = ancestry[0], listProp;
-            if (!parent) return false;
+            if (!parent) { return false; }
             var keys = estraverse.VisitorKeys[parent.type];
-            for (var i = 0, l = keys.length; i < l; ++i)
+            for (var i = 0, l = keys.length; i < l; ++i) {
                 if (isArray(listProp = parent[keys[i]])) {
                     var idx = listProp.indexOf(node);
-                    if (idx < 0) continue;
-                    if (idx > 0 && matches(listProp[idx - 1], selector, ancestry))
+                    if (idx < 0) { continue; }
+                    if (idx > 0 && matches(listProp[idx - 1], selector, ancestry)) {
                         return true;
-                    if (idx < listProp.length - 1 && matches(listProp[idx + 1], selector, ancestry))
+                    }
+                    if (idx < listProp.length - 1 && matches(listProp[idx + 1], selector, ancestry)) {
                         return true;
+                    }
                 }
+            }
             return false;
         }
 
@@ -573,14 +584,14 @@
          */
         function nthChild(node, ancestry, idxFn) {
             var parent = ancestry[0], listProp;
-            if (!parent) return false;
+            if (!parent) { return false; }
             var keys = estraverse.VisitorKeys[parent.type];
-            for (var i = 0, l = keys.length; i < l; ++i)
+            for (var i = 0, l = keys.length; i < l; ++i) {
                 if (isArray(listProp = parent[keys[i]])) {
                     var idx = listProp.indexOf(node);
-                    if (idx >= 0 && idx === idxFn(listProp.length))
-                        return true;
+                    if (idx >= 0 && idx === idxFn(listProp.length)) { return true; }
                 }
+            }
             return false;
         }
 
@@ -588,12 +599,13 @@
          * For each selector node marked as a subject, find the portion of the selector that the subject must match.
          */
         function subjects(selector, ancestor) {
-            if(selector == null || typeof selector != 'object') return [];
-            if(ancestor == null) ancestor = selector;
+            if (selector == null || typeof selector != 'object') { return []; }
+            if (ancestor == null) { ancestor = selector; }
             var results = selector.subject ? [ancestor] : [];
-            Object.keys(selector).forEach(function(p) {
+            for(var p in selector) {
+                if(!{}.hasOwnProperty.call(selector, p)) { continue; }
                 [].push.apply(results, subjects(selector[p], p === 'left' ? selector[p] : ancestor));
-            });
+            }
             return results;
         }
 
@@ -602,21 +614,25 @@
          */
         function match(ast, selector) {
             var ancestry = [], results = [];
-            if (!selector) return results;
+            if (!selector) { return results; }
             var altSubjects = subjects(selector);
             estraverse.traverse(ast, {
                 enter: function (node, parent) {
-                    if(parent != null) ancestry.unshift(parent);
-                    if (matches(node, selector, ancestry))
-                        if(altSubjects.length)
-                            for(var i = 0, l = altSubjects.length; i < l; ++i) {
-                                if(matches(node, altSubjects[i], ancestry)) results.push(node);
-                                for(var k = 0, m = ancestry.length; k < m; ++k)
-                                    if(matches(ancestry[k], altSubjects[i], ancestry.slice(k + 1)))
+                    if (parent != null) { ancestry.unshift(parent); }
+                    if (matches(node, selector, ancestry)) {
+                        if (altSubjects.length) {
+                            for (var i = 0, l = altSubjects.length; i < l; ++i) {
+                                if (matches(node, altSubjects[i], ancestry)) { results.push(node); }
+                                for (var k = 0, m = ancestry.length; k < m; ++k) {
+                                    if (matches(ancestry[k], altSubjects[i], ancestry.slice(k + 1))) {
                                         results.push(ancestry[k]);
+                                    }
+                                }
                             }
-                        else
+                        } else {
                             results.push(node);
+                        }
+                    }
                 },
                 leave: function () { ancestry.shift(); }
             });
