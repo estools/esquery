@@ -19,7 +19,8 @@
     "query"
   ],
   "devDependencies": {
-    "jstestr": ">=0.4"
+    "jstestr": ">=0.4",
+    "pegjs": "~0.7.0"
   },
   "license": "BSD",
   "engines": {
