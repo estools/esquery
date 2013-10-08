@@ -550,7 +550,8 @@
             if (!parent) { return false; }
             keys = estraverse.VisitorKeys[parent.type];
             for (i = 0, l = keys.length; i < l; ++i) {
-                if (isArray(listProp = parent[keys[i]])) {
+                listProp = parent[keys[i]];
+                if (isArray(listProp)) {
                     for (k = 0, m = listProp.length; k < m; ++k) {
                         if (listProp[k] !== node && matches(listProp[k], selector, ancestry)) {
                             return true;
@@ -569,7 +570,8 @@
             if (!parent) { return false; }
             keys = estraverse.VisitorKeys[parent.type];
             for (i = 0, l = keys.length; i < l; ++i) {
-                if (isArray(listProp = parent[keys[i]])) {
+                listProp = parent[keys[i]];
+                if (isArray(listProp)) {
                     idx = listProp.indexOf(node);
                     if (idx < 0) { continue; }
                     if (idx > 0 && matches(listProp[idx - 1], selector, ancestry)) {
@@ -591,7 +593,8 @@
             if (!parent) { return false; }
             keys = estraverse.VisitorKeys[parent.type];
             for (i = 0, l = keys.length; i < l; ++i) {
-                if (isArray(listProp = parent[keys[i]])) {
+                listProp = parent[keys[i]];
+                if (isArray(listProp)) {
                     idx = listProp.indexOf(node);
                     if (idx >= 0 && idx === idxFn(listProp.length)) { return true; }
                 }
