@@ -205,6 +205,16 @@ define([
                 conditional.body[1].test.left.right,
                 conditional.body[1].alternate.test
             ], matches);
+        },
+
+        "index access": function () {
+            var matches = esquery(simpleProgram, "[body[2].type=\"ExpressionStatement\"]");
+            assert.contains([
+                simpleProgram
+            ], matches);
+
+            matches = esquery(simpleProgram, "[body[2].type=\"VariableDeclarator\"]");
+            assert.isTrue(matches.length === 0);
         }
     });
 });

@@ -14,7 +14,7 @@
          * Get the value of a property which may be multiple levels down in the object.
          */
         function getPath(obj, key) {
-            var i, keys = key.split(".");
+            var i, keys = key.replace(/\[([0-9]+)\]/, ".$1").split(".");
             for (i = 0; i < keys.length; i++) {
                 if (obj == null) { return obj; }
                 obj = obj[keys[i]];

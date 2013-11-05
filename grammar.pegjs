@@ -56,7 +56,7 @@ attr
   = "[" _ v:attrValue _ "]" { return v; }
   attrOps = a:[><!]? "=" { return a + '='; } / [><]
   attrEqOps = a:"!"? "="  { return a + '='; }
-  attrName = i:(identifierName / ".")+ { return i.join(''); }
+  attrName = f:field { return f.name; }
   attrValue
     = name:attrName _ op:attrEqOps _ value:(type / regex) {
       return { type: 'attribute', name: name, operator: op, value: value };
@@ -80,9 +80,12 @@ attr
     type = "type(" _ t:[^ )]+ _ ")" { return { type: 'type', value: t.join('') }; }
     regex = "/" d:[^/]+ "/" { return { type: 'regexp', value: new RegExp(d.join('')) }; }
 
-field = "." i:identifierName is:("." identifierName)* {
-  return { type: 'field', name: is.reduce(function(memo, p){ return memo + p[0] + p[1]; }, i)};
-}
+field
+  = "."? i:(identifierName fieldProperty?) is:("." identifierName fieldProperty?)* {
+    return { type: 'field', name: is.reduce(function(memo, p){ return memo + p[0] + p[1] + p[2]; }, i[0] + i[1])};
+  }
+  fieldIndex = d:[0-9]+ { return d.join(''); }
+  fieldProperty = "[" _ i:fieldIndex _ "]" { return '[' + i + ']'; }
 
 negation = ":not(" _ ss:selectors _ ")" { return { type: 'not', selectors: ss }; }
 matches = ":matches(" _ ss:selectors _ ")" { return { type: 'matches', selectors: ss }; }
