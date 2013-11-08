@@ -19,7 +19,7 @@ define([
         },
 
         ":expression": function () {
-            var matches = esquery(ast, ":expression");
+            var matches = esquery(ast, ":Expression");
             assert.contains([
               ast.body[0].id,
               ast.body[0].body.body[0].expression,
@@ -31,7 +31,7 @@ define([
         },
 
         ":function": function () {
-            var matches = esquery(ast, ":function");
+            var matches = esquery(ast, ":FUNCTION");
             assert.contains([
               ast.body[0],
               ast.body[0].body.body[0].expression.right
@@ -40,7 +40,7 @@ define([
         },
 
         ":declaration": function () {
-            var matches = esquery(ast, ":declaration");
+            var matches = esquery(ast, ":declaratioN");
             assert.contains([
               ast.body[0]
             ], matches);
@@ -48,7 +48,7 @@ define([
         },
 
         ":pattern": function () {
-            var matches = esquery(ast, ":pattern");
+            var matches = esquery(ast, ":paTTern");
             assert.contains([
               ast.body[0].id,
               ast.body[0].body.body[0].expression,

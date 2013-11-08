@@ -146,7 +146,7 @@
 
                 case 'class':
                     if(!node.type) return false;
-                    switch(selector.name){
+                    switch(selector.name.toLowerCase()){
                         case 'statement':
                             if(node.type.slice(-9) === 'Statement') return true;
                             // fallthrough: interface Declaration <: Statement { }

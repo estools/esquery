@@ -854,7 +854,7 @@ var result = (function(){
         }
         if (r0 !== null) {
           reportedPos = r1;
-          r0 = (function(i) { return { type: 'identifier', value: i.toLowerCase() }; })(r4);
+          r0 = (function(i) { return { type: 'identifier', value: i }; })(r4);
         }
         if (r0 === null) {
           pos = r1;
@@ -2426,8 +2426,8 @@ var result = (function(){
           }
         }
         if (r3 !== null) {
-          if (input.substr(pos, 9) === "statement") {
-            r4 = "statement";
+          if (input.substr(pos, 9).toLowerCase() === "statement") {
+            r4 = input.substr(pos, 9);
             pos += 9;
           } else {
             r4 = null;
@@ -2436,8 +2436,8 @@ var result = (function(){
             }
           }
           if (r4 === null) {
-            if (input.substr(pos, 10) === "expression") {
-              r4 = "expression";
+            if (input.substr(pos, 10).toLowerCase() === "expression") {
+              r4 = input.substr(pos, 10);
               pos += 10;
             } else {
               r4 = null;
@@ -2446,8 +2446,8 @@ var result = (function(){
               }
             }
             if (r4 === null) {
-              if (input.substr(pos, 11) === "declaration") {
-                r4 = "declaration";
+              if (input.substr(pos, 11).toLowerCase() === "declaration") {
+                r4 = input.substr(pos, 11);
                 pos += 11;
               } else {
                 r4 = null;
@@ -2456,8 +2456,8 @@ var result = (function(){
                 }
               }
               if (r4 === null) {
-                if (input.substr(pos, 8) === "function") {
-                  r4 = "function";
+                if (input.substr(pos, 8).toLowerCase() === "function") {
+                  r4 = input.substr(pos, 8);
                   pos += 8;
                 } else {
                   r4 = null;
@@ -2466,8 +2466,8 @@ var result = (function(){
                   }
                 }
                 if (r4 === null) {
-                  if (input.substr(pos, 7) === "pattern") {
-                    r4 = "pattern";
+                  if (input.substr(pos, 7).toLowerCase() === "pattern") {
+                    r4 = input.substr(pos, 7);
                     pos += 7;
                   } else {
                     r4 = null;
