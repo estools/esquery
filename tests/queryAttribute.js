@@ -33,6 +33,11 @@ define([
                 conditional.body[1].test.left,
                 conditional.body[1].test.left.left
             ], matches);
+
+            matches = esquery(conditional, "[prefix=true]");
+            assert.contains([
+                conditional.body[1].consequent.body[0].expression.right
+            ], matches);
         },
 
         "for loop": function () {
