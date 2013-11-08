@@ -763,6 +763,9 @@ var result = (function(){
                         r0 = parse_nthChild();
                         if (r0 === null) {
                           r0 = parse_nthLastChild();
+                          if (r0 === null) {
+                            r0 = parse_class();
+                          }
                         }
                       }
                     }
@@ -2389,6 +2392,108 @@ var result = (function(){
         if (r0 !== null) {
           reportedPos = r1;
           r0 = (function(n) { return nthLast(parseInt(n.join(''), 10)); })(r5);
+        }
+        if (r0 === null) {
+          pos = r1;
+        }
+        
+        cache[cacheKey] = {
+          nextPos: pos,
+          result:  r0
+        };
+        return r0;
+      }
+      
+      function parse_class() {
+        var cacheKey = "class@" + pos;
+        var cachedResult = cache[cacheKey];
+        if (cachedResult) {
+          pos = cachedResult.nextPos;
+          return cachedResult.result;
+        }
+        
+        var r0, r1, r2, r3, r4;
+        
+        r1 = pos;
+        r2 = pos;
+        if (input.charCodeAt(pos) === 58) {
+          r3 = ":";
+          pos++;
+        } else {
+          r3 = null;
+          if (reportFailures === 0) {
+            matchFailed("\":\"");
+          }
+        }
+        if (r3 !== null) {
+          if (input.substr(pos, 9) === "statement") {
+            r4 = "statement";
+            pos += 9;
+          } else {
+            r4 = null;
+            if (reportFailures === 0) {
+              matchFailed("\"statement\"");
+            }
+          }
+          if (r4 === null) {
+            if (input.substr(pos, 10) === "expression") {
+              r4 = "expression";
+              pos += 10;
+            } else {
+              r4 = null;
+              if (reportFailures === 0) {
+                matchFailed("\"expression\"");
+              }
+            }
+            if (r4 === null) {
+              if (input.substr(pos, 11) === "declaration") {
+                r4 = "declaration";
+                pos += 11;
+              } else {
+                r4 = null;
+                if (reportFailures === 0) {
+                  matchFailed("\"declaration\"");
+                }
+              }
+              if (r4 === null) {
+                if (input.substr(pos, 8) === "function") {
+                  r4 = "function";
+                  pos += 8;
+                } else {
+                  r4 = null;
+                  if (reportFailures === 0) {
+                    matchFailed("\"function\"");
+                  }
+                }
+                if (r4 === null) {
+                  if (input.substr(pos, 7) === "pattern") {
+                    r4 = "pattern";
+                    pos += 7;
+                  } else {
+                    r4 = null;
+                    if (reportFailures === 0) {
+                      matchFailed("\"pattern\"");
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if (r4 !== null) {
+            r0 = [r3, r4];
+          } else {
+            r0 = null;
+            pos = r2;
+          }
+        } else {
+          r0 = null;
+          pos = r2;
+        }
+        if (r0 !== null) {
+          reportedPos = r1;
+          r0 = (function(c) {
+          return { type: 'class', name: c };
+        })(r4);
         }
         if (r0 === null) {
           pos = r1;

@@ -143,6 +143,27 @@
                         nthChild(node, ancestry, function (length) {
                             return length - selector.index.value;
                         });
+
+                case 'class':
+                    if(!node.type) return false;
+                    switch(selector.name){
+                        case 'statement':
+                            if(node.type.slice(-9) === 'Statement') return true;
+                            // fallthrough: interface Declaration <: Statement { }
+                        case 'declaration':
+                            return node.type.slice(-11) === 'Declaration';
+                        case 'pattern':
+                            if(node.type.slice(-7) === 'Pattern') return true;
+                            // fallthrough: interface Expression <: Node, Pattern { }
+                        case 'expression':
+                            return node.type.slice(-10) === 'Expression' ||
+                                node.type === 'Literal' ||
+                                node.type === 'Identifier';
+                        case 'function':
+                            return node.type.slice(0, 8) === 'Function' ||
+                                node.type === 'ArrowFunctionExpression';
+                    }
+                    throw new Error('Unknown class name: ' + selector.name);
             }
 
             throw new Error('Unknown selector type: ' + selector.type);
