@@ -113,6 +113,13 @@ define([
             ], matches);
         },
 
+        "simple function numeric": function () {
+            var matches = esquery(simpleFunction, "FunctionDeclaration[params.0.name=x]");
+            assert.contains([
+                simpleFunction.body[0]
+            ], matches);
+        },
+
         "simple program regexp": function () {
             var matches = esquery(simpleProgram, "[name=/[asdfy]/]");
             assert.contains([
