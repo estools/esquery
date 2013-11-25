@@ -1,6 +1,6 @@
 ESQuery is a library for querying the AST output by Esprima for patterns of syntax using a CSS style selector system. Check out the demo:
 
-[demo](http://jrfeenst.github.io/esquery/demo.html)
+[demo](http://jrfeenst.github.io/esquery/)
 
 The following selectors are supported:
 * AST node type: `ForStatement`
