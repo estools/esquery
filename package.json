@@ -5,6 +5,12 @@
   "author": "Joel Feenstra <jrfeenst+esquery@gmail.com>",
   "description": "A query library for ECMAScript AST using a CSS selector like query language.",
   "main": "esquery.js",
+  "files": [
+    "esquery.js",
+    "parser.js",
+    "license.txt",
+    "README.md"
+  ],
   "scripts": {
     "test": "node node_modules/jstestr/bin/jstestr.js path=tests"
   },
@@ -20,7 +26,8 @@
   ],
   "devDependencies": {
     "jstestr": ">=0.4",
-    "pegjs": "~0.7.0"
+    "pegjs": "~0.7.0",
+    "commonjs-everywhere": "~0.9.4"
   },
   "license": "BSD",
   "engines": {
