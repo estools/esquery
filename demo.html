@@ -12,13 +12,9 @@
         #selector {
             width: 100%;
         }
-
-        #tokens {
-            white-space: pre-wrap;
-        }
     </style>
 
-    <script src="esquery.js"></script>
+    <script src="esquery.min.js"></script>
 </head>
 <body>
     <p>
@@ -215,8 +211,6 @@
         <input id="selector" type="text" value='[id.name="bar"]'/>
     </p>
 
-    <pre id="tokens"></pre>
-    <hr>
     <pre id="selectorAst"></pre>
     <hr>
     <pre id="output"></pre>
@@ -224,7 +218,6 @@
     <script type="text/javascript">
     var astNode = document.getElementById("ast");
     var selectorNode = document.getElementById("selector");
-    var tokensNode = document.getElementById("tokens");
     var selectorAstNode = document.getElementById("selectorAst");
     var outputNode = document.getElementById("output");
 
@@ -233,41 +226,38 @@
         eval("ast = " + astNode.value);
 
         var selector = selectorNode.value;
-        tokensNode.innerHTML = "";
         selectorAstNode.innerHTML = "";
         outputNode.innerHTML = "";
 
-        var start, end, tokens, tokensOutput, selectorAst, selectorAstOutput, matches, matchesOutput;
-
-        start = performance.now();
+        var start, end, selectorAst, selectorAstOutput, matches, matchesOutput;
 
         try {
-            tokens = esquery.tokenize(selector);
+          start = performance.now();
         } catch (e) {
-            tokensOutput = e.message;
+          start = Date.now();
         }
 
         try {
-            selectorAst = esquery.processTokens(tokens);
+            selectorAst = esquery.parse(selector);
         } catch (e) {
             selectorAstOutput = e.message;
         }
 
         try {
-            var matches = esquery.match(ast, selectorAst, new esquery.Cache(ast));
-            matches = esquery.finalMatches(matches);
-
+            var matches = esquery.match(ast, selectorAst);
         } catch (e) {
             matchesOutput = e.message;
         }
         
-        end = performance.now();
+        try {
+          end = performance.now();
+        } catch (e) {
+          end = Date.now();
+        }
 
-        tokensOutput = tokensOutput || JSON.stringify(tokens);
         selectorAstOutput = selectorAstOutput || JSON.stringify(selectorAst, null, "  ");
         matchesOutput = matchesOutput || JSON.stringify(matches, null, "  ");
 
-        tokensNode.appendChild(document.createTextNode(tokensOutput));
         selectorAstNode.appendChild(document.createTextNode(selectorAstOutput));
         outputNode.appendChild(document.createTextNode((matches ? matches.length : 0) +
                 " nodes found in " + (end - start) + "ms\n" + matchesOutput));
