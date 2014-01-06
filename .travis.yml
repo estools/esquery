@@ -1,9 +1,7 @@
 language: node_js
 
 before_install:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - git submodule update --init --recursive
+  - '[ "${TRAVIS_NODE_VERSION}" = "0.6" ] && npm conf set strict-ssl false || true'
 
 node_js:
   - "0.11"
