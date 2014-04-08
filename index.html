@@ -3,10 +3,13 @@
     <title>esquery</title>
 
     <style>
-        #ast {
+        #source {
             width: 100%;
             height: 50%;
-            font-family: monospace;
+        }
+
+        textarea, pre, input {
+            font-family: "Consolas", "Menlo", "Courier", monospace;
         }
 
         #selector {
@@ -15,195 +18,23 @@
     </style>
 
     <script src="esquery.min.js"></script>
+    <script src="esprima.js"></script>
 </head>
 <body>
     <p>
-        <textarea id="ast" wrap="off">{
-    "type": "Program",
-    "body": [
-        {
-            "type": "VariableDeclaration",
-            "declarations": [
-                {
-                    "type": "VariableDeclarator",
-                    "id": {
-                        "type": "Identifier",
-                        "name": "x"
-                    },
-                    "init": {
-                        "type": "Literal",
-                        "value": 1,
-                        "raw": "1"
-                    }
-                }
-            ],
-            "kind": "var"
-        },
-        {
-            "type": "VariableDeclaration",
-            "declarations": [
-                {
-                    "type": "VariableDeclarator",
-                    "id": {
-                        "type": "Identifier",
-                        "name": "y"
-                    },
-                    "init": {
-                        "type": "Literal",
-                        "value": 2,
-                        "raw": "2"
-                    }
-                }
-            ],
-            "kind": "var"
-        },
-        {
-            "type": "FunctionDeclaration",
-            "id": {
-                "type": "Identifier",
-                "name": "bar"
-            },
-            "params": [],
-            "defaults": [],
-            "body": {
-                "type": "BlockStatement",
-                "body": [
-                    {
-                        "type": "IfStatement",
-                        "test": {
-                            "type": "BinaryExpression",
-                            "operator": "<",
-                            "left": {
-                                "type": "Identifier",
-                                "name": "x"
-                            },
-                            "right": {
-                                "type": "Identifier",
-                                "name": "y"
-                            }
-                        },
-                        "consequent": {
-                            "type": "BlockStatement",
-                            "body": [
-                                {
-                                    "type": "ExpressionStatement",
-                                    "expression": {
-                                        "type": "CallExpression",
-                                        "callee": {
-                                            "type": "Identifier",
-                                            "name": "foo"
-                                        },
-                                        "arguments": []
-                                    }
-                                }
-                            ]
-                        },
-                        "alternate": {
-                            "type": "BlockStatement",
-                            "body": [
-                                {
-                                    "type": "ExpressionStatement",
-                                    "expression": {
-                                        "type": "AssignmentExpression",
-                                        "operator": "=",
-                                        "left": {
-                                            "type": "Identifier",
-                                            "name": "x"
-                                        },
-                                        "right": {
-                                            "type": "Identifier",
-                                            "name": "y"
-                                        }
-                                    }
-                                },
-                                {
-                                    "type": "ReturnStatement",
-                                    "argument": null
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "type": "ForStatement",
-                        "init": {
-                            "type": "VariableDeclaration",
-                            "declarations": [
-                                {
-                                    "type": "VariableDeclarator",
-                                    "id": {
-                                        "type": "Identifier",
-                                        "name": "i"
-                                    },
-                                    "init": {
-                                        "type": "Literal",
-                                        "value": 0,
-                                        "raw": "0"
-                                    }
-                                }
-                            ],
-                            "kind": "var"
-                        },
-                        "test": {
-                            "type": "BinaryExpression",
-                            "operator": "<",
-                            "left": {
-                                "type": "Identifier",
-                                "name": "i"
-                            },
-                            "right": {
-                                "type": "Literal",
-                                "value": 2,
-                                "raw": "2"
-                            }
-                        },
-                        "update": {
-                            "type": "UpdateExpression",
-                            "operator": "++",
-                            "argument": {
-                                "type": "Identifier",
-                                "name": "i"
-                            },
-                            "prefix": false
-                        },
-                        "body": {
-                            "type": "BlockStatement",
-                            "body": [
-                                {
-                                    "type": "ExpressionStatement",
-                                    "expression": {
-                                        "type": "AssignmentExpression",
-                                        "operator": "+=",
-                                        "left": {
-                                            "type": "Identifier",
-                                            "name": "x"
-                                        },
-                                        "right": {
-                                            "type": "Identifier",
-                                            "name": "i"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "type": "ExpressionStatement",
-                        "expression": {
-                            "type": "CallExpression",
-                            "callee": {
-                                "type": "Identifier",
-                                "name": "bar"
-                            },
-                            "arguments": []
-                        }
-                    }
-                ]
-            },
-            "rest": null,
-            "generator": false,
-            "expression": false
-        }
-    ]
+        <textarea id="source" wrap="off">var x = 1;
+var y = 2;
+function bar() {
+    if (x < y) {
+        foo();
+    } else {
+        x = y;
+        return;
+    }
+    for (var i = 0; i < 2; i++) {
+        x += i;
+    }
+    bar();
 }</textarea>
     </p>
 
@@ -216,14 +47,13 @@
     <pre id="output"></pre>
 
     <script type="text/javascript">
-    var astNode = document.getElementById("ast");
+    var sourceNode = document.getElementById("source");
     var selectorNode = document.getElementById("selector");
     var selectorAstNode = document.getElementById("selectorAst");
     var outputNode = document.getElementById("output");
 
     function update() {
-        var ast;
-        eval("ast = " + astNode.value);
+        var ast = esprima.parse(sourceNode.value);
 
         var selector = selectorNode.value;
         selectorAstNode.innerHTML = "";
@@ -265,7 +95,7 @@
 
     update();
 
-    astNode.addEventListener("change", update);
+    sourceNode.addEventListener("change", update);
     selectorNode.addEventListener("change", update);
     selectorNode.addEventListener("keyup", update);
     outputNode.addEventListener("change", update);
