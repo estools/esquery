@@ -1,8 +1,8 @@
-define([], function () {
+define(["esprima"], function (esprima) {
 
-// function a(){ [a] = () => 0; }
+    // return esprima.parse("function a(){ [a] = () => 0; }");
 
-	return {
+    return {
         "type": "Program",
         "body": [
             {
