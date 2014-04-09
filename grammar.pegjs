@@ -41,8 +41,10 @@ selector
   }
 
 sequence
-  = bs:(a:atom s:"!"? { if(s) a.subject = true; return a; })+ {
-    return bs.length === 1 ? bs[0] : { type: 'compound', selectors: bs };
+  = subject:"!"? as:atom+ {
+    var b = as.length === 1 ? as[0] : { type: 'compound', selectors: as };
+    if(subject) b.subject = true;
+    return b;
   }
 
 atom
