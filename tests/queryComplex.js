@@ -12,12 +12,12 @@ define([
 
     test.defineSuite("Complex selector query", {
 
-    	"two types child": function () {
+        "two types child": function () {
             var matches = esquery(conditional, "IfStatement > BinaryExpression");
             assert.contains([
-            	conditional.body[0].test
-        	], matches);
-    	},
+                conditional.body[0].test
+            ], matches);
+        },
 
         "three types child": function () {
             var matches = esquery(conditional, "IfStatement > BinaryExpression > Identifier");
@@ -26,25 +26,25 @@ define([
             ], matches);
         },
 
-    	"two types descendant": function () {
+        "two types descendant": function () {
             var matches = esquery(conditional, "IfStatement BinaryExpression");
             assert.contains([
-            	conditional.body[0].test
-        	], matches);
-    	},
+                conditional.body[0].test
+            ], matches);
+        },
 
-    	"two types sibling": function () {
+        "two types sibling": function () {
             var matches = esquery(simpleProgram, "VariableDeclaration ~ IfStatement");
             assert.contains([
-            	simpleProgram.body[3]
-        	], matches);
-    	},
+                simpleProgram.body[3]
+            ], matches);
+        },
 
-    	"two types adjacent": function () {
+        "two types adjacent": function () {
             var matches = esquery(simpleProgram, "VariableDeclaration + ExpressionStatement");
             assert.contains([
-            	simpleProgram.body[2]
-        	], matches);
-    	}
+                simpleProgram.body[2]
+            ], matches);
+        }
     });
 });

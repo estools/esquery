@@ -10,30 +10,30 @@ define([
 ], function (esquery, assert, test, conditional, forLoop, simpleFunction, simpleProgram) {
 
     test.defineSuite("Pseudo matches query", {
-    	
-    	"conditional matches": function () {
+
+        "conditional matches": function () {
             var matches = esquery(conditional, ":matches(IfStatement)");
             assert.contains([
                 conditional.body[0],
                 conditional.body[1].alternate
             ], matches);
-    	},
+        },
 
-    	"for loop matches": function () {
+        "for loop matches": function () {
             var matches = esquery(forLoop, ":matches(BinaryExpression, MemberExpression)");
             assert.contains([
                 forLoop.body[0].test,
                 forLoop.body[0].body.body[0].expression.callee
             ], matches);
-    	},
+        },
 
-    	"simple function matches": function () {
+        "simple function matches": function () {
             var matches = esquery(simpleFunction, ':matches([name="foo"], ReturnStatement)');
             assert.contains([
                 simpleFunction.body[0].id,
                 simpleFunction.body[0].body.body[2]
             ], matches);
-    	},
+        },
 
         "simple program matches": function () {
             var matches = esquery(simpleProgram, ":matches(AssignmentExpression, BinaryExpression)");
