@@ -18,8 +18,8 @@
 }
 
 start
-  = ss:selectors { return ss.length === 1 ? ss[0] : { type: 'matches', selectors: ss }; }
-  / "" { return void 0; }
+  = _ ss:selectors _ { return ss.length === 1 ? ss[0] : { type: 'matches', selectors: ss }; }
+  / _ { return void 0; }
 
 _ = " "*
 identifierName = i:[^ [\],():#!=><~+.]+ { return i.join(''); }
