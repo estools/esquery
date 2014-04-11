@@ -20,7 +20,7 @@ The following selectors are supported:
 * [adjacent sibling](http://dev.w3.org/csswg/selectors4/#adjacent-sibling-combinators): `node + adjacent`
 * [negation](http://dev.w3.org/csswg/selectors4/#negation-pseudo): `:not(ForStatement)`
 * [matches-any](http://dev.w3.org/csswg/selectors4/#matches): `:matches([attr] > :first-child, :last-child)`
-* [subject indicator](http://dev.w3.org/csswg/selectors4/#subject) (postfix, unlike CSS4): `IfStatement! > [name="foo"]`
+* [subject indicator](http://dev.w3.org/csswg/selectors4/#subject): `!IfStatement > [name="foo"]`
 * class of AST node: `:statement`, `:expression`, `:declaration`, `:function`, or `:pattern`
 
 [![Build Status](https://travis-ci.org/jrfeenst/esquery.png?branch=master)](https://travis-ci.org/jrfeenst/esquery)
