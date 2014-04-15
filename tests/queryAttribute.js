@@ -3,10 +3,10 @@ define([
     "esquery",
     "jstestr/assert",
     "jstestr/test",
-    "./ast/conditional",
-    "./ast/forLoop",
-    "./ast/simpleFunction",
-    "./ast/simpleProgram"
+    "./fixtures/conditional",
+    "./fixtures/forLoop",
+    "./fixtures/simpleFunction",
+    "./fixtures/simpleProgram"
 ], function (esquery, assert, test, conditional, forLoop, simpleFunction, simpleProgram) {
 
     test.defineSuite("Attribute query", {
