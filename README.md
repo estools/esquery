@@ -23,4 +23,4 @@ The following selectors are supported:
 * [subject indicator](http://dev.w3.org/csswg/selectors4/#subject): `!IfStatement > [name="foo"]`
 * class of AST node: `:statement`, `:expression`, `:declaration`, `:function`, or `:pattern`
 
-[![Build Status](https://travis-ci.org/jrfeenst/esquery.png?branch=master)](https://travis-ci.org/jrfeenst/esquery)
+[![Build Status](https://travis-ci.org/estools/esquery.png?branch=master)](https://travis-ci.org/estools/esquery)
