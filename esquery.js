@@ -335,15 +335,23 @@ function subjects(selector, ancestor) {
 }
 
 /**
+* @callback TraverseVisitor
+* @param {?external:AST} node
+* @param {?external:AST} parent
+* @param {external:AST[]} ancestry
+*/
+
+/**
  * From a JS AST and a selector AST, collect all JS AST nodes that
  * match the selector.
  * @param {external:AST} ast
  * @param {?SelectorAST} selector
+ * @param {TraverseVisitor} visitor
  * @returns {external:AST[]}
  */
-function match(ast, selector) {
-    const ancestry = [], results = [];
-    if (!selector) { return results; }
+function traverse(ast, selector, visitor) {
+    if (!selector) { return; }
+    const ancestry = [];
     const altSubjects = subjects(selector);
     estraverse.traverse(ast, {
         enter (node, parent) {
@@ -351,20 +359,37 @@ function match(ast, selector) {
             if (matches(node, selector, ancestry)) {
                 if (altSubjects.length) {
                     for (let i = 0, l = altSubjects.length; i < l; ++i) {
-                        if (matches(node, altSubjects[i], ancestry)) { results.push(node); }
+                        if (matches(node, altSubjects[i], ancestry)) {
+                            visitor(node, parent, ancestry.slice());
+                        }
                         for (let k = 0, m = ancestry.length; k < m; ++k) {
                             if (matches(ancestry[k], altSubjects[i], ancestry.slice(k + 1))) {
-                                results.push(ancestry[k]);
+                                visitor(ancestry[k], parent, ancestry.slice());
                             }
                         }
                     }
                 } else {
-                    results.push(node);
+                    visitor(node, parent, ancestry.slice());
                 }
             }
         },
         leave () { ancestry.shift(); },
         fallback: 'iteration'
+    });
+}
+
+
+/**
+ * From a JS AST and a selector AST, collect all JS AST nodes that
+ * match the selector.
+ * @param {external:AST} ast
+ * @param {?SelectorAST} selector
+ * @returns {external:AST[]}
+ */
+function match(ast, selector) {
+    const results = [];
+    traverse(ast, selector, function (node) {
+        results.push(node);
     });
     return results;
 }
@@ -390,6 +415,7 @@ function query(ast, selector) {
 
 query.parse = parse;
 query.match = match;
+query.traverse = traverse;
 query.matches = matches;
 query.query = query;
 
