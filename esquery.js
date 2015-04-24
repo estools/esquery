@@ -245,11 +245,11 @@
         }
 
         /**
-         * From a JS AST and a selector AST, collect all JS AST nodes that match the selector.
+         * From a JS AST and a selector AST, visit all JS AST nodes that match the selector.
          */
-        function match(ast, selector) {
-            var ancestry = [], results = [], altSubjects, i, l, k, m;
-            if (!selector) { return results; }
+        function traverse(ast, selector, visitor) {
+            var ancestry = [], altSubjects, i, l, k, m;
+            if (!selector) { return }
             altSubjects = subjects(selector);
             estraverse.traverse(ast, {
                 enter: function (node, parent) {
@@ -257,20 +257,33 @@
                     if (matches(node, selector, ancestry)) {
                         if (altSubjects.length) {
                             for (i = 0, l = altSubjects.length; i < l; ++i) {
-                                if (matches(node, altSubjects[i], ancestry)) { results.push(node); }
+                                if (matches(node, altSubjects[i], ancestry)) {
+                                    visitor(node, parent, ancestry.slice());
+                                }
                                 for (k = 0, m = ancestry.length; k < m; ++k) {
                                     if (matches(ancestry[k], altSubjects[i], ancestry.slice(k + 1))) {
-                                        results.push(ancestry[k]);
+                                        visitor(ancestry[k], parent, ancestry.slice());
                                     }
                                 }
                             }
                         } else {
-                            results.push(node);
+                            visitor(node, parent, ancestry.slice());
                         }
                     }
                 },
                 leave: function () { ancestry.shift(); }
             });
+        }
+
+        /**
+         * From a JS AST and a selector AST, collect all JS AST nodes that match the selector.
+         */
+        function match(ast, selector) {
+            var results = [];
+            if (!selector) { return results; }
+            traverse(ast, selector, function(node, parent, ancestry){
+                results.push(node);
+            })
             return results;
         }
 
@@ -290,6 +303,7 @@
 
         query.parse = parse;
         query.match = match;
+        query.traverse = traverse;
         query.matches = matches;
         return query.query = query;
     }
