@@ -83,6 +83,22 @@
                     }
                     return true;
 
+                case 'has':
+                    var a, collector = [];
+                    for (i = 0, l = selector.selectors.length; i < l; ++i) {
+                      a = [];
+                      estraverse.traverse(node, {
+                          enter: function (node, parent) {
+                              if (parent != null) { a.unshift(parent); }
+                              if (matches(node, selector.selectors[i], a)) {
+                                collector.push(node);
+                              }
+                          },
+                          leave: function () { a.shift(); }
+                      });
+                    }
+                    return collector.length !== 0;
+
                 case 'child':
                     if (matches(node, selector.right, ancestry)) {
                         return matches(ancestry[0], selector.left, ancestry.slice(1));
