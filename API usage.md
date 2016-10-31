@@ -1,5 +1,20 @@
 ## API and usage
 
+*Install (via npm for Node.js)*
+
+`npm i esquery --save`
+
+*Quick start*
+
+```js
+const esquery = require('esquery');
+
+const conditional = "if (x === 1) { foo(); } else { x = 2; }"
+
+var matches = esquery(conditional, "[name='x']")
+console.log(matches);
+```
+
 The following examples are taken from the test cases in `/tests` folder.
 
 ### Attribute query
@@ -8,7 +23,7 @@ The following examples are taken from the test cases in `/tests` folder.
 
 `for (i = 0; i < foo.length; i++) { foo[i](); }`
 
-- `[operator="=\]` - matches `i = 0`
+- `[operator="="]` - matches `i = 0`
 - `[object.name="foo"]` - object named `foo` ie. `foo.length`
 - `[name=/i|foo/]` - where name of node matches `i` or `foo`
 
