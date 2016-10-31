@@ -26,15 +26,15 @@
   ],
   "devDependencies": {
     "commonjs-everywhere": "~0.9.7",
-    "esprima": "~2.6.0",
-    "jstestr": ">=0.4",
-    "pegjs": "^0.7.0"
+    "esprima": "^3.1.0",
+    "jstestr": "^0.4.2",
+    "pegjs": "^0.10.0"
   },
   "license": "BSD",
   "engines": {
-    "node": ">=0.6"
+    "node": ">=5.0.0"
   },
   "dependencies": {
-    "estraverse": "^4.1.0"
+    "estraverse": "^4.2.0"
   }
 }
