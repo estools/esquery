@@ -144,6 +144,55 @@ var y = 'y';
 x = x * 2;
 ```
 
+*Shorthands*
+
+There are also shorthands such as:
+
+`@If > @Binary` equivalent to `IfStatement > BinaryExpression`
+
+See `translateInput` function in `parser.js` for the full list of supported shorthands and translations.
+
+- `@If`: `IfExpression`
+- `@Id`: `Identifier`
+- `@Var`: `VariableDeclaration`
+- `@Expr`
+- `@Member`
+- `@Return`
+- `@Block`
+- `@ForIn`
+- `@ForOf`
+- `@For`
+- `@Empty`
+- `@Labeled`
+- `@Break`
+- `@Continue`
+- `@Switch`
+- `@Throw`
+- `@Try`
+- `@While`
+- `@DoWhile`
+- `@Let`
+- `@This`
+- `@Array`
+- `@Object`
+- `@FunDecl`
+- `@Fun`
+- `@Arrow`
+- `@Seq`
+- `@Cond`
+- `@New`
+- `@Member`
+- `@Yield`
+- `@Gen`
+- `@UnaryOp`
+- `@Unary`
+- `@BinaryOp`
+- `@Binary`
+- `@LogicalOp`
+- `@Logical`
+- `@AssignOp`
+- `@Assign`
+
 ### Compound
 
 `[left.name="x"][right.value=1]` - where the left side is a node name `x` and the right has the value `1`
