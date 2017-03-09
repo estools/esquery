@@ -8,6 +8,9 @@
         return {}.toString.call(array) === '[object Array]';
     };
 
+    var LEFT_SIDE = {};
+    var RIGHT_SIDE = {};
+
     function esqueryModule() {
 
         /**
@@ -122,16 +125,16 @@
 
                 case 'sibling':
                     return matches(node, selector.right, ancestry) &&
-                        sibling(node, selector.left, ancestry, 'left') ||
+                        sibling(node, selector.left, ancestry, LEFT_SIDE) ||
                         matches(node, selector.left, ancestry) &&
-                        sibling(node, selector.right, ancestry, 'right') &&
+                        sibling(node, selector.right, ancestry, RIGHT_SIDE) &&
                         selector.left.subject;
 
                 case 'adjacent':
                     return matches(node, selector.right, ancestry) &&
-                        adjacent(node, selector.left, ancestry, 'left') ||
+                        adjacent(node, selector.left, ancestry, LEFT_SIDE) ||
                         matches(node, selector.left, ancestry) &&
-                        adjacent(node, selector.right, ancestry, 'right') &&
+                        adjacent(node, selector.right, ancestry, RIGHT_SIDE) &&
                         selector.left.subject;
 
                 case 'nth-child':
@@ -183,7 +186,7 @@
                 if (isArray(listProp)) {
                     startIndex = listProp.indexOf(node);
                     if (startIndex < 0) { continue; }
-                    if (side === 'left') {
+                    if (side === LEFT_SIDE) {
                       lowerBound = 0;
                       upperBound = startIndex;
                     } else {
@@ -212,10 +215,10 @@
                 if (isArray(listProp)) {
                     idx = listProp.indexOf(node);
                     if (idx < 0) { continue; }
-                    if (side === 'left' && idx > 0 && matches(listProp[idx - 1], selector, ancestry)) {
+                    if (side === LEFT_SIDE && idx > 0 && matches(listProp[idx - 1], selector, ancestry)) {
                         return true;
                     }
-                    if (side === 'right' && idx < listProp.length - 1 && matches(listProp[idx + 1], selector, ancestry)) {
+                    if (side === RIGHT_SIDE && idx < listProp.length - 1 && matches(listProp[idx + 1], selector, ancestry)) {
                         return true;
                     }
                 }
