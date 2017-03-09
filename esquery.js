@@ -122,15 +122,17 @@
 
                 case 'sibling':
                     return matches(node, selector.right, ancestry) &&
-                        sibling(node, selector.left, ancestry) ||
+                        sibling(node, selector.left, ancestry, 'left') ||
                         matches(node, selector.left, ancestry) &&
-                        sibling(node, selector.right, ancestry);
+                        sibling(node, selector.right, ancestry, 'right') &&
+                        selector.left.subject;
 
                 case 'adjacent':
                     return matches(node, selector.right, ancestry) &&
-                        adjacent(node, selector.left, ancestry) ||
+                        adjacent(node, selector.left, ancestry, 'left') ||
                         matches(node, selector.left, ancestry) &&
-                        adjacent(node, selector.right, ancestry);
+                        adjacent(node, selector.right, ancestry, 'right') &&
+                        selector.left.subject;
 
                 case 'nth-child':
                     return matches(node, selector.right, ancestry) &&
@@ -172,15 +174,24 @@
         /*
          * Determines if the given node has a sibling that matches the given selector.
          */
-        function sibling(node, selector, ancestry) {
-            var parent = ancestry[0], listProp, keys, i, l, k, m;
+        function sibling(node, selector, ancestry, side) {
+            var parent = ancestry[0], listProp, startIndex, keys, i, l, k, lowerBound, upperBound;
             if (!parent) { return false; }
             keys = estraverse.VisitorKeys[parent.type];
             for (i = 0, l = keys.length; i < l; ++i) {
                 listProp = parent[keys[i]];
                 if (isArray(listProp)) {
-                    for (k = 0, m = listProp.length; k < m; ++k) {
-                        if (listProp[k] !== node && matches(listProp[k], selector, ancestry)) {
+                    startIndex = listProp.indexOf(node);
+                    if (startIndex < 0) { continue; }
+                    if (side === 'left') {
+                      lowerBound = 0;
+                      upperBound = startIndex;
+                    } else {
+                      lowerBound = startIndex + 1;
+                      upperBound = listProp.length;
+                    }
+                    for (k = lowerBound; k < upperBound; ++k) {
+                        if (matches(listProp[k], selector, ancestry)) {
                             return true;
                         }
                     }
@@ -192,7 +203,7 @@
         /*
          * Determines if the given node has an asjacent sibling that matches the given selector.
          */
-        function adjacent(node, selector, ancestry) {
+        function adjacent(node, selector, ancestry, side) {
             var parent = ancestry[0], listProp, keys, i, l, idx;
             if (!parent) { return false; }
             keys = estraverse.VisitorKeys[parent.type];
@@ -201,10 +212,10 @@
                 if (isArray(listProp)) {
                     idx = listProp.indexOf(node);
                     if (idx < 0) { continue; }
-                    if (idx > 0 && matches(listProp[idx - 1], selector, ancestry)) {
+                    if (side === 'left' && idx > 0 && matches(listProp[idx - 1], selector, ancestry)) {
                         return true;
                     }
-                    if (idx < listProp.length - 1 && matches(listProp[idx + 1], selector, ancestry)) {
+                    if (side === 'right' && idx < listProp.length - 1 && matches(listProp[idx + 1], selector, ancestry)) {
                         return true;
                     }
                 }

@@ -6,8 +6,9 @@ define([
     "./fixtures/forLoop",
     "./fixtures/simpleFunction",
     "./fixtures/simpleProgram",
-    "./fixtures/nestedFunctions"
-], function (esquery, assert, test, conditional, forLoop, simpleFunction, simpleProgram, nestedFunctions) {
+    "./fixtures/nestedFunctions",
+    "./fixtures/bigArray"
+], function (esquery, assert, test, conditional, forLoop, simpleFunction, simpleProgram, nestedFunctions, bigArray) {
 
     test.defineSuite("Query subject", {
 
@@ -136,6 +137,25 @@ define([
                 simpleProgram.body[1],
                 simpleProgram.body[2]
             ], matches);
+        },
+
+        "multiple adjacent siblings": function () {
+            var matches = esquery(bigArray, "Identifier + Identifier");
+            assert.contains([
+                bigArray.body[0].expression.elements[4],
+                bigArray.body[0].expression.elements[8]
+            ], matches);
+            assert.isSame(2, matches.length);
+        },
+
+        "multiple siblings": function () {
+            var matches = esquery(bigArray, "Identifier ~ Identifier");
+            assert.contains([
+                bigArray.body[0].expression.elements[4],
+                bigArray.body[0].expression.elements[7],
+                bigArray.body[0].expression.elements[8]
+            ], matches);
+            assert.isSame(3, matches.length);
         }
     });
 });
