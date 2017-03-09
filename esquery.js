@@ -126,16 +126,16 @@
                 case 'sibling':
                     return matches(node, selector.right, ancestry) &&
                         sibling(node, selector.left, ancestry, LEFT_SIDE) ||
+                        selector.left.subject &&
                         matches(node, selector.left, ancestry) &&
-                        sibling(node, selector.right, ancestry, RIGHT_SIDE) &&
-                        selector.left.subject;
+                        sibling(node, selector.right, ancestry, RIGHT_SIDE);
 
                 case 'adjacent':
                     return matches(node, selector.right, ancestry) &&
                         adjacent(node, selector.left, ancestry, LEFT_SIDE) ||
+                        selector.right.subject &&
                         matches(node, selector.left, ancestry) &&
-                        adjacent(node, selector.right, ancestry, RIGHT_SIDE) &&
-                        selector.left.subject;
+                        adjacent(node, selector.right, ancestry, RIGHT_SIDE);
 
                 case 'nth-child':
                     return matches(node, selector.right, ancestry) &&
