@@ -19,6 +19,13 @@ define([
             ], matches);
         },
 
+        "two types child (shorthand)": function () {
+            var matches = esquery(conditional, "@If > @Binary");
+            assert.contains([
+                conditional.body[0].test
+            ], matches);
+        },
+
         "three types child": function () {
             var matches = esquery(conditional, "IfStatement > BinaryExpression > Identifier");
             assert.contains([
@@ -26,8 +33,23 @@ define([
             ], matches);
         },
 
+        "three types child (shorthand)": function () {
+            var matches = esquery(conditional, "@If > @Binary > @Id");
+            assert.contains([
+                conditional.body[0].test.left
+            ], matches);
+        },
+
+
         "two types descendant": function () {
             var matches = esquery(conditional, "IfStatement BinaryExpression");
+            assert.contains([
+                conditional.body[0].test
+            ], matches);
+        },
+
+        "two types descendant (shorthand)": function () {
+            var matches = esquery(conditional, "@If @Binary");
             assert.contains([
                 conditional.body[0].test
             ], matches);
@@ -40,8 +62,22 @@ define([
             ], matches);
         },
 
+        "two types sibling (shorthand)": function () {
+            var matches = esquery(simpleProgram, "@Var ~ @If");
+            assert.contains([
+                simpleProgram.body[3]
+            ], matches);
+        },
+
         "two types adjacent": function () {
             var matches = esquery(simpleProgram, "VariableDeclaration + ExpressionStatement");
+            assert.contains([
+                simpleProgram.body[2]
+            ], matches);
+        },
+
+        "two types adjacent (shorthand)": function () {
+            var matches = esquery(simpleProgram, "@Variable + @Expr");
             assert.contains([
                 simpleProgram.body[2]
             ], matches);

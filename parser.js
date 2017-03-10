@@ -4,7 +4,7 @@ var result = (function(){
    *
    * http://pegjs.majda.cz/
    */
-  
+
   function quote(s) {
     /*
      * ECMA-262, 5th ed., 7.8.4: All characters may appear literally in a
@@ -27,7 +27,54 @@ var result = (function(){
       .replace(/[\x00-\x07\x0B\x0E-\x1F\x80-\uFFFF]/g, escape)
       + '"';
   }
-  
+
+  function translateInput(input) {
+    input = input.replace(/@If($|[^S])/, 'IfStatement ')
+    input = input.replace(/@Id($|[^e])/, 'Identifier ')
+    input = input.replace(/@Var($|[^i])/, 'VariableDeclaration ')
+    input = input.replace(/@Expr($|[^e])/, 'ExpressionStatement ')
+    input = input.replace(/@Member($|[^E])/, 'MemberExpression ')
+    input = input.replace(/@Return($|[^S])/, 'ReturnStatement ')
+    input = input.replace(/@Block($|[^S])/, 'BlockStatement ')
+    input = input.replace(/@ForIn($|[^S])/, 'ForInStatement ')
+    input = input.replace(/@ForOf($|[^S])/, 'ForOfStatement ')
+    input = input.replace(/@For($|[^S])/, 'ForStatement ')
+    input = input.replace(/@Empty($|[^S])/, 'EmptyStatement ')
+    input = input.replace(/@Labeled($|[^S])/, 'LabeledStatement ')
+    input = input.replace(/@Break($|[^S])/, 'BreakStatement ')
+    input = input.replace(/@Continue($|[^S])/, 'ContinueStatement ')
+    input = input.replace(/@With($|[^S])/, 'WithStatement ')
+    input = input.replace(/@Switch($|[^S])/, 'SwitchStatement ')
+    input = input.replace(/@Throw($|[^S])/, 'ThrowStatement ')
+    input = input.replace(/@Try($|[^S])/, 'TryStatement ')
+    input = input.replace(/@While($|[^S])/, 'WhileStatement ')
+    input = input.replace(/@DoWhile($|[^S])/, 'DoWhileStatement ')
+    input = input.replace(/@Let($|[^S])/, 'LetStatement ')
+    input = input.replace(/@This($|[^S])/, 'ThisExpression ')
+    input = input.replace(/@Array($|[^S])/, 'ArrayExpression ')
+    input = input.replace(/@Object($|[^S])/, 'ObjectExpression ')
+    input = input.replace(/@FunDecl($|[^a])/, 'FunctionDeclaration ')
+    input = input.replace(/@Fun($|[^c])/, 'FunctionExpression ')
+    input = input.replace(/@Arrow($|[^E])/, 'ArrowExpression ')
+    input = input.replace(/@Seq($|[^u])/, 'SequenceExpression ')
+    input = input.replace(/@Cond($|[^i])/, 'ConditionalExpression ')
+    input = input.replace(/@New($|[^E])/, 'NewExpression ')
+    input = input.replace(/@Call($|[^E])/, 'CallExpression ')
+    input = input.replace(/@Member($|[^E])/, 'MemberExpression ')
+    input = input.replace(/@Yield($|[^E])/, 'YieldExpression ')
+    input = input.replace(/@Gen($|[^e])/, 'GeneratorExpression ')
+    input = input.replace(/@UnaryOp($|[^e])/, 'UnaryOperator ')
+    input = input.replace(/@Unary($|[^E])/, 'UnaryExpression ')
+    input = input.replace(/@BinaryOp($|[^e])/, 'BinaryOperator ')
+    input = input.replace(/@Binary($|[^E])/, 'BinaryExpression ')
+    input = input.replace(/@LogicalOp($|[^e])/, 'LogicalOperator ')
+    input = input.replace(/@Logical($|[^E])/, 'LogicalExpression ')
+    input = input.replace(/@AssignOp($|[^e])/, 'AssignmentOperator ')
+    input = input.replace(/@Assign($|[^m])/, 'AssignmentExpression ')
+
+    return input
+  }
+
   var result = {
     /*
      * Parses the input with a generated parser. If the parsing is successfull,
@@ -36,6 +83,10 @@ var result = (function(){
      * unsuccessful, throws |PEG.parser.SyntaxError| describing the error.
      */
     parse: function(input, startRule) {
+      // console.log('parse', input, startRule)
+      input = translateInput(input)
+      // console.log('translated input for parse', input)
+
       var parseFunctions = {
         "start": parse_start,
         "_": parse__,
@@ -60,13 +111,14 @@ var result = (function(){
         "field": parse_field,
         "negation": parse_negation,
         "matches": parse_matches,
+        "has": parse_has,
         "firstChild": parse_firstChild,
         "lastChild": parse_lastChild,
         "nthChild": parse_nthChild,
         "nthLastChild": parse_nthLastChild,
         "class": parse_class
       };
-      
+
       if (startRule !== undefined) {
         if (parseFunctions[startRule] === undefined) {
           throw new Error("Invalid rule name: " + quote(startRule) + ".");
@@ -74,29 +126,29 @@ var result = (function(){
       } else {
         startRule = "start";
       }
-      
+
       var pos = 0;
       var reportFailures = 0;
       var rightmostFailuresPos = 0;
       var rightmostFailuresExpected = [];
       var cache = {};
-      
+
       function padLeft(input, padding, length) {
         var result = input;
-        
+
         var padLength = length - input.length;
         for (var i = 0; i < padLength; i++) {
           result = padding + result;
         }
-        
+
         return result;
       }
-      
+
       function escape(ch) {
         var charCode = ch.charCodeAt(0);
         var escapeChar;
         var length;
-        
+
         if (charCode <= 0xFF) {
           escapeChar = 'x';
           length = 2;
@@ -104,23 +156,23 @@ var result = (function(){
           escapeChar = 'u';
           length = 4;
         }
-        
+
         return '\\' + escapeChar + padLeft(charCode.toString(16).toUpperCase(), '0', length);
       }
-      
+
       function matchFailed(failure) {
         if (pos < rightmostFailuresPos) {
           return;
         }
-        
+
         if (pos > rightmostFailuresPos) {
           rightmostFailuresPos = pos;
           rightmostFailuresExpected = [];
         }
-        
+
         rightmostFailuresExpected.push(failure);
       }
-      
+
       function parse_start() {
         var cacheKey = "start@" + pos;
         var cachedResult = cache[cacheKey];
@@ -128,10 +180,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         result0 = parse__();
@@ -169,14 +221,14 @@ var result = (function(){
             pos = pos0;
           }
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse__() {
         var cacheKey = "_@" + pos;
         var cachedResult = cache[cacheKey];
@@ -184,9 +236,9 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1;
-        
+
         result0 = [];
         if (input.charCodeAt(pos) === 32) {
           result1 = " ";
@@ -209,14 +261,14 @@ var result = (function(){
             }
           }
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_identifierName() {
         var cacheKey = "identifierName@" + pos;
         var cachedResult = cache[cacheKey];
@@ -224,10 +276,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1;
         var pos0;
-        
+
         pos0 = pos;
         if (/^[^ [\],():#!=><~+.]/.test(input.charAt(pos))) {
           result1 = input.charAt(pos);
@@ -261,14 +313,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_binaryOp() {
         var cacheKey = "binaryOp@" + pos;
         var cachedResult = cache[cacheKey];
@@ -276,10 +328,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         result0 = parse__();
@@ -420,14 +472,14 @@ var result = (function(){
             }
           }
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_selectors() {
         var cacheKey = "selectors@" + pos;
         var cachedResult = cache[cacheKey];
@@ -435,10 +487,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2, result3, result4, result5;
         var pos0, pos1, pos2;
-        
+
         pos0 = pos;
         pos1 = pos;
         result0 = parse_selector();
@@ -533,14 +585,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_selector() {
         var cacheKey = "selector@" + pos;
         var cachedResult = cache[cacheKey];
@@ -548,10 +600,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2, result3;
         var pos0, pos1, pos2;
-        
+
         pos0 = pos;
         pos1 = pos;
         result0 = parse_sequence();
@@ -608,14 +660,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_sequence() {
         var cacheKey = "sequence@" + pos;
         var cachedResult = cache[cacheKey];
@@ -623,10 +675,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (input.charCodeAt(pos) === 33) {
@@ -670,14 +722,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_atom() {
         var cacheKey = "atom@" + pos;
         var cachedResult = cache[cacheKey];
@@ -685,9 +737,9 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0;
-        
+
         result0 = parse_wildcard();
         if (result0 === null) {
           result0 = parse_identifier();
@@ -700,15 +752,18 @@ var result = (function(){
                 if (result0 === null) {
                   result0 = parse_matches();
                   if (result0 === null) {
-                    result0 = parse_firstChild();
+                    result0 = parse_has();
                     if (result0 === null) {
-                      result0 = parse_lastChild();
+                      result0 = parse_firstChild();
                       if (result0 === null) {
-                        result0 = parse_nthChild();
+                        result0 = parse_lastChild();
                         if (result0 === null) {
-                          result0 = parse_nthLastChild();
+                          result0 = parse_nthChild();
                           if (result0 === null) {
-                            result0 = parse_class();
+                            result0 = parse_nthLastChild();
+                            if (result0 === null) {
+                              result0 = parse_class();
+                            }
                           }
                         }
                       }
@@ -719,14 +774,14 @@ var result = (function(){
             }
           }
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_wildcard() {
         var cacheKey = "wildcard@" + pos;
         var cachedResult = cache[cacheKey];
@@ -734,10 +789,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0;
         var pos0;
-        
+
         pos0 = pos;
         if (input.charCodeAt(pos) === 42) {
           result0 = "*";
@@ -754,14 +809,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_identifier() {
         var cacheKey = "identifier@" + pos;
         var cachedResult = cache[cacheKey];
@@ -769,10 +824,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (input.charCodeAt(pos) === 35) {
@@ -803,14 +858,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_attr() {
         var cacheKey = "attr@" + pos;
         var cachedResult = cache[cacheKey];
@@ -818,10 +873,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2, result3, result4;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (input.charCodeAt(pos) === 91) {
@@ -877,14 +932,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_attrOps() {
         var cacheKey = "attrOps@" + pos;
         var cachedResult = cache[cacheKey];
@@ -892,10 +947,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (/^[><!]/.test(input.charAt(pos))) {
@@ -945,14 +1000,14 @@ var result = (function(){
             }
           }
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_attrEqOps() {
         var cacheKey = "attrEqOps@" + pos;
         var cachedResult = cache[cacheKey];
@@ -960,10 +1015,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (input.charCodeAt(pos) === 33) {
@@ -1002,14 +1057,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_attrName() {
         var cacheKey = "attrName@" + pos;
         var cachedResult = cache[cacheKey];
@@ -1017,10 +1072,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1;
         var pos0;
-        
+
         pos0 = pos;
         result1 = parse_identifierName();
         if (result1 === null) {
@@ -1060,14 +1115,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_attrValue() {
         var cacheKey = "attrValue@" + pos;
         var cachedResult = cache[cacheKey];
@@ -1075,10 +1130,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2, result3, result4;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         result0 = parse_attrName();
@@ -1182,14 +1237,14 @@ var result = (function(){
             }
           }
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_string() {
         var cacheKey = "string@" + pos;
         var cachedResult = cache[cacheKey];
@@ -1197,10 +1252,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2, result3;
         var pos0, pos1, pos2, pos3;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (input.charCodeAt(pos) === 34) {
@@ -1491,14 +1546,14 @@ var result = (function(){
             pos = pos0;
           }
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_number() {
         var cacheKey = "number@" + pos;
         var cachedResult = cache[cacheKey];
@@ -1506,10 +1561,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2;
         var pos0, pos1, pos2;
-        
+
         pos0 = pos;
         pos1 = pos;
         pos2 = pos;
@@ -1601,14 +1656,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_path() {
         var cacheKey = "path@" + pos;
         var cachedResult = cache[cacheKey];
@@ -1616,10 +1671,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0;
         var pos0;
-        
+
         pos0 = pos;
         result0 = parse_identifierName();
         if (result0 !== null) {
@@ -1628,14 +1683,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_type() {
         var cacheKey = "type@" + pos;
         var cachedResult = cache[cacheKey];
@@ -1643,10 +1698,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2, result3, result4;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (input.substr(pos, 5) === "type(") {
@@ -1727,14 +1782,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_regex() {
         var cacheKey = "regex@" + pos;
         var cachedResult = cache[cacheKey];
@@ -1742,10 +1797,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (input.charCodeAt(pos) === 47) {
@@ -1814,14 +1869,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_field() {
         var cacheKey = "field@" + pos;
         var cachedResult = cache[cacheKey];
@@ -1829,10 +1884,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2, result3, result4;
         var pos0, pos1, pos2;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (input.charCodeAt(pos) === 46) {
@@ -1917,14 +1972,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_negation() {
         var cacheKey = "negation@" + pos;
         var cachedResult = cache[cacheKey];
@@ -1932,10 +1987,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2, result3, result4;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (input.substr(pos, 5) === ":not(") {
@@ -1991,14 +2046,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_matches() {
         var cacheKey = "matches@" + pos;
         var cachedResult = cache[cacheKey];
@@ -2006,10 +2061,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2, result3, result4;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (input.substr(pos, 9) === ":matches(") {
@@ -2065,14 +2120,88 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
+      function parse_has() {
+        var cacheKey = "has@" + pos;
+        var cachedResult = cache[cacheKey];
+        if (cachedResult) {
+          pos = cachedResult.nextPos;
+          return cachedResult.result;
+        }
+
+        var result0, result1, result2, result3, result4;
+        var pos0, pos1;
+
+        pos0 = pos;
+        pos1 = pos;
+        if (input.substr(pos, 5) === ":has(") {
+          result0 = ":has(";
+          pos += 5;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\":has(\"");
+          }
+        }
+        if (result0 !== null) {
+          result1 = parse__();
+          if (result1 !== null) {
+            result2 = parse_selectors();
+            if (result2 !== null) {
+              result3 = parse__();
+              if (result3 !== null) {
+                if (input.charCodeAt(pos) === 41) {
+                  result4 = ")";
+                  pos++;
+                } else {
+                  result4 = null;
+                  if (reportFailures === 0) {
+                    matchFailed("\")\"");
+                  }
+                }
+                if (result4 !== null) {
+                  result0 = [result0, result1, result2, result3, result4];
+                } else {
+                  result0 = null;
+                  pos = pos1;
+                }
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, ss) { return { type: 'has', selectors: ss }; })(pos0, result0[2]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+
+        cache[cacheKey] = {
+          nextPos: pos,
+          result:  result0
+        };
+        return result0;
+      }
+
       function parse_firstChild() {
         var cacheKey = "firstChild@" + pos;
         var cachedResult = cache[cacheKey];
@@ -2080,10 +2209,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0;
         var pos0;
-        
+
         pos0 = pos;
         if (input.substr(pos, 12) === ":first-child") {
           result0 = ":first-child";
@@ -2100,14 +2229,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_lastChild() {
         var cacheKey = "lastChild@" + pos;
         var cachedResult = cache[cacheKey];
@@ -2115,10 +2244,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0;
         var pos0;
-        
+
         pos0 = pos;
         if (input.substr(pos, 11) === ":last-child") {
           result0 = ":last-child";
@@ -2135,14 +2264,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_nthChild() {
         var cacheKey = "nthChild@" + pos;
         var cachedResult = cache[cacheKey];
@@ -2150,10 +2279,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2, result3, result4;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (input.substr(pos, 11) === ":nth-child(") {
@@ -2234,14 +2363,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_nthLastChild() {
         var cacheKey = "nthLastChild@" + pos;
         var cachedResult = cache[cacheKey];
@@ -2249,10 +2378,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1, result2, result3, result4;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (input.substr(pos, 16) === ":nth-last-child(") {
@@ -2333,14 +2462,14 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
+
       function parse_class() {
         var cacheKey = "class@" + pos;
         var cachedResult = cache[cacheKey];
@@ -2348,10 +2477,10 @@ var result = (function(){
           pos = cachedResult.nextPos;
           return cachedResult.result;
         }
-        
+
         var result0, result1;
         var pos0, pos1;
-        
+
         pos0 = pos;
         pos1 = pos;
         if (input.charCodeAt(pos) === 58) {
@@ -2435,18 +2564,18 @@ var result = (function(){
         if (result0 === null) {
           pos = pos0;
         }
-        
+
         cache[cacheKey] = {
           nextPos: pos,
           result:  result0
         };
         return result0;
       }
-      
-      
+
+
       function cleanupExpected(expected) {
         expected.sort();
-        
+
         var lastExpected = null;
         var cleanExpected = [];
         for (var i = 0; i < expected.length; i++) {
@@ -2457,7 +2586,7 @@ var result = (function(){
         }
         return cleanExpected;
       }
-      
+
       function computeErrorPosition() {
         /*
          * The first idea was to use |String.split| to break the input up to the
@@ -2465,11 +2594,11 @@ var result = (function(){
          * there. However IE's |split| implementation is so broken that it was
          * enough to prevent it.
          */
-        
+
         var line = 1;
         var column = 1;
         var seenCR = false;
-        
+
         for (var i = 0; i < Math.max(pos, rightmostFailuresPos); i++) {
           var ch = input.charAt(i);
           if (ch === "\n") {
@@ -2485,11 +2614,11 @@ var result = (function(){
             seenCR = false;
           }
         }
-        
+
         return { line: line, column: column };
       }
-      
-      
+
+
         function nth(n) { return { type: 'nth-child', index: { type: 'literal', value: n } }; }
         function nthLast(n) { return { type: 'nth-last-child', index: { type: 'literal', value: n } }; }
         function strUnescape(s) {
@@ -2506,10 +2635,10 @@ var result = (function(){
             }
           });
         }
-      
-      
+
+
       var result = parseFunctions[startRule]();
-      
+
       /*
        * The parser is now in one of the following three states:
        *
@@ -2538,7 +2667,7 @@ var result = (function(){
         var offset = Math.max(pos, rightmostFailuresPos);
         var found = offset < input.length ? input.charAt(offset) : null;
         var errorPosition = computeErrorPosition();
-        
+
         throw new this.SyntaxError(
           cleanupExpected(rightmostFailuresExpected),
           found,
@@ -2547,20 +2676,20 @@ var result = (function(){
           errorPosition.column
         );
       }
-      
+
       return result;
     },
-    
+
     /* Returns the parser source code. */
     toSource: function() { return this._source; }
   };
-  
+
   /* Thrown when a parser encounters a syntax error. */
-  
+
   result.SyntaxError = function(expected, found, offset, line, column) {
     function buildMessage(expected, found) {
       var expectedHumanized, foundHumanized;
-      
+
       switch (expected.length) {
         case 0:
           expectedHumanized = "end of input";
@@ -2573,12 +2702,12 @@ var result = (function(){
             + " or "
             + expected[expected.length - 1];
       }
-      
+
       foundHumanized = found ? quote(found) : "end of input";
-      
+
       return "Expected " + expectedHumanized + " but " + foundHumanized + " found.";
     }
-    
+
     this.name = "SyntaxError";
     this.expected = expected;
     this.found = found;
@@ -2587,9 +2716,9 @@ var result = (function(){
     this.line = line;
     this.column = column;
   };
-  
+
   result.SyntaxError.prototype = Error.prototype;
-  
+
   return result;
 })();
 if (typeof define === "function" && define.amd) { define(function(){ return result; }); } else if (typeof module !== "undefined" && module.exports) { module.exports = result; } else { this.esquery = result; }
