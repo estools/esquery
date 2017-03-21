@@ -165,7 +165,8 @@
                                 node.type === 'Literal' ||
                                 node.type === 'Identifier';
                         case 'function':
-                            return node.type.slice(0, 8) === 'Function' ||
+                            return node.type === 'FunctionDeclaration' ||
+                                node.type === 'FunctionExpression' ||
                                 node.type === 'ArrowFunctionExpression';
                     }
                     throw new Error('Unknown class name: ' + selector.name);
