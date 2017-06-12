@@ -6,7 +6,7 @@
 
 
     if (typeof define === "function" && define.amd) {
-        define(esquery(estraverse_jsx));
+        define(function(){return esquery(estraverse_jsx);});
     } else if (typeof module !== 'undefined' && module.exports) {
         module.exports = esquery(estraverse_jsx);
     } else {
