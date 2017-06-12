@@ -6,7 +6,9 @@
   "description": "A query library for ECMAScript AST using a CSS selector like query language.",
   "main": "esquery.js",
   "files": [
+    "esquery_init.js",
     "esquery.js",
+    "jsx.js",
     "parser.js",
     "license.txt",
     "README.md"
@@ -35,6 +37,7 @@
     "node": ">=0.6"
   },
   "dependencies": {
-    "estraverse": "^4.0.0"
+    "estraverse": "^4.0.0",
+    "estraverse-fb": "*"
   }
 }

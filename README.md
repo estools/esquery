@@ -23,4 +23,14 @@ The following selectors are supported:
 * [subject indicator](http://dev.w3.org/csswg/selectors4/#subject): `!IfStatement > [name="foo"]`
 * class of AST node: `:statement`, `:expression`, `:declaration`, `:function`, or `:pattern`
 
+For JSX-Support use:
+
+`var esquery = require("esquery/jsx");`
+
+instead of:
+
+`var esquery = require("esquery");`
+
+(Note the '/jsx' part)
+
 [![Build Status](https://travis-ci.org/estools/esquery.png?branch=master)](https://travis-ci.org/estools/esquery)
