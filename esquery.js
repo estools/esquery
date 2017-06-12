@@ -6,7 +6,7 @@
 
 
     if (typeof define === "function" && define.amd) {
-        define(esquery(estraverse));
+        define(function(){return esquery(estraverse);});
     } else if (typeof module !== 'undefined' && module.exports) {
         module.exports = esquery(estraverse);
     } else {
