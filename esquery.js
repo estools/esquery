@@ -281,6 +281,81 @@
             return results;
         }
 
+        /*
+         * Clones a selector AST
+         */
+        function clone(selector) {
+            if (typeof selector !== 'object' || selector instanceof RegExp) {
+                return selector;
+            }
+            var clonedSelector = selector instanceof Array ? [] : {};
+            for (var key in selector) {
+                if (!selector.hasOwnProperty(key)) { continue; }
+                clonedSelector[key] = clone(selector[key]);
+            }
+            return clonedSelector;
+        }
+
+        /*
+         * Transforms this query so that subject indicators are replaced with :has selectors
+         */
+        function transform(selector) {
+            var root = { },
+                current = selector,
+                previous = root,
+                subjects = [ ];
+
+            if (!selector) { return selector; }
+
+            while ('left' in current && 'right' in current) {
+                if (current.right.subject) {
+                    previous.type = 'scope';
+                    subjects.push([ clone(current), clone(root) ]);
+                }
+                previous.type = current.type;
+                previous.right = current.right;
+                previous = previous.left = { }
+                current = current.left;
+            }
+            if (current.subject) {
+                previous.type = 'scope';
+                subjects.push([ clone(current), clone(root) ]);
+            }
+            if (subjects.length === 0) {
+                return selector;
+            } else {
+                var matches = {
+                    type: 'matches',
+                    selectors: subjects.map(function (subject) {
+                        var result = subject[0], has = {
+                            type: 'has',
+                            selectors: [ subject[1] ]
+                        };
+                        if ('right' in subject[0]) {
+                            delete result.right.subject;
+                            result.right = {
+                                type: 'compound',
+                                selectors: result.right.type === 'compound'
+                                    ? result.right.selectors.concat(has)
+                                    : [ result.right, has ]
+                            };
+                        } else {
+                            delete result.subject;
+                            result = {
+                                type: 'compound',
+                                selectors: result.type === 'compound'
+                                    ? result.selectors.concat(has)
+                                    : [ result, has ]
+                            };
+                        }
+                        return result;
+                    })
+                };
+                return matches.selectors.length === 1
+                    ? matches.selectors[0] : matches;
+            }
+        }
+
         /**
          * From a JS AST and a selector AST, collect all JS AST nodes that match the selector.
          */
@@ -315,7 +390,7 @@
          * Parse a selector string and return its AST.
          */
         function parse(selector) {
-            return parser.parse(selector);
+            return transform(parser.parse(selector));
         }
 
         /**
