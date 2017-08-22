@@ -796,7 +796,10 @@ var result = (function(){
           result0 = (function(offset, a, ops) {
             return ops.reduce(function (memo, rhs) {
               return { type: rhs[0], left: memo, right: rhs[1] };
-            }, a || { type: 'scope' });
+            },
+            !a || a.type === 'scope'
+              ? { type: 'scope' }
+              : { type: 'descendant', left: { type: 'scope' }, right: a });
           })(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {

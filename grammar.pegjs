@@ -48,7 +48,10 @@ relativeSelector
   = a:sequence? ops:(binaryOp sequence)* {
     return ops.reduce(function (memo, rhs) {
       return { type: rhs[0], left: memo, right: rhs[1] };
-    }, a || { type: 'scope' });
+    },
+    !a || a.type === 'scope'
+      ? { type: 'scope' }
+      : { type: 'descendant', left: { type: 'scope' }, right: a });
   }
 
 sequence

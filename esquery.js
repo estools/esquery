@@ -47,7 +47,7 @@
         /**
          * Given a `node` and its ancestors, determine if `node` is matched by `selector`.
          */
-        function matches(node, selector, ancestry) {
+        function matches(node, selector, ancestry, scope) {
             var path, ancestor, i, l, p;
             if (!selector) { return true; }
             if (!node) { return false; }
@@ -67,31 +67,32 @@
 
                 case 'matches':
                     for (i = 0, l = selector.selectors.length; i < l; ++i) {
-                        if (matches(node, selector.selectors[i], ancestry)) { return true; }
+                        if (matches(node, selector.selectors[i], ancestry, scope)) { return true; }
                     }
                     return false;
 
                 case 'compound':
                     for (i = 0, l = selector.selectors.length; i < l; ++i) {
-                        if (!matches(node, selector.selectors[i], ancestry)) { return false; }
+                        if (!matches(node, selector.selectors[i], ancestry, scope)) { return false; }
                     }
                     return true;
 
                 case 'not':
                     for (i = 0, l = selector.selectors.length; i < l; ++i) {
-                        if (matches(node, selector.selectors[i], ancestry)) { return false; }
+                        if (matches(node, selector.selectors[i], ancestry, scope)) { return false; }
                     }
                     return true;
 
                 case 'has':
-                    var a, collector = [];
+                    var a, collector = [], parent = ancestry[0];
                     for (i = 0, l = selector.selectors.length; i < l; ++i) {
-                      a = [];
-                      estraverse.traverse(node, {
-                          enter: function (node, parent) {
-                              if (parent != null) { a.unshift(parent); }
-                              if (matches(node, selector.selectors[i], a)) {
-                                collector.push(node);
+                      a = ancestry.slice(parent ? 1 : 0);
+                      estraverse.traverse(parent || node, {
+                          enter: function (child, parent) {
+                              if (parent == null) { return; }
+                              a.unshift(parent);
+                              if (matches(child, selector.selectors[i], a, node)) {
+                                collector.push(child);
                               }
                           },
                           leave: function () { a.shift(); }
@@ -100,15 +101,15 @@
                     return collector.length !== 0;
 
                 case 'child':
-                    if (matches(node, selector.right, ancestry)) {
-                        return matches(ancestry[0], selector.left, ancestry.slice(1));
+                    if (matches(node, selector.right, ancestry, scope)) {
+                        return matches(ancestry[0], selector.left, ancestry.slice(1), scope);
                     }
                     return false;
 
                 case 'descendant':
-                    if (matches(node, selector.right, ancestry)) {
+                    if (matches(node, selector.right, ancestry, scope)) {
                         for (i = 0, l = ancestry.length; i < l; ++i) {
-                            if (matches(ancestry[i], selector.left, ancestry.slice(i + 1))) {
+                            if (matches(ancestry[i], selector.left, ancestry.slice(i + 1), scope)) {
                                 return true;
                             }
                         }
@@ -140,27 +141,27 @@
                     }
 
                 case 'sibling':
-                    return matches(node, selector.right, ancestry) &&
-                        sibling(node, selector.left, ancestry, LEFT_SIDE) ||
+                    return matches(node, selector.right, ancestry, scope) &&
+                        sibling(node, selector.left, ancestry, LEFT_SIDE, scope) ||
                         selector.left.subject &&
-                        matches(node, selector.left, ancestry) &&
-                        sibling(node, selector.right, ancestry, RIGHT_SIDE);
+                        matches(node, selector.left, ancestry, scope) &&
+                        sibling(node, selector.right, ancestry, RIGHT_SIDE, scope);
 
                 case 'adjacent':
-                    return matches(node, selector.right, ancestry) &&
-                        adjacent(node, selector.left, ancestry, LEFT_SIDE) ||
+                    return matches(node, selector.right, ancestry, scope) &&
+                        adjacent(node, selector.left, ancestry, LEFT_SIDE, scope) ||
                         selector.right.subject &&
-                        matches(node, selector.left, ancestry) &&
-                        adjacent(node, selector.right, ancestry, RIGHT_SIDE);
+                        matches(node, selector.left, ancestry, scope) &&
+                        adjacent(node, selector.right, ancestry, RIGHT_SIDE, scope);
 
                 case 'nth-child':
-                    return matches(node, selector.right, ancestry) &&
+                    return matches(node, selector.right, ancestry, scope) &&
                         nthChild(node, ancestry, function (length) {
                             return selector.index.value - 1;
                         });
 
                 case 'nth-last-child':
-                    return matches(node, selector.right, ancestry) &&
+                    return matches(node, selector.right, ancestry, scope) &&
                         nthChild(node, ancestry, function (length) {
                             return length - selector.index.value;
                         });
@@ -186,8 +187,10 @@
                     }
                     throw new Error('Unknown class name: ' + selector.name);
 
-                case 'root':
                 case 'scope':
+                    return scope ? node === scope : ancestry.length === 0;
+
+                case 'root':
                     return ancestry.length === 0;
             }
 
@@ -197,7 +200,7 @@
         /*
          * Determines if the given node has a sibling that matches the given selector.
          */
-        function sibling(node, selector, ancestry, side) {
+        function sibling(node, selector, ancestry, side, scope) {
             var parent = ancestry[0], listProp, startIndex, keys, i, l, k, lowerBound, upperBound;
             if (!parent) { return false; }
             keys = estraverse.VisitorKeys[parent.type];
@@ -214,7 +217,7 @@
                       upperBound = listProp.length;
                     }
                     for (k = lowerBound; k < upperBound; ++k) {
-                        if (matches(listProp[k], selector, ancestry)) {
+                        if (matches(listProp[k], selector, ancestry, scope)) {
                             return true;
                         }
                     }
@@ -226,7 +229,7 @@
         /*
          * Determines if the given node has an asjacent sibling that matches the given selector.
          */
-        function adjacent(node, selector, ancestry, side) {
+        function adjacent(node, selector, ancestry, side, scope) {
             var parent = ancestry[0], listProp, keys, i, l, idx;
             if (!parent) { return false; }
             keys = estraverse.VisitorKeys[parent.type];
@@ -235,10 +238,10 @@
                 if (isArray(listProp)) {
                     idx = listProp.indexOf(node);
                     if (idx < 0) { continue; }
-                    if (side === LEFT_SIDE && idx > 0 && matches(listProp[idx - 1], selector, ancestry)) {
+                    if (side === LEFT_SIDE && idx > 0 && matches(listProp[idx - 1], selector, ancestry, scope)) {
                         return true;
                     }
-                    if (side === RIGHT_SIDE && idx < listProp.length - 1 && matches(listProp[idx + 1], selector, ancestry)) {
+                    if (side === RIGHT_SIDE && idx < listProp.length - 1 && matches(listProp[idx + 1], selector, ancestry, scope)) {
                         return true;
                     }
                 }
