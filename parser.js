@@ -65,7 +65,8 @@ var result = (function(){
         "lastChild": parse_lastChild,
         "nthChild": parse_nthChild,
         "nthLastChild": parse_nthLastChild,
-        "class": parse_class
+        "class": parse_class,
+        "root": parse_root
       };
       
       if (startRule !== undefined) {
@@ -712,6 +713,9 @@ var result = (function(){
                             result0 = parse_nthLastChild();
                             if (result0 === null) {
                               result0 = parse_class();
+                              if (result0 === null) {
+                                result0 = parse_root();
+                              }
                             }
                           }
                         }
@@ -2509,6 +2513,41 @@ var result = (function(){
           result0 = (function(offset, c) {
           return { type: 'class', name: c };
         })(pos0, result0[1]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        
+        cache[cacheKey] = {
+          nextPos: pos,
+          result:  result0
+        };
+        return result0;
+      }
+      
+      function parse_root() {
+        var cacheKey = "root@" + pos;
+        var cachedResult = cache[cacheKey];
+        if (cachedResult) {
+          pos = cachedResult.nextPos;
+          return cachedResult.result;
+        }
+        
+        var result0;
+        var pos0;
+        
+        pos0 = pos;
+        if (input.substr(pos, 5) === ":root") {
+          result0 = ":root";
+          pos += 5;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\":root\"");
+          }
+        }
+        if (result0 !== null) {
+          result0 = (function(offset) { return { type: 'root' }; })(pos0);
         }
         if (result0 === null) {
           pos = pos0;

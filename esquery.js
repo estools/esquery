@@ -185,6 +185,9 @@
                                 node.type === 'ArrowFunctionExpression';
                     }
                     throw new Error('Unknown class name: ' + selector.name);
+
+                case 'root':
+                    return ancestry.length === 0;
             }
 
             throw new Error('Unknown selector type: ' + selector.type);

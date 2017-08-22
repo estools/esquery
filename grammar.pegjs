@@ -49,7 +49,7 @@ sequence
 
 atom
   = wildcard / identifier / attr / field / negation / matches
-  / has / firstChild / lastChild / nthChild / nthLastChild / class
+  / has / firstChild / lastChild / nthChild / nthLastChild / class / root
 
 wildcard = a:"*" { return { type: 'wildcard', value: a }; }
 identifier = "#"? i:identifierName { return { type: 'identifier', value: i }; }
@@ -99,3 +99,5 @@ nthLastChild = ":nth-last-child(" _ n:[0-9]+ _ ")" { return nthLast(parseInt(n.j
 class = ":" c:("statement"i / "expression"i / "declaration"i / "function"i / "pattern"i) {
   return { type: 'class', name: c };
 }
+
+root = ":root" { return { type: 'root' }; }
