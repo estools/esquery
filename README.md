@@ -22,6 +22,6 @@ The following selectors are supported:
 * [matches-any](http://dev.w3.org/csswg/selectors4/#matches): `:matches([attr] > :first-child, :last-child)`
 * [subject indicator](http://dev.w3.org/csswg/selectors4/#subject): `!IfStatement > [name="foo"]`
 * class of AST node: `:statement`, `:expression`, `:declaration`, `:function`, or `:pattern`
-* [root](https://drafts.csswg.org/selectors-4/#root-pseudo): `:root`
+* [root](https://drafts.csswg.org/selectors-4/#root-pseudo) and [scope](https://drafts.csswg.org/selectors-4/#scope-pseudo): `:root`, `:scope`
 
 [![Build Status](https://travis-ci.org/estools/esquery.png?branch=master)](https://travis-ci.org/estools/esquery)
