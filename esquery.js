@@ -187,6 +187,7 @@
                     throw new Error('Unknown class name: ' + selector.name);
 
                 case 'root':
+                case 'scope':
                     return ancestry.length === 0;
             }
 
