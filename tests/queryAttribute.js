@@ -141,6 +141,11 @@ define([
             ], matches);
         },
 
+        "nonexistent attribute regexp": function () {
+            var matches = esquery(conditional, '[foobar=/./]');
+            assert.isSame(0, matches.length);
+        },
+
         "not string": function () {
             var matches = esquery(conditional, '[name!="x"]');
             assert.contains([
