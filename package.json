@@ -25,10 +25,10 @@
     "query"
   ],
   "devDependencies": {
-    "jstestr": ">=0.4",
-    "pegjs": "~0.7.0",
     "commonjs-everywhere": "~0.9.4",
-    "esprima": "~1.1.1"
+    "esprima": "^4.0.0",
+    "jstestr": ">=0.4",
+    "pegjs": "~0.7.0"
   },
   "license": "BSD-3-Clause",
   "engines": {
