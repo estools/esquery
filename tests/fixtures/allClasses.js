@@ -1,6 +1,6 @@
 define(["esprima"], function (esprima) {
 
-    // return esprima.parse("function a(){ [a] = () => 0; }");
+    // return esprima.parse("function a(){ [a] = () => 0; `foo`; new.target; }");
 
     return {
         "type": "Program",
@@ -12,7 +12,6 @@ define(["esprima"], function (esprima) {
                     "name": "a"
                 },
                 "params": [],
-                "defaults": [],
                 "body": {
                     "type": "BlockStatement",
                     "body": [
@@ -32,26 +31,58 @@ define(["esprima"], function (esprima) {
                                 },
                                 "right": {
                                     "type": "ArrowFunctionExpression",
+                                    "id": null,
                                     "params": [],
-                                    "defaults": [],
-                                    "rest": null,
                                     "body": {
                                         "type": "Literal",
                                         "value": 0,
                                         "raw": "0"
                                     },
                                     "generator": false,
-                                    "expression": false
+                                    "expression": true,
+                                    "async": false
+                                }
+                            }
+                        },
+                        {
+                            "type": "ExpressionStatement",
+                            "expression": {
+                                "type": "TemplateLiteral",
+                                "quasis": [
+                                    {
+                                        "type": "TemplateElement",
+                                        "value": {
+                                            "raw": "foo",
+                                            "cooked": "foo"
+                                        },
+                                        "tail": true
+                                    }
+                                ],
+                                "expressions": []
+                            }
+                        },
+                        {
+                            "type": "ExpressionStatement",
+                            "expression": {
+                                "type": "MetaProperty",
+                                "meta": {
+                                    "type": "Identifier",
+                                    "name": "new"
+                                },
+                                "property": {
+                                    "type": "Identifier",
+                                    "name": "target"
                                 }
                             }
                         }
                     ]
                 },
-                "rest": null,
                 "generator": false,
-                "expression": false
+                "expression": false,
+                "async": false
             }
-        ]
+        ],
+        "sourceType": "script"
     };
 
 });
