@@ -1,6 +1,6 @@
 define(["esprima"], function (esprima) {
 
-    // return esprima.parse("function a(){ [a] = () => 0; }");
+    // return esprima.parse("function a(){ [a] = () => 0; new.target; `test`; `hello,${name}`; }");
 
     return {
         "type": "Program",
@@ -44,6 +44,67 @@ define(["esprima"], function (esprima) {
                                     "expression": false
                                 }
                             }
+                        },
+                        {
+                          "type": "ExpressionStatement",
+                          "expression": {
+                            "type": "MetaProperty",
+                            "meta": {
+                              "type": "Identifier",
+                              "name": "new",
+                            },
+                            "property": {
+                              "type": "Identifier",
+                              "name": "target",
+                            },
+                          },
+                        },
+                        {
+                          "type": "ExpressionStatement",
+                          "expression": {
+                            "type": "TemplateLiteral",
+                            "quasis": [
+                              {
+                                "type": "TemplateElement",
+                                "value": {
+                                  "raw": "test",
+                                  "cooked": "test"
+                                },
+                                "tail": true,
+                              }
+                            ],
+                            "expressions": [],
+                          },
+                        },
+                        {
+                            "type": "ExpressionStatement",
+                            "expression": {
+                                "type": "TemplateLiteral",
+                                "quasis": [
+                                    {
+                                        "type": "TemplateElement",
+                                        "value": {
+                                            "raw": "hello,",
+                                            "cooked": "hello,"
+                                        },
+                                        "tail": false,
+                                    },
+                                    {
+                                        "type": "TemplateElement",
+                                        "value": {
+                                            "raw": "",
+                                            "cooked": ""
+                                        },
+                                        "tail": true,
+                                    }
+                                ],
+                                "expressions": [
+                                    {
+                                        "type": "Identifier",
+                                        "name": "name",
+                                    }
+                                ],
+                            },
                         }
                     ]
                 },

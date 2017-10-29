@@ -178,8 +178,12 @@
                             // fallthrough: interface Expression <: Node, Pattern { }
                         case 'expression':
                             return node.type.slice(-10) === 'Expression' ||
-                                node.type === 'Literal' ||
-                                node.type === 'Identifier';
+                                node.type.slice(-7) === 'Literal' ||
+                                (
+                                    node.type === 'Identifier' &&
+                                    (ancestry.length === 0 || ancestry[0].type !== 'MetaProperty')
+                                ) ||
+                                node.type === 'MetaProperty';
                         case 'function':
                             return node.type.slice(0, 8) === 'Function' ||
                                 node.type === 'ArrowFunctionExpression';
