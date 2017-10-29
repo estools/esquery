@@ -29,11 +29,9 @@ define([
               ast.body[0].body.body[0].expression.right,
               ast.body[0].body.body[0].expression.right.body,
               ast.body[0].body.body[1].expression,
-              ast.body[0].body.body[1].expression.meta,
-              ast.body[0].body.body[1].expression.property,
               ast.body[0].body.body[2].expression
             ], matches);
-            assert.isSame(9, matches.length);
+            assert.isSame(7, matches.length);
         },
 
         ":function": function () {
@@ -63,11 +61,9 @@ define([
               ast.body[0].body.body[0].expression.right,
               ast.body[0].body.body[0].expression.right.body,
               ast.body[0].body.body[1].expression,
-              ast.body[0].body.body[1].expression.meta,
-              ast.body[0].body.body[1].expression.property,
               ast.body[0].body.body[2].expression
             ], matches);
-            assert.isSame(10, matches.length);
+            assert.isSame(8, matches.length);
         }
 
     });
