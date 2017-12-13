@@ -2,16 +2,16 @@
 
 *Install (via npm for Node.js)*
 
-`npm i esquery --save`
+`npm install esquery --save`
 
 *Quick start*
 
 ```js
 const esquery = require('esquery');
 
-const conditional = "if (x === 1) { foo(); } else { x = 2; }"
+const conditional = 'if (x === 1) { foo(); } else { x = 2; }'
 
-var matches = esquery(conditional, "[name='x']")
+var matches = esquery(conditional, '[name='x']')
 console.log(matches);
 ```
 
@@ -73,7 +73,7 @@ if (x == 'test' && true || x) { y = -1; } else if (false) { y = 1; }
 - `[operator]` - That is any type of operator (such as `==`, `||` etc)
 - `[prefix=true]` - node that has `prefix` set to true, such as `++c`
 - `[test=type(object)]` - where subject of condition is an object, such as `x` in `|| x`
-- `[value=type(boolean)]` - where value is a boolean, such 
+- `[value=type(boolean)]` - where value is a boolean, such
 as `&& true`
 
 Example: `prefix`
@@ -104,16 +104,18 @@ Examples:
 `[name="x"]:function` - function named `x`
 `[name="foo"]:declaration` - declaration named `foo`
 
-## Complex
+## Combinators
 
 - descendant selector (` ` space)
 - child selector (`>`)
 - adjacent sibling selector (`+`)
 - general sibling selector (`~`)
 
-Please see [javascript: expressions-vs-statements](http://www.2ality.com/2012/09/expressions-vs-statements.html)
+Please see [ESTree specification](https://github.com/estree/estree) and [CSS selectors spec](https://www.w3.org/TR/css3-selectors/)
 
-`IfStatement > BinaryExpression` - `if` statement followed by a [binary expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_Operators) fx `3+4` or `x*y`
+`IfStatement > BinaryExpression` - [binary expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_Operators) fx `3+4;` or `x*y;`
+
+A `BinaryExpression` nested directly within an `IfStatement`
 
 Valid: `if (2 === 2)`
 
@@ -123,11 +125,11 @@ Valid: `if (x === 2)`
 
 `IfStatement BinaryExpression`
 
-An `if` statement with any binary expression below it.
+A binary expression nested arbitrarily deeply within an `if` statement.
 
 `VariableDeclaration ~ IfStatement`
 
-`var` declaration with sibling `if` statement
+`if` statement with sibling `var` declaration. The `if` statement is the target.
 
 Valid: siblings of same body
 ```js
@@ -215,7 +217,7 @@ Valid: `x = 1`
 
 ### Fields
 
-You can also query on the [Mozilla Parser API](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Parser_API) fields directly
+You can also query on the [ESTree API](https://github.com/estree/estree) fields directly
 
 Example:
 
@@ -280,21 +282,9 @@ Valid: `const foo = 2`
 
 ### Subject
 
-`!IfStatement Identifier` - any not an If statement with an Identifier under, such as `const x = 3` but not `if (x == 2)`
+`!IfStatement Identifier` - any `if` statement with one or more nested `Identifier`, such as `const x = 3` but not `if (x == 2)`
 
-`!* > [name="foo"]` all nodes but those where the immediate child is a node namded `foo` 
-
-More examples:
-
-- `![test] [name="y"]`
-- `![generator=type(boolean)] > BlockStatement`
-- `![operator=/=+/] > [name="x"]`
-- `!:matches(*) > [name="foo"]`
-- `!:not(BlockStatement) > [name="foo"]`
-- `![left.name="x"][right.value=1]`
-- `* !AssignmentExpression`
-- `!VariableDeclaration ~ IfStatement`
-- `!VariableDeclaration + !ExpressionStatement`
+`!* > [name="foo"]` all nodes but those where the immediate child is a node named `foo`
 
 ### Types
 
