@@ -123,7 +123,7 @@
                             return p != null;
                         case '=':
                             switch (selector.value.type) {
-                                case 'regexp': return selector.value.value.test(p);
+                                case 'regexp': return typeof p === 'string' && selector.value.value.test(p);
                                 case 'literal': return '' + selector.value.value === '' + p;
                                 case 'type': return selector.value.value === typeof p;
                             }
