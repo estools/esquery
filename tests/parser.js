@@ -1,9 +1,8 @@
 define([
     "esquery",
     "jstestr/assert",
-    "jstestr/test",
-    "perf_hooks"
-], function (esquery, assert, test, performance) {
+    "jstestr/test"
+], function (esquery, assert, test) {
 
     test.defineSuite("basic query parsing", {
 
