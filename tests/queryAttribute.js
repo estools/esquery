@@ -222,6 +222,13 @@ define([
                 conditional.body[1].test.left.right,
                 conditional.body[1].alternate.test
             ], matches);
+        },
+
+        "attribute with selector": function () {
+            var matches = esquery(conditional, 'IfStatement[test*LogicalExpression[operator="||"]]');
+            assert.contains([
+                conditional.body[1]
+            ], matches);
         }
     });
 });

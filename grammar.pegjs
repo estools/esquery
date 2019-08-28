@@ -22,7 +22,7 @@ start
   / _ { return void 0; }
 
 _ = " "*
-identifierName = i:[^ [\],():#!=><~+.]+ { return i.join(''); }
+identifierName = i:[^ [\],():#!=><~+.*]+ { return i.join(''); }
 binaryOp
   = _ ">" _ { return 'child'; }
   / _ "~" _ { return 'sibling'; }
@@ -64,6 +64,9 @@ attr
       return { type: 'attribute', name: name, operator: op, value: value };
     }
     / name:attrName _ op:attrOps _ value:(string / number / path) {
+      return { type: 'attribute', name: name, operator: op, value: value };
+    }
+    / name:attrName _ op:"*" _ value:selector {
       return { type: 'attribute', name: name, operator: op, value: value };
     }
     / name:attrName { return { type: 'attribute', name: name }; }

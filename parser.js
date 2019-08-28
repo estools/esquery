@@ -230,26 +230,26 @@ var result = (function(){
         var pos0;
         
         pos0 = pos;
-        if (/^[^ [\],():#!=><~+.]/.test(input.charAt(pos))) {
+        if (/^[^ [\],():#!=><~+.*]/.test(input.charAt(pos))) {
           result1 = input.charAt(pos);
           pos++;
         } else {
           result1 = null;
           if (reportFailures === 0) {
-            matchFailed("[^ [\\],():#!=><~+.]");
+            matchFailed("[^ [\\],():#!=><~+.*]");
           }
         }
         if (result1 !== null) {
           result0 = [];
           while (result1 !== null) {
             result0.push(result1);
-            if (/^[^ [\],():#!=><~+.]/.test(input.charAt(pos))) {
+            if (/^[^ [\],():#!=><~+.*]/.test(input.charAt(pos))) {
               result1 = input.charAt(pos);
               pos++;
             } else {
               result1 = null;
               if (reportFailures === 0) {
-                matchFailed("[^ [\\],():#!=><~+.]");
+                matchFailed("[^ [\\],():#!=><~+.*]");
               }
             }
           }
@@ -1177,12 +1177,63 @@ var result = (function(){
           }
           if (result0 === null) {
             pos0 = pos;
+            pos1 = pos;
             result0 = parse_attrName();
             if (result0 !== null) {
-              result0 = (function(offset, name) { return { type: 'attribute', name: name }; })(pos0, result0);
+              result1 = parse__();
+              if (result1 !== null) {
+                if (input.charCodeAt(pos) === 42) {
+                  result2 = "*";
+                  pos++;
+                } else {
+                  result2 = null;
+                  if (reportFailures === 0) {
+                    matchFailed("\"*\"");
+                  }
+                }
+                if (result2 !== null) {
+                  result3 = parse__();
+                  if (result3 !== null) {
+                    result4 = parse_selector();
+                    if (result4 !== null) {
+                      result0 = [result0, result1, result2, result3, result4];
+                    } else {
+                      result0 = null;
+                      pos = pos1;
+                    }
+                  } else {
+                    result0 = null;
+                    pos = pos1;
+                  }
+                } else {
+                  result0 = null;
+                  pos = pos1;
+                }
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+            if (result0 !== null) {
+              result0 = (function(offset, name, op, value) {
+                  return { type: 'attribute', name: name, operator: op, value: value };
+                })(pos0, result0[0], result0[2], result0[4]);
             }
             if (result0 === null) {
               pos = pos0;
+            }
+            if (result0 === null) {
+              pos0 = pos;
+              result0 = parse_attrName();
+              if (result0 !== null) {
+                result0 = (function(offset, name) { return { type: 'attribute', name: name }; })(pos0, result0);
+              }
+              if (result0 === null) {
+                pos = pos0;
+              }
             }
           }
         }
