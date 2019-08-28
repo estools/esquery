@@ -137,7 +137,7 @@
                         case '<': return p < selector.value.value;
                         case '>': return p > selector.value.value;
                         case '>=': return p >= selector.value.value;
-                        case '*': return matches(p, selector.value, ancestry);
+                        case 'selector': return matches(p, selector.value, ancestry);
                     }
 
                 case 'sibling':

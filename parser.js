@@ -230,26 +230,26 @@ var result = (function(){
         var pos0;
         
         pos0 = pos;
-        if (/^[^ [\],():#!=><~+.*]/.test(input.charAt(pos))) {
+        if (/^[^ [\],():#!=><~+.]/.test(input.charAt(pos))) {
           result1 = input.charAt(pos);
           pos++;
         } else {
           result1 = null;
           if (reportFailures === 0) {
-            matchFailed("[^ [\\],():#!=><~+.*]");
+            matchFailed("[^ [\\],():#!=><~+.]");
           }
         }
         if (result1 !== null) {
           result0 = [];
           while (result1 !== null) {
             result0.push(result1);
-            if (/^[^ [\],():#!=><~+.*]/.test(input.charAt(pos))) {
+            if (/^[^ [\],():#!=><~+.]/.test(input.charAt(pos))) {
               result1 = input.charAt(pos);
               pos++;
             } else {
               result1 = null;
               if (reportFailures === 0) {
-                matchFailed("[^ [\\],():#!=><~+.*]");
+                matchFailed("[^ [\\],():#!=><~+.]");
               }
             }
           }
@@ -1080,7 +1080,7 @@ var result = (function(){
           return cachedResult.result;
         }
         
-        var result0, result1, result2, result3, result4;
+        var result0, result1, result2, result3, result4, result5;
         var pos0, pos1;
         
         pos0 = pos;
@@ -1182,13 +1182,13 @@ var result = (function(){
             if (result0 !== null) {
               result1 = parse__();
               if (result1 !== null) {
-                if (input.charCodeAt(pos) === 42) {
-                  result2 = "*";
-                  pos++;
+                if (input.substr(pos, 2) === "=(") {
+                  result2 = "=(";
+                  pos += 2;
                 } else {
                   result2 = null;
                   if (reportFailures === 0) {
-                    matchFailed("\"*\"");
+                    matchFailed("\"=(\"");
                   }
                 }
                 if (result2 !== null) {
@@ -1196,7 +1196,21 @@ var result = (function(){
                   if (result3 !== null) {
                     result4 = parse_selector();
                     if (result4 !== null) {
-                      result0 = [result0, result1, result2, result3, result4];
+                      if (input.charCodeAt(pos) === 41) {
+                        result5 = ")";
+                        pos++;
+                      } else {
+                        result5 = null;
+                        if (reportFailures === 0) {
+                          matchFailed("\")\"");
+                        }
+                      }
+                      if (result5 !== null) {
+                        result0 = [result0, result1, result2, result3, result4, result5];
+                      } else {
+                        result0 = null;
+                        pos = pos1;
+                      }
                     } else {
                       result0 = null;
                       pos = pos1;
@@ -1218,9 +1232,9 @@ var result = (function(){
               pos = pos1;
             }
             if (result0 !== null) {
-              result0 = (function(offset, name, op, value) {
-                  return { type: 'attribute', name: name, operator: op, value: value };
-                })(pos0, result0[0], result0[2], result0[4]);
+              result0 = (function(offset, name, value) {
+                  return { type: 'attribute', name: name, operator: 'selector', value: value };
+                })(pos0, result0[0], result0[4]);
             }
             if (result0 === null) {
               pos = pos0;

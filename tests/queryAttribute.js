@@ -225,7 +225,7 @@ define([
         },
 
         "attribute with selector": function () {
-            var matches = esquery(conditional, 'IfStatement[test*LogicalExpression[operator="||"]]');
+            var matches = esquery(conditional, 'IfStatement[test=(LogicalExpression[operator="||"])]');
             assert.contains([
                 conditional.body[1]
             ], matches);
