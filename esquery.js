@@ -224,7 +224,7 @@
         }
 
         /*
-         * Determines if the given node has an asjacent sibling that matches the given selector.
+         * Determines if the given node has an adjacent sibling that matches the given selector.
          */
         function adjacent(node, selector, ancestry, side) {
             var parent = ancestry[0], listProp, keys, i, l, idx;
