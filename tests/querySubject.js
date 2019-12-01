@@ -100,7 +100,7 @@ define([
             ], matches);
         },
 
-        "decendent right subject": function () {
+        "descendant right subject": function () {
             var matches = esquery(forLoop, '* !AssignmentExpression');
             assert.contains([
                 forLoop.body[0].init
