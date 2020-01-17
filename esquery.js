@@ -94,7 +94,8 @@
                                 collector.push(node);
                               }
                           },
-                          leave: function () { a.shift(); }
+                          leave: function () { a.shift(); },
+                          fallback: 'iteration'
                       });
                     }
                     return collector.length !== 0;
@@ -303,7 +304,8 @@
                         }
                     }
                 },
-                leave: function () { ancestry.shift(); }
+                leave: function () { ancestry.shift(); },
+                fallback: 'iteration'
             });
             return results;
         }
