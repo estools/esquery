@@ -156,6 +156,12 @@ define([
                 bigArray.body[0].expression.elements[8]
             ], matches);
             assert.isSame(3, matches.length);
+        },
+
+        "nested descendant subject": function () {
+            var matches = esquery(nestedFunctions, "!:function :function AssignmentExpression");
+            assert.contains([ nestedFunctions.body[0] ], matches);
+            assert.isSame(1, matches.length);
         }
     });
 });
