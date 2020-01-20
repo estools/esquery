@@ -1,12 +1,13 @@
 /* vim: set sw=4 sts=4 : */
 (function () {
-
     var estraverse = require('estraverse');
     var parser = require('./parser');
 
     var isArray = Array.isArray || function isArray(array) {
         return {}.toString.call(array) === '[object Array]';
     };
+
+    var PARSE_CACHE = {};
 
     var LEFT_SIDE = {};
     var RIGHT_SIDE = {};
@@ -312,7 +313,12 @@
          * Parse a selector string and return its AST.
          */
         function parse(selector) {
-            return parser.parse(selector);
+            if (PARSE_CACHE[selector]) {
+                return PARSE_CACHE[selector];
+            }
+            var parsed = parser.parse(selector);
+            PARSE_CACHE[selector] = parsed;
+            return parsed;
         }
 
         /**

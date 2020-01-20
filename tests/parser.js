@@ -1,7 +1,7 @@
 define([
     "esquery",
     "jstestr/assert",
-    "jstestr/test",
+    "jstestr/test"
 ], function (esquery, assert, test) {
 
     test.defineSuite("basic query parsing", {
@@ -18,7 +18,11 @@ define([
             assert.isNotEqual(void 0, esquery.parse("A     "));
             assert.isNotEqual(void 0, esquery.parse(" A "));
             assert.isNotEqual(void 0, esquery.parse("     A     "));
-        }
+        },
 
+        "memoize selector parsing": function () {
+            assert.isEqual(JSON.stringify(esquery.parse("A")) === JSON.stringify(esquery.parse("A")), true);
+            assert.isEqual(esquery.parse("A") === esquery.parse("A"), true);
+        }
     });
 });
