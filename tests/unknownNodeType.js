@@ -8,13 +8,10 @@ define([
 
   test.defineSuite("Unknown node type", {
     "does not throw": function () {
-      var thrown = false
       try {
         esquery(AST, '*');
       } catch (e) {
-        thrown = true
-      } finally {
-        assert.isFalse(thrown)
+        assert.fail()
       }
     }
   });
