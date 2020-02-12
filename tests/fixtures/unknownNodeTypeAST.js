@@ -5,7 +5,7 @@
  *
  */
 define(["esprima"], function(esprima) {
-  var program = esprima.parse("var x = 's'")
-  program.body[0].type = 'TypeAlias'
-  return program
-})
+  var program = esprima.parse("var x = 's'");
+  program.body[0].type = 'TypeAlias';
+  return program;
+});

@@ -1,4 +1,3 @@
-
 define([
   "esquery",
   "jstestr/assert",
@@ -11,9 +10,8 @@ define([
       try {
         esquery(AST, '*');
       } catch (e) {
-        assert.fail()
+        assert.fail();
       }
     }
   });
 });
-
