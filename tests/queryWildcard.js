@@ -49,7 +49,7 @@ define([
                     kind: "var"
                 }]
             };
-            matches = esquery(program, "*");
+            var matches = esquery(program, "*");
 
             assert.contains([
                 program,
