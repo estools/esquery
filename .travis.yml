@@ -5,3 +5,9 @@ node_js:
   - "0.12"
   - "0.11"
   - "0.10"
+
+matrix:
+  include:
+    - name: Lint
+      node_js: 12
+      script: npm run lint
