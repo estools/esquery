@@ -6,9 +6,8 @@ define([
     "./fixtures/conditional",
     "./fixtures/forLoop",
     "./fixtures/simpleFunction",
-    "./fixtures/simpleProgram",
-    "./fixtures/nestedFunctions"
-], function (esquery, assert, test, conditional, forLoop, simpleFunction, simpleProgram, nestedFunctions) {
+    "./fixtures/simpleProgram"
+], function (esquery, assert, test, conditional, forLoop, simpleFunction, simpleProgram) {
 
     test.defineSuite("Complex selector query", {
 

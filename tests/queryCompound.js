@@ -3,11 +3,8 @@ define([
     "esquery",
     "jstestr/assert",
     "jstestr/test",
-    "./fixtures/conditional",
-    "./fixtures/forLoop",
-    "./fixtures/simpleFunction",
-    "./fixtures/simpleProgram"
-], function (esquery, assert, test, conditional, forLoop, simpleFunction, simpleProgram) {
+    "./fixtures/conditional"
+], function (esquery, assert, test, conditional) {
 
     test.defineSuite("Compound query", {
 
