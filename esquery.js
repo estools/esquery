@@ -157,7 +157,7 @@
 
                 case 'nth-child':
                     return matches(node, selector.right, ancestry) &&
-                        nthChild(node, ancestry, function (length) {
+                        nthChild(node, ancestry, function () {
                             return selector.index.value - 1;
                         });
 
