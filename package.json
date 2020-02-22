@@ -12,7 +12,8 @@
     "README.md"
   ],
   "scripts": {
-    "test": "node node_modules/jstestr/bin/jstestr.js path=tests"
+    "test": "node node_modules/jstestr/bin/jstestr.js path=tests",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
