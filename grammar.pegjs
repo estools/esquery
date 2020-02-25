@@ -33,11 +33,25 @@ selectors = s:selector ss:(_ "," _ selector)* {
   return [s].concat(ss.map(function (s) { return s[3]; }));
 }
 
+relativeSelectors = s:relativeSelector ss:(_ "," _ relativeSelector)* {
+  return [s].concat(ss.map(function (s) { return s[3]; }));
+}
+
 selector
   = a:sequence ops:(binaryOp sequence)* {
     return ops.reduce(function (memo, rhs) {
       return { type: rhs[0], left: memo, right: rhs[1] };
     }, a);
+  }
+
+relativeSelector
+  = a:sequence? ops:(binaryOp sequence)* {
+    return ops.reduce(function (memo, rhs) {
+      return { type: rhs[0], left: memo, right: rhs[1] };
+    },
+    !a || a.type === 'scope'
+      ? { type: 'scope' }
+      : { type: 'descendant', left: { type: 'scope' }, right: a });
   }
 
 sequence
@@ -50,6 +64,7 @@ sequence
 atom
   = wildcard / identifier / attr / field / negation / matches
   / has / firstChild / lastChild / nthChild / nthLastChild / class
+  / root / scope
 
 wildcard = a:"*" { return { type: 'wildcard', value: a }; }
 identifier = "#"? i:identifierName { return { type: 'identifier', value: i }; }
@@ -88,7 +103,7 @@ field = "." i:identifierName is:("." identifierName)* {
 
 negation = ":not(" _ ss:selectors _ ")" { return { type: 'not', selectors: ss }; }
 matches = ":matches(" _ ss:selectors _ ")" { return { type: 'matches', selectors: ss }; }
-has = ":has(" _ ss:selectors _ ")" { return { type: 'has', selectors: ss }; }
+has = ":has(" _ ss:relativeSelectors _ ")" { return { type: 'has', selectors: ss }; }
 
 firstChild = ":first-child" { return nth(1); }
 lastChild = ":last-child" { return nthLast(1); }
@@ -99,3 +114,6 @@ nthLastChild = ":nth-last-child(" _ n:[0-9]+ _ ")" { return nthLast(parseInt(n.j
 class = ":" c:("statement"i / "expression"i / "declaration"i / "function"i / "pattern"i) {
   return { type: 'class', name: c };
 }
+
+root = ":root" { return { type: 'root' }; }
+scope = ":scope" { return { type: 'scope' }; }
