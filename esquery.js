@@ -128,14 +128,14 @@
                                 case 'literal': return '' + selector.value.value === '' + p;
                                 case 'type': return selector.value.value === typeof p;
                             }
-                            break;
+                            throw new Error("Unknown selector value type: " + selector.value.type);
                         case '!=':
                             switch (selector.value.type) {
                                 case 'regexp': return !selector.value.value.test(p);
                                 case 'literal': return '' + selector.value.value !== '' + p;
                                 case 'type': return selector.value.value !== typeof p;
                             }
-                            break;
+                            throw new Error("Unknown selector value type: " + selector.value.type);
                         case '<=': return p <= selector.value.value;
                         case '<': return p < selector.value.value;
                         case '>': return p > selector.value.value;
