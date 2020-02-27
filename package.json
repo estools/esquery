@@ -12,7 +12,8 @@
     "README.md"
   ],
   "scripts": {
-    "test": "node node_modules/jstestr/bin/jstestr.js path=tests"
+    "test": "node node_modules/jstestr/bin/jstestr.js path=tests",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -25,10 +26,11 @@
     "query"
   ],
   "devDependencies": {
-    "jstestr": ">=0.4",
-    "pegjs": "~0.7.0",
     "commonjs-everywhere": "~0.9.4",
-    "esprima": "~1.1.1"
+    "eslint": "^6.8.0",
+    "esprima": "~1.1.1",
+    "jstestr": ">=0.4",
+    "pegjs": "~0.7.0"
   },
   "license": "BSD-3-Clause",
   "engines": {

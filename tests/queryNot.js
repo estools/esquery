@@ -44,7 +44,7 @@ define([
                     kind: "var"
                 }]
             };
-            matches = esquery(program, ":not([value=1])");
+            var matches = esquery(program, ":not([value=1])");
 
             assert.contains([
                 program,

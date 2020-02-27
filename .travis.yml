@@ -1,7 +1,18 @@
 sudo: false
 language: node_js
 node_js:
-  - "iojs"
-  - "0.12"
-  - "0.11"
   - "0.10"
+  - "0.11"
+  - "0.12"
+  - "iojs"
+  - 4
+  - 6
+  - 8
+  - 10
+  - 12
+
+matrix:
+  include:
+    - name: Lint
+      node_js: 12
+      script: npm run lint

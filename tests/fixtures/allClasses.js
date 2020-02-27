@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 define(["esprima"], function (esprima) {
 
     // return esprima.parse("function a(){ [a] = () => 0; new.target; `test`; `hello,${name}`; }");

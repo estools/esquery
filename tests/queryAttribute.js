@@ -222,6 +222,24 @@ define([
                 conditional.body[1].test.left.right,
                 conditional.body[1].alternate.test
             ], matches);
+        },
+
+        "unknown type": function () {
+            assert.doesThrow(Error, function () {
+                esquery.match(forLoop, {
+                    type: 'attribute',
+                    name: 'foo',
+                    operator: '=',
+                    value: { type: 'foobar' } });
+            });
+
+            assert.doesThrow(Error, function () {
+                esquery.match(forLoop, {
+                    type: 'attribute',
+                    name: 'foo',
+                    operator: '!=',
+                    value: { type: 'foobar' } });
+            });
         }
     });
 });

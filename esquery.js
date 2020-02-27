@@ -128,25 +128,26 @@
                                 case 'literal': return '' + selector.value.value === '' + p;
                                 case 'type': return selector.value.value === typeof p;
                             }
+                            throw new Error("Unknown selector value type: " + selector.value.type);
                         case '!=':
                             switch (selector.value.type) {
                                 case 'regexp': return !selector.value.value.test(p);
                                 case 'literal': return '' + selector.value.value !== '' + p;
                                 case 'type': return selector.value.value !== typeof p;
                             }
+                            throw new Error("Unknown selector value type: " + selector.value.type);
                         case '<=': return p <= selector.value.value;
                         case '<': return p < selector.value.value;
                         case '>': return p > selector.value.value;
                         case '>=': return p >= selector.value.value;
                     }
-
+                    break;
                 case 'sibling':
                     return matches(node, selector.right, ancestry) &&
                         sibling(node, selector.left, ancestry, LEFT_SIDE) ||
                         selector.left.subject &&
                         matches(node, selector.left, ancestry) &&
                         sibling(node, selector.right, ancestry, RIGHT_SIDE);
-
                 case 'adjacent':
                     return matches(node, selector.right, ancestry) &&
                         adjacent(node, selector.left, ancestry, LEFT_SIDE) ||
@@ -156,7 +157,7 @@
 
                 case 'nth-child':
                     return matches(node, selector.right, ancestry) &&
-                        nthChild(node, ancestry, function (length) {
+                        nthChild(node, ancestry, function () {
                             return selector.index.value - 1;
                         });
 
