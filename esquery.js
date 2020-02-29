@@ -4,9 +4,7 @@
     var estraverse = require('estraverse');
     var parser = require('./parser');
 
-    var isArray = Array.isArray || function isArray(array) {
-        return {}.toString.call(array) === '[object Array]';
-    };
+    var isArray = Array.isArray;
 
     var LEFT_SIDE = {};
     var RIGHT_SIDE = {};
