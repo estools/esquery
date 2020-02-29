@@ -13,8 +13,8 @@
     "README.md"
   ],
   "scripts": {
-    "build-parser": "Make",
-    "build-browser": "Make browser",
+    "build-parser": "make parser",
+    "build-browser": "make browser",
     "test": "node node_modules/jstestr/bin/jstestr.js path=tests",
     "lint": "eslint ."
   },
@@ -31,17 +31,17 @@
     "query"
   ],
   "devDependencies": {
-    "commonjs-everywhere": "~0.9.4",
+    "commonjs-everywhere": "~0.9.7",
     "eslint": "^6.8.0",
-    "esprima": "~1.1.1",
+    "esprima": "~4.0.1",
     "jstestr": ">=0.4",
     "pegjs": "~0.7.0"
   },
   "license": "BSD-3-Clause",
   "engines": {
-    "node": ">=0.6"
+    "node": ">=4.0"
   },
   "dependencies": {
-    "estraverse": "^4.0.0"
+    "estraverse": "^4.3.0"
   }
 }
