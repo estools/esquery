@@ -1,4 +1,3 @@
-Makefile
 grammar.pegjs
 tests
 testRunner.html
