@@ -1,0 +1,60 @@
+{
+  "private": true,
+  "name": "esquery-demo",
+  "version": "1.1.0",
+  "author": "Joel Feenstra <jrfeenst+esquery@gmail.com>",
+  "contributors": [],
+  "description": "A query library for ECMAScript AST using a CSS selector like query language.",
+  "files": [
+    "dist/*.js",
+    "parser.js",
+    "license.txt",
+    "README.md"
+  ],
+  "nyc": {
+    "reporter": [
+      "html",
+      "text"
+    ],
+    "exclude": [
+      "parser.js",
+      "dist",
+      "tests"
+    ]
+  },
+  "scripts": {
+    "build-esquery": "rollup -c",
+    "build-espree": "rollup -c rollup.espree.js",
+    "rollup": "npm run build-esquery && npm run build-espree",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/estools/esquery.git"
+  },
+  "bugs": "https://github.com/estools/esquery/issues",
+  "homepage": "https://github.com/estools/esquery/",
+  "keywords": [
+    "ast",
+    "ecmascript",
+    "javascript",
+    "query"
+  ],
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-json": "^4.0.2",
+    "@rollup/plugin-node-resolve": "^7.1.1",
+    "eslint": "^6.8.0",
+    "esm": "^3.2.25",
+    "espree": "^6.1.2",
+    "rollup": "^1.32.0",
+    "rollup-plugin-terser": "^5.2.0"
+  },
+  "license": "BSD-3-Clause",
+  "engines": {
+    "node": ">=8.0"
+  },
+  "dependencies": {
+    "esquery": "^1.1.0"
+  }
+}

@@ -1,37 +1,31 @@
+<!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8" />
     <title>esquery</title>
 
-    <style>
-        #source {
-            width: 100%;
-            height: 50%;
-        }
+    <link rel="stylesheet" href="index.css" />
 
-        textarea, pre, input {
-            font-family: "Consolas", "Menlo", "Courier", monospace;
-        }
+    <script src="esquery.umd.js"></script>
+    <!--
+    <script src="node_modules/esquery/dist/esquery.min.js"></script>
+    -->
 
-        #selector {
-            width: 100%;
-        }
-    </style>
-
-    <script src="esquery.min.js"></script>
-    <script src="esprima.js"></script>
+    <script src="espree.umd.js"></script>
+    <script src="index.js" defer="defer"></script>
 </head>
 <body>
     <p>
         <textarea id="source" wrap="off">var x = 1;
 var y = 2;
 function bar() {
-    if (x < y) {
+    if (x &lt; y) {
         foo();
     } else {
         x = y;
         return;
     }
-    for (var i = 0; i < 2; i++) {
+    for (var i = 0; i &lt; 2; i++) {
         x += i;
     }
     bar();
@@ -39,66 +33,11 @@ function bar() {
     </p>
 
     <p>
-        <input id="selector" type="text" value='[id.name="bar"]'/>
+        <input id="selector" type="text" value="[id.name=&quot;bar&quot;]"/>
     </p>
 
     <pre id="selectorAst"></pre>
     <hr>
     <pre id="output"></pre>
-
-    <script type="text/javascript">
-    var sourceNode = document.getElementById("source");
-    var selectorNode = document.getElementById("selector");
-    var selectorAstNode = document.getElementById("selectorAst");
-    var outputNode = document.getElementById("output");
-
-    function update() {
-        var ast = esprima.parse(sourceNode.value);
-
-        var selector = selectorNode.value;
-        selectorAstNode.innerHTML = "";
-        outputNode.innerHTML = "";
-
-        var start, end, selectorAst, selectorAstOutput, matches, matchesOutput;
-
-        try {
-          start = performance.now();
-        } catch (e) {
-          start = Date.now();
-        }
-
-        try {
-            selectorAst = esquery.parse(selector);
-        } catch (e) {
-            selectorAstOutput = e.message;
-        }
-
-        try {
-            var matches = esquery.match(ast, selectorAst);
-        } catch (e) {
-            matchesOutput = e.message;
-        }
-        
-        try {
-          end = performance.now();
-        } catch (e) {
-          end = Date.now();
-        }
-
-        selectorAstOutput = selectorAstOutput || JSON.stringify(selectorAst, null, "  ");
-        matchesOutput = matchesOutput || JSON.stringify(matches, null, "  ");
-
-        selectorAstNode.appendChild(document.createTextNode(selectorAstOutput));
-        outputNode.appendChild(document.createTextNode((matches ? matches.length : 0) +
-                " nodes found in " + (end - start) + "ms\n" + matchesOutput));
-    }
-
-    update();
-
-    sourceNode.addEventListener("change", update);
-    selectorNode.addEventListener("change", update);
-    selectorNode.addEventListener("keyup", update);
-    outputNode.addEventListener("change", update);
-    </script>
 </body>
 </html>

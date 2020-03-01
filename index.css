@@ -1,0 +1,13 @@
+#source {
+    width: 100%;
+    min-height: 280px;
+    height: 50%;
+}
+
+textarea, pre, input {
+    font-family: "Consolas", "Menlo", "Courier", monospace;
+}
+
+#selector {
+    width: 100%;
+}

@@ -1,0 +1,9 @@
+node_modules
+dist
+
+espree.umd.js
+esquery.umd.js
+
+!.eslintrc.js
+!rollup.config.js
+!rollup.espree.js
