@@ -48,7 +48,7 @@ describe("Pseudo *-child query", function () {
         ]);
     });
 
-    it("conditional nth child (multiple digits)", function () {
+    it("conditional nth-last child (multiple digits)", function () {
         var matches = esquery(conditionalLong, ":nth-last-child(10)");
         assert.includeMembers(matches, [
             conditionalLong.body[1]
