@@ -1,5 +1,5 @@
-import * as esprima from "esprima";
+import * as espree from "espree";
 
-var parsed = esprima.parse("for (i = 0; i < foo.length; i++) { foo[i](); }");
+var parsed = espree.parse("for (i = 0; i < foo.length; i++) { foo[i](); }");
 
 export default parsed;

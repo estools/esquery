@@ -1,4 +1,4 @@
-ESQuery is a library for querying the AST output by Esprima for patterns of syntax using a CSS style selector system. Check out the demo:
+ESQuery is a library for querying the AST output by Espree for patterns of syntax using a CSS style selector system. Check out the demo:
 
 [demo](https://estools.github.io/esquery/)
 

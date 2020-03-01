@@ -1,6 +1,6 @@
-import * as esprima from "esprima";
+import * as espree from "espree";
 
-var parsed = esprima.parse(
+var parsed = espree.parse(
     "function foo() {\n" +
     "  var x = 1;\n" +
     "  function bar() {\n" +

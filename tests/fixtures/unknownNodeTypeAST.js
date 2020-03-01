@@ -5,9 +5,9 @@
  * type aType = {};
  *
  */
-import * as esprima from "esprima";
+import * as espree from "espree";
 
-var program = esprima.parse("var x = 's'");
+var program = espree.parse("var x = 's'");
 program.body[0].type = 'TypeAlias';
 
 export default program;

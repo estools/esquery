@@ -1,6 +1,6 @@
-import * as esprima from "esprima";
+import * as espree from "espree";
 
-var parsed = esprima.parse(
+var parsed = espree.parse(
     "var x = 1;\n" +
     "switch (x) {\n" +
     "  case 0: foo1(); break;\n" +

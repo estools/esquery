@@ -1,6 +1,6 @@
-import * as esprima from "esprima";
+import * as espree from "espree";
 
-var parsed = esprima.parse(
+var parsed = espree.parse(
     '[1, 2, 3, foo, bar, 4, 5, baz, qux, 6]'
 );
 

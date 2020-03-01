@@ -1,6 +1,6 @@
-import * as esprima from "esprima";
+import * as espree from "espree";
 
-var parsed = esprima.parse(
+var parsed = espree.parse(
     "if (x === 1) { foo(1); }" +
     "if (x === 2) { foo(2); }" +
     "if (x === 3) { foo(3); }" +
