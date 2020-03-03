@@ -1,5 +1,8 @@
 sudo: false
 language: node_js
+script:
+  - npm run build-browser
+  - npm test
 node_js:
   - 4
   - 6
