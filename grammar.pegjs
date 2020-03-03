@@ -56,8 +56,8 @@ identifier = "#"? i:identifierName { return { type: 'identifier', value: i }; }
 
 attr
   = "[" _ v:attrValue _ "]" { return v; }
-  attrOps = a:[><!]? "=" { return a + '='; } / [><]
-  attrEqOps = a:"!"? "="  { return a + '='; }
+  attrOps = a:[><!]? "=" { return (a || '') + '='; } / [><]
+  attrEqOps = a:"!"? "="  { return (a || '') + '='; }
   attrName = i:(identifierName / ".")+ { return i.join(''); }
   attrValue
     = name:attrName _ op:attrEqOps _ value:(type / regex) {

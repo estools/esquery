@@ -13,9 +13,10 @@
     "README.md"
   ],
   "scripts": {
-    "build-parser": "make parser",
-    "build-browser": "make browser",
-    "test": "node node_modules/jstestr/bin/jstestr.js path=tests",
+    "build-parser": "rm parser.js && pegjs --cache --format umd -o \"parser.js\" \"grammar.pegjs\"",
+    "build-browser-only": "cjsify esquery.js -mvx esquery --source-map \"dist/esquery.min.js.map\" > \"dist/esquery.min.js\"",
+    "build-browser": "npm run build-parser && npm run build-browser-only",
+    "test": "jstestr path=tests",
     "lint": "eslint ."
   },
   "repository": {
@@ -35,7 +36,7 @@
     "eslint": "^6.8.0",
     "esprima": "~4.0.1",
     "jstestr": ">=0.4",
-    "pegjs": "~0.7.0"
+    "pegjs": "~0.10.0"
   },
   "license": "BSD-3-Clause",
   "engines": {
