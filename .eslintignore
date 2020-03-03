@@ -1,2 +1,5 @@
-# Generated file:
-/parser.js
+node_modules
+dist
+parser.js
+
+!.eslintrc.js

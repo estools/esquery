@@ -2,8 +2,7 @@
 <html>
     <head>
         <title>Test Runner</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        
+        <meta charset="utf-8" />
         <style>
             html, body, #graphicalLogger {
                 padding: 0;
@@ -14,13 +13,13 @@
                 height: 100%;
             }
         </style>
-        <link rel="stylesheet" type="text/css" href="node_modules/jstestr/jstestr/logger/graphicalLogger.css"></link>
+        <link rel="stylesheet" href="node_modules/jstestr/jstestr/logger/graphicalLogger.css" />
     </head>
     <body>
         <div id="graphicalLogger"></div>
-        
+
         <script src="node_modules/jstestr/requirejs/require.js"></script>
-        <script type="text/javascript">
+        <script>
             require({
                 baseUrl: ".",
                 packages: [{
@@ -34,7 +33,6 @@
                 browserLoggers();
                 browserRunner();
             });
-        </script>
         </script>
     </body>
 </html>
