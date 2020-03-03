@@ -12,16 +12,6 @@ module.exports = {
         // Remove after converting to ESM
         define: "readonly"
     },
-    overrides: [{
-      files: 'parser.js',
-      rules: {
-        // We could disable checking as auto-generated
-        'no-control-regex': 0,
-        'no-unused-vars': 0,
-        'no-useless-escape': 0,
-        semi: 0
-      }
-    }],
     parserOptions: {
         ecmaVersion: 2018
     },
