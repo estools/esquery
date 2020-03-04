@@ -42,35 +42,35 @@ export default {
                         }
                     },
                     {
-                      "type": "ExpressionStatement",
-                      "expression": {
-                        "type": "MetaProperty",
-                        "meta": {
-                          "type": "Identifier",
-                          "name": "new",
+                        "type": "ExpressionStatement",
+                        "expression": {
+                            "type": "MetaProperty",
+                            "meta": {
+                                "type": "Identifier",
+                                "name": "new",
+                            },
+                            "property": {
+                                "type": "Identifier",
+                                "name": "target",
+                            },
                         },
-                        "property": {
-                          "type": "Identifier",
-                          "name": "target",
-                        },
-                      },
                     },
                     {
-                      "type": "ExpressionStatement",
-                      "expression": {
-                        "type": "TemplateLiteral",
-                        "quasis": [
-                          {
-                            "type": "TemplateElement",
-                            "value": {
-                              "raw": "test",
-                              "cooked": "test"
-                            },
-                            "tail": true,
-                          }
-                        ],
-                        "expressions": [],
-                      },
+                        "type": "ExpressionStatement",
+                        "expression": {
+                            "type": "TemplateLiteral",
+                            "quasis": [
+                                {
+                                    "type": "TemplateElement",
+                                    "value": {
+                                        "raw": "test",
+                                        "cooked": "test"
+                                    },
+                                    "tail": true,
+                                }
+                            ],
+                            "expressions": [],
+                        },
                     },
                     {
                         "type": "ExpressionStatement",

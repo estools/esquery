@@ -23,7 +23,7 @@ function getRollupObject ({minifying, format = 'umd'} = {}) {
             format,
             sourcemap: minifying,
             file: `dist/esquery${
-                    format === 'umd' ? '' : `.${format}`
+                format === 'umd' ? '' : `.${format}`
             }${minifying ? '.min' : ''}.js`,
             name: 'esquery'
         },

@@ -80,17 +80,17 @@ function matches(node, selector, ancestry) {
         case 'has':
             var a, collector = [];
             for (i = 0, l = selector.selectors.length; i < l; ++i) {
-              a = [];
-              estraverse.traverse(node, {
-                  enter: function (node, parent) {
-                      if (parent != null) { a.unshift(parent); }
-                      if (matches(node, selector.selectors[i], a)) {
-                        collector.push(node);
-                      }
-                  },
-                  leave: function () { a.shift(); },
-                  fallback: 'iteration'
-              });
+                a = [];
+                estraverse.traverse(node, {
+                    enter: function (node, parent) {
+                        if (parent != null) { a.unshift(parent); }
+                        if (matches(node, selector.selectors[i], a)) {
+                            collector.push(node);
+                        }
+                    },
+                    leave: function () { a.shift(); },
+                    fallback: 'iteration'
+                });
             }
             return collector.length !== 0;
 
@@ -202,11 +202,11 @@ function sibling(node, selector, ancestry, side) {
             startIndex = listProp.indexOf(node);
             if (startIndex < 0) { continue; }
             if (side === LEFT_SIDE) {
-              lowerBound = 0;
-              upperBound = startIndex;
+                lowerBound = 0;
+                upperBound = startIndex;
             } else {
-              lowerBound = startIndex + 1;
-              upperBound = listProp.length;
+                lowerBound = startIndex + 1;
+                upperBound = listProp.length;
             }
             for (k = lowerBound; k < upperBound; ++k) {
                 if (matches(listProp[k], selector, ancestry)) {

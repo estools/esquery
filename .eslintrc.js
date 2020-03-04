@@ -26,6 +26,7 @@ module.exports = {
         ecmaVersion: 2018
     },
     rules: {
-        semi: ["error"]
+        semi: ["error"],
+        indent: ["error", 4, {SwitchCase: 1}]
     }
 };
