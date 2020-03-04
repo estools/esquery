@@ -1,10 +1,10 @@
-import esquery from "../esquery.js";
-import ast from "./fixtures/allClasses.js";
+import esquery from '../esquery.js';
+import ast from './fixtures/allClasses.js';
 
-describe("Class query", function () {
+describe('Class query', function () {
 
-    it(":statement", function () {
-        var matches = esquery(ast, ":statement");
+    it(':statement', function () {
+        const matches = esquery(ast, ':statement');
         assert.includeMembers(matches, [
             ast.body[0],
             ast.body[0].body,
@@ -16,8 +16,8 @@ describe("Class query", function () {
         assert.equal(6, matches.length);
     });
 
-    it(":expression", function () {
-        var matches = esquery(ast, ":Expression");
+    it(':expression', function () {
+        const matches = esquery(ast, ':Expression');
         assert.includeMembers(matches, [
             ast.body[0].id,
             ast.body[0].body.body[0].expression,
@@ -32,8 +32,8 @@ describe("Class query", function () {
         assert.equal(9, matches.length);
     });
 
-    it(":function", function () {
-        var matches = esquery(ast, ":FUNCTION");
+    it(':function', function () {
+        const matches = esquery(ast, ':FUNCTION');
         assert.includeMembers(matches, [
             ast.body[0],
             ast.body[0].body.body[0].expression.right
@@ -41,16 +41,16 @@ describe("Class query", function () {
         assert.equal(2, matches.length);
     });
 
-    it(":declaration", function () {
-        var matches = esquery(ast, ":declaratioN");
+    it(':declaration', function () {
+        const matches = esquery(ast, ':declaratioN');
         assert.includeMembers(matches, [
             ast.body[0]
         ]);
         assert.equal(1, matches.length);
     });
 
-    it(":pattern", function () {
-        var matches = esquery(ast, ":paTTern");
+    it(':pattern', function () {
+        const matches = esquery(ast, ':paTTern');
         assert.includeMembers(matches, [
             ast.body[0].id,
             ast.body[0].body.body[0].expression,

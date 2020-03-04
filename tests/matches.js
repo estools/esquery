@@ -1,11 +1,11 @@
-import esquery from "../esquery.js";
-import forLoop from "./fixtures/forLoop.js";
-import simpleProgram from "./fixtures/simpleProgram.js";
-import conditional from "./fixtures/conditional.js";
+import esquery from '../esquery.js';
+import forLoop from './fixtures/forLoop.js';
+import simpleProgram from './fixtures/simpleProgram.js';
+import conditional from './fixtures/conditional.js';
 
 describe('matches', function () {
-    it("falsey node", function () {
-        let selector = esquery.parse('*');
+    it('falsey node', function () {
+        const selector = esquery.parse('*');
 
         assert.equal(false, esquery.matches(
             null,
@@ -26,7 +26,7 @@ describe('matches', function () {
         ));
     });
 
-    it("falsey selector", function () {
+    it('falsey selector', function () {
         assert.equal(true, esquery.matches(
             forLoop,
             null,
@@ -46,8 +46,8 @@ describe('matches', function () {
         ));
     });
 
-    it("falsey ancestry", function () {
-        let selector = esquery.parse('*');
+    it('falsey ancestry', function () {
+        const selector = esquery.parse('*');
 
         assert.doesNotThrow(() => {
             esquery.matches(

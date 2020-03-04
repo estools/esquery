@@ -1,10 +1,10 @@
-import esquery from "../esquery.js";
-import forLoop from "./fixtures/forLoop.js";
-import ast from "./fixtures/allClasses.js";
+import esquery from '../esquery.js';
+import forLoop from './fixtures/forLoop.js';
+import ast from './fixtures/allClasses.js';
 
 describe('match', function () {
 
-    it("unknown selector type", function () {
+    it('unknown selector type', function () {
         assert.throws(function () {
             esquery.match(forLoop, {
                 type: 'badType'
@@ -12,7 +12,7 @@ describe('match', function () {
         }, Error);
     });
 
-    it("unknown selector type", function () {
+    it('unknown selector type', function () {
         assert.throws(function () {
             esquery.match(forLoop, {
                 type: 'class',
@@ -21,7 +21,7 @@ describe('match', function () {
         }, Error);
     });
 
-    it("unknown class name", function () {
+    it('unknown class name', function () {
         assert.throws(function () {
             esquery.match(ast, {
                 type: 'class',
@@ -30,7 +30,7 @@ describe('match', function () {
         }, Error);
     });
 
-    it("unknown type", function () {
+    it('unknown type', function () {
         assert.throws(function () {
             esquery.match(forLoop, {
                 type: 'attribute',
@@ -48,7 +48,7 @@ describe('match', function () {
         }, Error);
     });
 
-    it("unknown operator", function () {
+    it('unknown operator', function () {
         assert.throws(function () {
             esquery.match(forLoop, {
                 type: 'attribute',
@@ -60,11 +60,11 @@ describe('match', function () {
 
     // Can remove need for this if remove `subjects`' `hasOwnProperty`
     //  check in favor of for-of (Node >=6.9.2) or use `Object.keys`
-    it("selector with non-own properties", function () {
+    it('selector with non-own properties', function () {
         assert.throws(function () {
             function Selector () {}
             Selector.prototype.inheritedMethod = function () {};
-            var sel = new Selector();
+            const sel = new Selector();
             sel.type = 'class';
             sel.name = 'badName';
             sel.value = { type: 'foobar' };
