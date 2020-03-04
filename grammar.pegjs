@@ -4,7 +4,6 @@
   function strUnescape(s) {
     return s.replace(/\\(.)/g, function(match, ch) {
       switch(ch) {
-        case 'a': return '\a';
         case 'b': return '\b';
         case 'f': return '\f';
         case 'n': return '\n';
@@ -76,7 +75,9 @@ attr
       }
     number
       = a:([0-9]* ".")? b:[0-9]+ {
-        return { type: 'literal', value: parseFloat((a ? a.join('') : '') + b.join('')) };
+        // Can use `a.flat().join('')` once supported
+        var leadingDecimals = a ? a.reduce((acc, val) => acc.concat(val), []).join('') : '';
+        return { type: 'literal', value: parseFloat(leadingDecimals + b.join('')) };
       }
     path = i:identifierName { return { type: 'literal', value: i }; }
     type = "type(" _ t:[^ )]+ _ ")" { return { type: 'type', value: t.join('') }; }

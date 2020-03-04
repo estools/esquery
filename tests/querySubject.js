@@ -1,161 +1,157 @@
-define([
-    "dist/esquery",
-    "jstestr/assert",
-    "jstestr/test",
-    "./fixtures/conditional",
-    "./fixtures/forLoop",
-    "./fixtures/simpleFunction",
-    "./fixtures/simpleProgram",
-    "./fixtures/nestedFunctions",
-    "./fixtures/bigArray"
-], function (esquery, assert, test, conditional, forLoop, simpleFunction, simpleProgram, nestedFunctions, bigArray) {
+import esquery from "../esquery.js";
+import conditional from "./fixtures/conditional.js";
+import forLoop from "./fixtures/forLoop.js";
+import simpleFunction from "./fixtures/simpleFunction.js";
+import simpleProgram from "./fixtures/simpleProgram.js";
 
-    test.defineSuite("Query subject", {
+import nestedFunctions from "./fixtures/nestedFunctions.js";
+import bigArray from "./fixtures/bigArray.js";
 
-        "type subject": function () {
-            var matches = esquery(conditional, "!IfStatement Identifier");
-            assert.contains([
-                conditional.body[0],
-                conditional.body[1],
-                conditional.body[1].alternate
-            ], matches);
-        },
+describe("Query subject", function () {
 
-        "* subject": function () {
-            var matches = esquery(forLoop, '!* > [name="foo"]');
-            assert.contains([
-                forLoop.body[0].test.right,
-                forLoop.body[0].body.body[0].expression.callee
-            ], matches);
-        },
+    it("type subject", function () {
+        var matches = esquery(conditional, "!IfStatement Identifier");
+        assert.includeMembers(matches, [
+            conditional.body[0],
+            conditional.body[1],
+            conditional.body[1].alternate
+        ]);
+    });
 
-        ":nth-child subject": function () {
-            var matches = esquery(simpleFunction, '!:nth-child(1) [name="y"]');
-            assert.contains([
-                simpleFunction.body[0],
-                simpleFunction.body[0].body.body[0],
-                simpleFunction.body[0].body.body[0].declarations[0]
-            ], matches);
-        },
+    it("* subject", function () {
+        var matches = esquery(forLoop, '!* > [name="foo"]');
+        assert.includeMembers(matches, [
+            forLoop.body[0].test.right,
+            forLoop.body[0].body.body[0].expression.callee
+        ]);
+    });
 
-        ":nth-last-child subject": function () {
-            var matches = esquery(simpleProgram, '!:nth-last-child(1) [name="y"]');
-            assert.contains([
-                simpleProgram.body[3],
-                simpleProgram.body[1].declarations[0],
-                simpleProgram.body[3].consequent.body[0]
-            ], matches);
-        },
+    it(":nth-child subject", function () {
+        var matches = esquery(simpleFunction, '!:nth-child(1) [name="y"]');
+        assert.includeMembers(matches, [
+            simpleFunction.body[0],
+            simpleFunction.body[0].body.body[0],
+            simpleFunction.body[0].body.body[0].declarations[0]
+        ]);
+    });
 
-        "attribute literal subject": function () {
-            var matches = esquery(simpleProgram, '![test] [name="y"]');
-            assert.contains([
-                simpleProgram.body[3]
-            ], matches);
-        },
+    it(":nth-last-child subject", function () {
+        var matches = esquery(simpleProgram, '!:nth-last-child(1) [name="y"]');
+        assert.includeMembers(matches, [
+            simpleProgram.body[3],
+            simpleProgram.body[1].declarations[0],
+            simpleProgram.body[3].consequent.body[0]
+        ]);
+    });
 
-        "attribute type subject": function () {
-            var matches = esquery(nestedFunctions, '![generator=type(boolean)] > BlockStatement');
-            assert.contains([
-                nestedFunctions.body[0],
-                nestedFunctions.body[0].body.body[1]
-            ], matches);
-        },
+    it("attribute literal subject", function () {
+        var matches = esquery(simpleProgram, '![test] [name="y"]');
+        assert.includeMembers(matches, [
+            simpleProgram.body[3]
+        ]);
+    });
 
-        "attribute regexp subject": function () {
-            var matches = esquery(conditional, '![operator=/=+/] > [name="x"]');
-            assert.contains([
-                conditional.body[0].test,
-                conditional.body[0].alternate.body[0].expression,
-                conditional.body[1].test.left.left
-            ], matches);
-        },
+    it("attribute type subject", function () {
+        var matches = esquery(nestedFunctions, '![generator=type(boolean)] > BlockStatement');
+        assert.includeMembers(matches, [
+            nestedFunctions.body[0],
+            nestedFunctions.body[0].body.body[1]
+        ]);
+    });
 
-        "field subject": function () {
-            var matches = esquery(forLoop, '!.test');
-            assert.contains([
-                forLoop.body[0].test
-            ], matches);
-        },
+    it("attribute regexp subject", function () {
+        var matches = esquery(conditional, '![operator=/=+/] > [name="x"]');
+        assert.includeMembers(matches, [
+            conditional.body[0].test,
+            conditional.body[0].alternate.body[0].expression,
+            conditional.body[1].test.left.left
+        ]);
+    });
 
-        ":matches subject": function () {
-            var matches = esquery(forLoop, '!:matches(*) > [name="foo"]');
-            assert.contains([
-                forLoop.body[0].test.right,
-                forLoop.body[0].body.body[0].expression.callee
-            ], matches);
-        },
+    it("field subject", function () {
+        var matches = esquery(forLoop, '!.test');
+        assert.includeMembers(matches, [
+            forLoop.body[0].test
+        ]);
+    });
 
-        ":not subject": function () {
-            var matches = esquery(nestedFunctions, '!:not(BlockStatement) > [name="foo"]');
-            assert.contains([
-                nestedFunctions.body[0]
-            ], matches);
-        },
+    it(":matches subject", function () {
+        var matches = esquery(forLoop, '!:matches(*) > [name="foo"]');
+        assert.includeMembers(matches, [
+            forLoop.body[0].test.right,
+            forLoop.body[0].body.body[0].expression.callee
+        ]);
+    });
 
-        "compound attributes subject": function () {
-            var matches = esquery(conditional, '![left.name="x"][right.value=1]');
-            assert.contains([
-                conditional.body[0].test
-            ], matches);
-        },
+    it(":not subject", function () {
+        var matches = esquery(nestedFunctions, '!:not(BlockStatement) > [name="foo"]');
+        assert.includeMembers(matches, [
+            nestedFunctions.body[0]
+        ]);
+    });
 
-        "descendant right subject": function () {
-            var matches = esquery(forLoop, '* !AssignmentExpression');
-            assert.contains([
-                forLoop.body[0].init
-            ], matches);
-        },
+    it("compound attributes subject", function () {
+        var matches = esquery(conditional, '![left.name="x"][right.value=1]');
+        assert.includeMembers(matches, [
+            conditional.body[0].test
+        ]);
+    });
 
-        "child right subject": function () {
-            var matches = esquery(forLoop, '* > !AssignmentExpression');
-            assert.contains([
-                forLoop.body[0].init
-            ], matches);
-        },
+    it("descendant right subject", function () {
+        var matches = esquery(forLoop, '* !AssignmentExpression');
+        assert.includeMembers(matches, [
+            forLoop.body[0].init
+        ]);
+    });
 
-        "sibling left subject": function () {
-            var matches = esquery(simpleProgram, "!VariableDeclaration ~ IfStatement");
-            assert.contains([
-                simpleProgram.body[0],
-                simpleProgram.body[1]
-            ], matches);
-        },
+    it("child right subject", function () {
+        var matches = esquery(forLoop, '* > !AssignmentExpression');
+        assert.includeMembers(matches, [
+            forLoop.body[0].init
+        ]);
+    });
 
-        "sibling right subject": function () {
-            var matches = esquery(simpleProgram, "!VariableDeclaration ~ !IfStatement");
-            assert.contains([
-                simpleProgram.body[0],
-                simpleProgram.body[1],
-                simpleProgram.body[3]
-            ], matches);
-        },
+    it("sibling left subject", function () {
+        var matches = esquery(simpleProgram, "!VariableDeclaration ~ IfStatement");
+        assert.includeMembers(matches, [
+            simpleProgram.body[0],
+            simpleProgram.body[1]
+        ]);
+    });
 
-        "adjacent right subject": function () {
-            var matches = esquery(simpleProgram, "!VariableDeclaration + !ExpressionStatement");
-            assert.contains([
-                simpleProgram.body[1],
-                simpleProgram.body[2]
-            ], matches);
-        },
+    it("sibling right subject", function () {
+        var matches = esquery(simpleProgram, "!VariableDeclaration ~ !IfStatement");
+        assert.includeMembers(matches, [
+            simpleProgram.body[0],
+            simpleProgram.body[1],
+            simpleProgram.body[3]
+        ]);
+    });
 
-        "multiple adjacent siblings": function () {
-            var matches = esquery(bigArray, "Identifier + Identifier");
-            assert.contains([
-                bigArray.body[0].expression.elements[4],
-                bigArray.body[0].expression.elements[8]
-            ], matches);
-            assert.isSame(2, matches.length);
-        },
+    it("adjacent right subject", function () {
+        var matches = esquery(simpleProgram, "!VariableDeclaration + !ExpressionStatement");
+        assert.includeMembers(matches, [
+            simpleProgram.body[1],
+            simpleProgram.body[2]
+        ]);
+    });
 
-        "multiple siblings": function () {
-            var matches = esquery(bigArray, "Identifier ~ Identifier");
-            assert.contains([
-                bigArray.body[0].expression.elements[4],
-                bigArray.body[0].expression.elements[7],
-                bigArray.body[0].expression.elements[8]
-            ], matches);
-            assert.isSame(3, matches.length);
-        }
+    it("multiple adjacent siblings", function () {
+        var matches = esquery(bigArray, "Identifier + Identifier");
+        assert.includeMembers(matches, [
+            bigArray.body[0].expression.elements[4],
+            bigArray.body[0].expression.elements[8]
+        ]);
+        assert.equal(2, matches.length);
+    });
+
+    it("multiple siblings", function () {
+        var matches = esquery(bigArray, "Identifier ~ Identifier");
+        assert.includeMembers(matches, [
+            bigArray.body[0].expression.elements[4],
+            bigArray.body[0].expression.elements[7],
+            bigArray.body[0].expression.elements[8]
+        ]);
+        assert.equal(3, matches.length);
     });
 });

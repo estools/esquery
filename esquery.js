@@ -44,7 +44,9 @@ function inPath(node, ancestor, path) {
 function matches(node, selector, ancestry) {
     var path, ancestor, i, l, p;
     if (!selector) { return true; }
+    // istanbul ignore if
     if (!node) { return false; }
+    // istanbul ignore if
     if (!ancestry) { ancestry = []; }
 
     switch(selector.type) {
@@ -113,7 +115,6 @@ function matches(node, selector, ancestry) {
         case 'attribute':
             p = getPath(node, selector.name);
             switch (selector.operator) {
-                case null:
                 case void 0:
                     return p != null;
                 case '=':
@@ -135,7 +136,7 @@ function matches(node, selector, ancestry) {
                 case '>': return p > selector.value.value;
                 case '>=': return p >= selector.value.value;
             }
-            break;
+            throw new Error('Unknown operator: ' + selector.operator);
         case 'sibling':
             return matches(node, selector.right, ancestry) &&
                 sibling(node, selector.left, ancestry, LEFT_SIDE) ||
@@ -162,6 +163,7 @@ function matches(node, selector, ancestry) {
                 });
 
         case 'class':
+            // istanbul ignore if
             if(!node.type) return false;
             switch(selector.name.toLowerCase()){
                 case 'statement':
@@ -196,12 +198,15 @@ function matches(node, selector, ancestry) {
  */
 function sibling(node, selector, ancestry, side) {
     var parent = ancestry[0], listProp, startIndex, keys, i, l, k, lowerBound, upperBound;
+    // istanbul ignore if
     if (!parent) { return false; }
     keys = estraverse.VisitorKeys[parent.type];
     for (i = 0, l = keys.length; i < l; ++i) {
         listProp = parent[keys[i]];
+        // istanbul ignore else
         if (isArray(listProp)) {
             startIndex = listProp.indexOf(node);
+            // istanbul ignore if
             if (startIndex < 0) { continue; }
             if (side === LEFT_SIDE) {
               lowerBound = 0;
@@ -225,12 +230,15 @@ function sibling(node, selector, ancestry, side) {
  */
 function adjacent(node, selector, ancestry, side) {
     var parent = ancestry[0], listProp, keys, i, l, idx;
+    // istanbul ignore if
     if (!parent) { return false; }
     keys = estraverse.VisitorKeys[parent.type];
     for (i = 0, l = keys.length; i < l; ++i) {
         listProp = parent[keys[i]];
+        // istanbul ignore else
         if (isArray(listProp)) {
             idx = listProp.indexOf(node);
+            // istanbul ignore if
             if (idx < 0) { continue; }
             if (side === LEFT_SIDE && idx > 0 && matches(listProp[idx - 1], selector, ancestry)) {
                 return true;

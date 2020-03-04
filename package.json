@@ -13,11 +13,23 @@
     "license.txt",
     "README.md"
   ],
+  "nyc": {
+    "reporter": [
+      "html",
+      "text"
+    ],
+    "exclude": [
+      "parser.js",
+      "dist",
+      "tests"
+    ]
+  },
   "scripts": {
     "build-parser": "rm parser.js && pegjs --cache --format umd -o \"parser.js\" \"grammar.pegjs\"",
     "build-browser-only": "rollup -c",
     "build-browser": "npm run build-parser && npm run build-browser-only",
-    "test": "jstestr path=tests",
+    "mocha": "mocha --require chai/register-assert --require esm tests",
+    "test": "rm -Rf node_modules/.cache && nyc npm run mocha",
     "lint": "eslint ."
   },
   "repository": {
@@ -36,16 +48,19 @@
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-json": "^4.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
+    "chai": "^4.2.0",
     "eslint": "^6.8.0",
+    "esm": "^3.2.25",
     "esprima": "~4.0.1",
-    "jstestr": ">=0.4",
+    "mocha": "^7.1.0",
+    "nyc": "^15.0.0",
     "pegjs": "~0.10.0",
     "rollup": "^1.32.0",
     "rollup-plugin-terser": "^5.2.0"
   },
   "license": "BSD-3-Clause",
   "engines": {
-    "node": ">=4.0"
+    "node": ">=8.0"
   },
   "dependencies": {
     "estraverse": "^4.3.0"

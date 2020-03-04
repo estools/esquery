@@ -1,7 +1,7 @@
-define(["esprima"], function (esprima) {
+import * as esprima from "esprima";
 
-    return esprima.parse(
-        '[1, 2, 3, foo, bar, 4, 5, baz, qux, 6]'
-    );
+var parsed = esprima.parse(
+    '[1, 2, 3, foo, bar, 4, 5, baz, qux, 6]'
+);
 
-});
+export default parsed;

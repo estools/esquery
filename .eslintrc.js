@@ -12,6 +12,13 @@ module.exports = {
         // Remove after converting to ESM
         define: "readonly"
     },
+    overrides: [{
+        files: 'tests/**',
+        globals: {
+            assert: true
+        },
+        env: {mocha: true}
+    }],
     parserOptions: {
         sourceType: 'module',
         ecmaVersion: 2018
