@@ -5,16 +5,17 @@
   "author": "Joel Feenstra <jrfeenst+esquery@gmail.com>",
   "contributors": [],
   "description": "A query library for ECMAScript AST using a CSS selector like query language.",
-  "main": "esquery.js",
+  "main": "dist/esquery.min.js",
+  "module": "dist/esquery.esm.min.js",
   "files": [
-    "esquery.js",
+    "dist/*.js",
     "parser.js",
     "license.txt",
     "README.md"
   ],
   "scripts": {
     "build-parser": "rm parser.js && pegjs --cache --format umd -o \"parser.js\" \"grammar.pegjs\"",
-    "build-browser-only": "cjsify esquery.js -mvx esquery --source-map \"dist/esquery.min.js.map\" > \"dist/esquery.min.js\"",
+    "build-browser-only": "rollup -c",
     "build-browser": "npm run build-parser && npm run build-browser-only",
     "test": "jstestr path=tests",
     "lint": "eslint ."
@@ -32,11 +33,15 @@
     "query"
   ],
   "devDependencies": {
-    "commonjs-everywhere": "~0.9.7",
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-json": "^4.0.2",
+    "@rollup/plugin-node-resolve": "^7.1.1",
     "eslint": "^6.8.0",
     "esprima": "~4.0.1",
     "jstestr": ">=0.4",
-    "pegjs": "~0.10.0"
+    "pegjs": "~0.10.0",
+    "rollup": "^1.32.0",
+    "rollup-plugin-terser": "^5.2.0"
   },
   "license": "BSD-3-Clause",
   "engines": {

@@ -1,5 +1,5 @@
 define([
-    "esquery",
+    "dist/esquery",
     "jstestr/assert",
     "jstestr/test",
 ], function (esquery, assert, test) {

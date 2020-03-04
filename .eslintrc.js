@@ -13,6 +13,7 @@ module.exports = {
         define: "readonly"
     },
     parserOptions: {
+        sourceType: 'module',
         ecmaVersion: 2018
     },
     rules: {

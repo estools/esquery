@@ -1,5 +1,5 @@
 define([
-    "esquery",
+    "dist/esquery",
     "jstestr/assert",
     "jstestr/test",
     "./fixtures/conditional",
