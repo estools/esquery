@@ -17,7 +17,9 @@ module.exports = {
         globals: {
             assert: true
         },
-        env: {mocha: true}
+        env: {
+            mocha: true
+        }
     }],
     parserOptions: {
         sourceType: 'module',
