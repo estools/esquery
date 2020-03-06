@@ -76,7 +76,7 @@ attr
     number
       = a:([0-9]* ".")? b:[0-9]+ {
         // Can use `a.flat().join('')` once supported
-        var leadingDecimals = a ? a.reduce((acc, val) => acc.concat(val), []).join('') : '';
+        var leadingDecimals = a ? [].concat.apply([], a).join('') : '';
         return { type: 'literal', value: parseFloat(leadingDecimals + b.join('')) };
       }
     path = i:identifierName { return { type: 'literal', value: i }; }
