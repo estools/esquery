@@ -44,9 +44,7 @@ function inPath(node, ancestor, path) {
 function matches(node, selector, ancestry) {
     var path, ancestor, i, l, p;
     if (!selector) { return true; }
-    // istanbul ignore if
     if (!node) { return false; }
-    // istanbul ignore if
     if (!ancestry) { ancestry = []; }
 
     switch(selector.type) {
@@ -163,8 +161,6 @@ function matches(node, selector, ancestry) {
                 });
 
         case 'class':
-            // istanbul ignore if
-            if(!node.type) return false;
             switch(selector.name.toLowerCase()){
                 case 'statement':
                     if(node.type.slice(-9) === 'Statement') return true;
