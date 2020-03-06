@@ -52,7 +52,7 @@ describe('matches', function () {
                 forLoop,
                 selector,
                 null
-            )
+            );
         });
 
         assert.doesNotThrow(() => {
@@ -60,7 +60,7 @@ describe('matches', function () {
                 forLoop,
                 selector,
                 ''
-            )
+            );
         });
 
         assert.doesNotThrow(() => {
@@ -68,7 +68,7 @@ describe('matches', function () {
                 forLoop,
                 selector,
                 false
-            )
+            );
         });
     });
 });
