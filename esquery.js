@@ -198,7 +198,6 @@ function sibling(node, selector, ancestry, side) {
     keys = estraverse.VisitorKeys[parent.type];
     for (i = 0, l = keys.length; i < l; ++i) {
         listProp = parent[keys[i]];
-        // istanbul ignore else
         if (isArray(listProp)) {
             startIndex = listProp.indexOf(node);
             if (startIndex < 0) { continue; }
@@ -228,7 +227,6 @@ function adjacent(node, selector, ancestry, side) {
     keys = estraverse.VisitorKeys[parent.type];
     for (i = 0, l = keys.length; i < l; ++i) {
         listProp = parent[keys[i]];
-        // istanbul ignore else
         if (isArray(listProp)) {
             idx = listProp.indexOf(node);
             if (idx < 0) { continue; }

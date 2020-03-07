@@ -1,6 +1,7 @@
 import esquery from "../esquery.js";
 import forLoop from "./fixtures/forLoop.js";
 import simpleProgram from "./fixtures/simpleProgram.js";
+import conditional from "./fixtures/conditional.js";
 
 describe('matches', function () {
     it("falsey node", function () {
@@ -109,6 +110,26 @@ describe('matches', function () {
                 simpleProgram.body[3],
                 selector,
                 simpleProgram.body
+            );
+        });
+    });
+
+    it('Non-array list prop', function () {
+        let selector = esquery.parse('!IfStatement ~ IfStatement');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                conditional.body[1],
+                selector,
+                conditional.body
+            );
+        });
+
+        selector = esquery.parse('!IfStatement + IfStatement');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                conditional.body[1],
+                selector,
+                conditional.body
             );
         });
     });
