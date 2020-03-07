@@ -194,7 +194,6 @@ function matches(node, selector, ancestry) {
  */
 function sibling(node, selector, ancestry, side) {
     var parent = ancestry[0], listProp, startIndex, keys, i, l, k, lowerBound, upperBound;
-    // istanbul ignore if
     if (!parent) { return false; }
     keys = estraverse.VisitorKeys[parent.type];
     for (i = 0, l = keys.length; i < l; ++i) {
@@ -226,7 +225,6 @@ function sibling(node, selector, ancestry, side) {
  */
 function adjacent(node, selector, ancestry, side) {
     var parent = ancestry[0], listProp, keys, i, l, idx;
-    // istanbul ignore if
     if (!parent) { return false; }
     keys = estraverse.VisitorKeys[parent.type];
     for (i = 0, l = keys.length; i < l; ++i) {

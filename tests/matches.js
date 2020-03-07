@@ -1,5 +1,6 @@
 import esquery from "../esquery.js";
 import forLoop from "./fixtures/forLoop.js";
+import simpleProgram from "./fixtures/simpleProgram.js";
 
 describe('matches', function () {
     it("falsey node", function () {
@@ -68,6 +69,26 @@ describe('matches', function () {
                 forLoop,
                 selector,
                 false
+            );
+        });
+    });
+
+    it('missing parent', function () {
+        let selector = esquery.parse('!VariableDeclaration + !ExpressionStatement');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                simpleProgram.body[2],
+                selector,
+                []
+            );
+        });
+
+        selector = esquery.parse('!VariableDeclaration ~ IfStatement');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                simpleProgram.body[3],
+                selector,
+                []
             );
         });
     });
