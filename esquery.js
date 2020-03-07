@@ -201,7 +201,6 @@ function sibling(node, selector, ancestry, side) {
         // istanbul ignore else
         if (isArray(listProp)) {
             startIndex = listProp.indexOf(node);
-            // istanbul ignore if
             if (startIndex < 0) { continue; }
             if (side === LEFT_SIDE) {
               lowerBound = 0;
@@ -232,7 +231,6 @@ function adjacent(node, selector, ancestry, side) {
         // istanbul ignore else
         if (isArray(listProp)) {
             idx = listProp.indexOf(node);
-            // istanbul ignore if
             if (idx < 0) { continue; }
             if (side === LEFT_SIDE && idx > 0 && matches(listProp[idx - 1], selector, ancestry)) {
                 return true;

@@ -92,4 +92,24 @@ describe('matches', function () {
             );
         });
     });
+
+    it('adjacent/sibling', function () {
+        let selector = esquery.parse('!VariableDeclaration + !ExpressionStatement');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                simpleProgram.body[2],
+                selector,
+                simpleProgram.body
+            );
+        });
+
+        selector = esquery.parse('!VariableDeclaration ~ IfStatement');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                simpleProgram.body[3],
+                selector,
+                simpleProgram.body
+            );
+        });
+    });
 });
