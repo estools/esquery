@@ -1,12 +1,12 @@
 import * as esprima from 'esprima';
 
-const parsed = esprima.parse(
-    'function foo() {\n' +
-    '  var x = 1;\n' +
-    '  function bar() {\n' +
-    '    x = 2;\n' +
-    '  }\n' +
-    '}\n'
-);
+const parsed = esprima.parse(`
+    function foo() {
+      var x = 1;
+      function bar() {
+        x = 2;
+      }
+    }
+`);
 
 export default parsed;
