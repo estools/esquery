@@ -1,49 +1,41 @@
+import esquery from "../esquery.js";
+import conditional from "./fixtures/conditional.js";
+import simpleProgram from "./fixtures/simpleProgram.js";
 
-define([
-    "dist/esquery",
-    "jstestr/assert",
-    "jstestr/test",
-    "./fixtures/conditional",
-    "./fixtures/forLoop",
-    "./fixtures/simpleFunction",
-    "./fixtures/simpleProgram"
-], function (esquery, assert, test, conditional, forLoop, simpleFunction, simpleProgram) {
+describe("Complex selector query", function () {
 
-    test.defineSuite("Complex selector query", {
+    it("two types child", function () {
+        var matches = esquery(conditional, "IfStatement > BinaryExpression");
+        assert.includeMembers(matches, [
+            conditional.body[0].test
+        ]);
+    });
 
-        "two types child": function () {
-            var matches = esquery(conditional, "IfStatement > BinaryExpression");
-            assert.contains([
-                conditional.body[0].test
-            ], matches);
-        },
+    it("three types child", function () {
+        var matches = esquery(conditional, "IfStatement > BinaryExpression > Identifier");
+        assert.includeMembers(matches, [
+            conditional.body[0].test.left
+        ]);
+    });
 
-        "three types child": function () {
-            var matches = esquery(conditional, "IfStatement > BinaryExpression > Identifier");
-            assert.contains([
-                conditional.body[0].test.left
-            ], matches);
-        },
+    it("two types descendant", function () {
+        var matches = esquery(conditional, "IfStatement BinaryExpression");
+        assert.includeMembers(matches, [
+            conditional.body[0].test
+        ]);
+    });
 
-        "two types descendant": function () {
-            var matches = esquery(conditional, "IfStatement BinaryExpression");
-            assert.contains([
-                conditional.body[0].test
-            ], matches);
-        },
+    it("two types sibling", function () {
+        var matches = esquery(simpleProgram, "VariableDeclaration ~ IfStatement");
+        assert.includeMembers(matches, [
+            simpleProgram.body[3]
+        ]);
+    });
 
-        "two types sibling": function () {
-            var matches = esquery(simpleProgram, "VariableDeclaration ~ IfStatement");
-            assert.contains([
-                simpleProgram.body[3]
-            ], matches);
-        },
-
-        "two types adjacent": function () {
-            var matches = esquery(simpleProgram, "VariableDeclaration + ExpressionStatement");
-            assert.contains([
-                simpleProgram.body[2]
-            ], matches);
-        }
+    it("two types adjacent", function () {
+        var matches = esquery(simpleProgram, "VariableDeclaration + ExpressionStatement");
+        assert.includeMembers(matches, [
+            simpleProgram.body[2]
+        ]);
     });
 });

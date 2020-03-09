@@ -223,7 +223,9 @@
         peg$c59 = /^[0-9]/,
         peg$c60 = peg$classExpectation([["0", "9"]], false, false),
         peg$c61 = function(a, b) {
-                return { type: 'literal', value: parseFloat((a ? a.join('') : '') + b.join('')) };
+                // Can use `a.flat().join('')` once supported
+                var leadingDecimals = a ? [].concat.apply([], a).join('') : '';
+                return { type: 'literal', value: parseFloat(leadingDecimals + b.join('')) };
               },
         peg$c62 = function(i) { return { type: 'literal', value: i }; },
         peg$c63 = "type(",
@@ -2477,7 +2479,6 @@
       function strUnescape(s) {
         return s.replace(/\\(.)/g, function(match, ch) {
           switch(ch) {
-            case 'a': return '\a';
             case 'b': return '\b';
             case 'f': return '\f';
             case 'n': return '\n';

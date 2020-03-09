@@ -113,7 +113,6 @@ function matches(node, selector, ancestry) {
         case 'attribute':
             p = getPath(node, selector.name);
             switch (selector.operator) {
-                case null:
                 case void 0:
                     return p != null;
                 case '=':
@@ -135,7 +134,7 @@ function matches(node, selector, ancestry) {
                 case '>': return p > selector.value.value;
                 case '>=': return p >= selector.value.value;
             }
-            break;
+            throw new Error('Unknown operator: ' + selector.operator);
         case 'sibling':
             return matches(node, selector.right, ancestry) &&
                 sibling(node, selector.left, ancestry, LEFT_SIDE) ||
@@ -162,7 +161,6 @@ function matches(node, selector, ancestry) {
                 });
 
         case 'class':
-            if(!node.type) return false;
             switch(selector.name.toLowerCase()){
                 case 'statement':
                     if(node.type.slice(-9) === 'Statement') return true;

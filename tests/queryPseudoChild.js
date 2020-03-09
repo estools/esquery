@@ -1,148 +1,157 @@
+import esquery from "../esquery.js";
+import conditional from "./fixtures/conditional.js";
+import conditionalLong from "./fixtures/conditionalLong.js";
+import forLoop from "./fixtures/forLoop.js";
+import simpleFunction from "./fixtures/simpleFunction.js";
+import simpleProgram from "./fixtures/simpleProgram.js";
 
-define([
-    "dist/esquery",
-    "jstestr/assert",
-    "jstestr/test",
-    "./fixtures/conditional",
-    "./fixtures/forLoop",
-    "./fixtures/simpleFunction",
-    "./fixtures/simpleProgram"
-], function (esquery, assert, test, conditional, forLoop, simpleFunction, simpleProgram) {
+describe("Pseudo *-child query", function () {
 
-    test.defineSuite("Pseudo *-child query", {
+    it("conditional first child", function () {
+        var matches = esquery(conditional, ":first-child");
+        assert.includeMembers(matches, [
+            conditional.body[0],
+            conditional.body[0].consequent.body[0],
+            conditional.body[0].alternate.body[0],
+            conditional.body[1].consequent.body[0],
+            conditional.body[1].alternate.consequent.body[0]
+        ]);
+    });
 
-        "conditional first child": function () {
-            var matches = esquery(conditional, ":first-child");
-            assert.contains([
-                conditional.body[0],
-                conditional.body[0].consequent.body[0],
-                conditional.body[0].alternate.body[0],
-                conditional.body[1].consequent.body[0],
-                conditional.body[1].alternate.consequent.body[0]
-            ], matches);
-        },
+    it("conditional last child", function () {
+        var matches = esquery(conditional, ":last-child");
+        assert.includeMembers(matches, [
+            conditional.body[1],
+            conditional.body[0].consequent.body[0],
+            conditional.body[0].alternate.body[0],
+            conditional.body[1].consequent.body[0],
+            conditional.body[1].alternate.consequent.body[0]
+        ]);
+    });
 
-        "conditional last child": function () {
-            var matches = esquery(conditional, ":last-child");
-            assert.contains([
-                conditional.body[1],
-                conditional.body[0].consequent.body[0],
-                conditional.body[0].alternate.body[0],
-                conditional.body[1].consequent.body[0],
-                conditional.body[1].alternate.consequent.body[0]
-            ], matches);
-        },
+    it("conditional nth child", function () {
+        var matches = esquery(conditional, ":nth-child(2)");
+        assert.includeMembers(matches, [
+            conditional.body[1]
+        ]);
 
-        "conditional nth child": function () {
-            var matches = esquery(conditional, ":nth-child(2)");
-            assert.contains([
-                conditional.body[1]
-            ], matches);
+        matches = esquery(conditional, ":nth-last-child(2)");
+        assert.includeMembers(matches, [
+            conditional.body[0]
+        ]);
+    });
 
-            matches = esquery(conditional, ":nth-last-child(2)");
-            assert.contains([
-                conditional.body[0]
-            ], matches);
-        },
+    it("conditional nth child (multiple digits)", function () {
+        var matches = esquery(conditionalLong, ":nth-child(10)");
+        assert.includeMembers(matches, [
+            conditionalLong.body[9]
+        ]);
+    });
 
-        "for loop first child": function () {
-            var matches = esquery(forLoop, ":first-child");
-            assert.contains([
-                forLoop.body[0],
-                forLoop.body[0].body.body[0]
-            ], matches);
-        },
+    it("conditional nth-last child (multiple digits)", function () {
+        var matches = esquery(conditionalLong, ":nth-last-child(10)");
+        assert.includeMembers(matches, [
+            conditionalLong.body[1]
+        ]);
+    });
 
-        "for loop last child": function () {
-            var matches = esquery(forLoop, ":last-child");
-            assert.contains([
-                forLoop.body[0],
-                forLoop.body[0].body.body[0]
-            ], matches);
-        },
+    it("for loop first child", function () {
+        var matches = esquery(forLoop, ":first-child");
+        assert.includeMembers(matches, [
+            forLoop.body[0],
+            forLoop.body[0].body.body[0]
+        ]);
+    });
 
-        "for loop nth child": function () {
-            var matches = esquery(forLoop, ":nth-last-child(1)");
-            assert.contains([
-                forLoop.body[0],
-                forLoop.body[0].body.body[0]
-            ], matches);
-        },
+    it("for loop last child", function () {
+        var matches = esquery(forLoop, ":last-child");
+        assert.includeMembers(matches, [
+            forLoop.body[0],
+            forLoop.body[0].body.body[0]
+        ]);
+    });
 
-        "simple function first child": function () {
-            var matches = esquery(simpleFunction, ":first-child");
-            assert.contains([
-                simpleFunction.body[0],
-                simpleFunction.body[0].params[0],
-                simpleFunction.body[0].body.body[0],
-                simpleFunction.body[0].body.body[0].declarations[0]
-            ], matches);
-        },
+    it("for loop nth child", function () {
+        var matches = esquery(forLoop, ":nth-last-child(1)");
+        assert.includeMembers(matches, [
+            forLoop.body[0],
+            forLoop.body[0].body.body[0]
+        ]);
+    });
 
-        "simple function last child": function () {
-            var matches = esquery(simpleFunction, ":last-child");
-            assert.contains([
-                simpleFunction.body[0],
-                simpleFunction.body[0].params[1],
-                simpleFunction.body[0].body.body[2],
-                simpleFunction.body[0].body.body[0].declarations[0]
-            ], matches);
-        },
+    it("simple function first child", function () {
+        var matches = esquery(simpleFunction, ":first-child");
+        assert.includeMembers(matches, [
+            simpleFunction.body[0],
+            simpleFunction.body[0].params[0],
+            simpleFunction.body[0].body.body[0],
+            simpleFunction.body[0].body.body[0].declarations[0]
+        ]);
+    });
 
-        "simple function nth child": function () {
-            var matches = esquery(simpleFunction, ":nth-child(2)");
-            assert.contains([
-                simpleFunction.body[0].params[1],
-                simpleFunction.body[0].body.body[1]
-            ], matches);
+    it("simple function last child", function () {
+        var matches = esquery(simpleFunction, ":last-child");
+        assert.includeMembers(matches, [
+            simpleFunction.body[0],
+            simpleFunction.body[0].params[1],
+            simpleFunction.body[0].body.body[2],
+            simpleFunction.body[0].body.body[0].declarations[0]
+        ]);
+    });
 
-            matches = esquery(simpleFunction, ":nth-child(3)");
-            assert.contains([
-                simpleFunction.body[0].body.body[2]
-            ], matches);
+    it("simple function nth child", function () {
+        var matches = esquery(simpleFunction, ":nth-child(2)");
+        assert.includeMembers(matches, [
+            simpleFunction.body[0].params[1],
+            simpleFunction.body[0].body.body[1]
+        ]);
 
-            matches = esquery(simpleFunction, ":nth-last-child(2)");
-            assert.contains([
-                simpleFunction.body[0].params[0],
-                simpleFunction.body[0].body.body[1]
-            ], matches);
-        },
+        matches = esquery(simpleFunction, ":nth-child(3)");
+        assert.includeMembers(matches, [
+            simpleFunction.body[0].body.body[2]
+        ]);
 
-        "simple program first child": function () {
-            var matches = esquery(simpleProgram, ":first-child");
-            assert.contains([
-                simpleProgram.body[0],
-                simpleProgram.body[0].declarations[0],
-                simpleProgram.body[1].declarations[0],
-                simpleProgram.body[3].consequent.body[0]
-            ], matches);
-        },
+        matches = esquery(simpleFunction, ":nth-last-child(2)");
+        assert.includeMembers(matches, [
+            simpleFunction.body[0].params[0],
+            simpleFunction.body[0].body.body[1]
+        ]);
+    });
 
-        "simple program last child": function () {
-            var matches = esquery(simpleProgram, ":last-child");
-            assert.contains([
-                simpleProgram.body[3],
-                simpleProgram.body[0].declarations[0],
-                simpleProgram.body[1].declarations[0],
-                simpleProgram.body[3].consequent.body[0]
-            ], matches);
-        },
+    it("simple program first child", function () {
+        var matches = esquery(simpleProgram, ":first-child");
+        assert.includeMembers(matches, [
+            simpleProgram.body[0],
+            simpleProgram.body[0].declarations[0],
+            simpleProgram.body[1].declarations[0],
+            simpleProgram.body[3].consequent.body[0]
+        ]);
+    });
 
-        "simple program nth child": function () {
-            var matches = esquery(simpleProgram, ":nth-child(2)");
-            assert.contains([
-                simpleProgram.body[1]
-            ], matches);
+    it("simple program last child", function () {
+        var matches = esquery(simpleProgram, ":last-child");
+        assert.includeMembers(matches, [
+            simpleProgram.body[3],
+            simpleProgram.body[0].declarations[0],
+            simpleProgram.body[1].declarations[0],
+            simpleProgram.body[3].consequent.body[0]
+        ]);
+    });
 
-            matches = esquery(simpleProgram, ":nth-child(3)");
-            assert.contains([
-                simpleProgram.body[2]
-            ], matches);
+    it("simple program nth child", function () {
+        var matches = esquery(simpleProgram, ":nth-child(2)");
+        assert.includeMembers(matches, [
+            simpleProgram.body[1]
+        ]);
 
-            matches = esquery(simpleProgram, ":nth-last-child(2)");
-            assert.contains([
-                simpleProgram.body[2]
-            ], matches);
-        }
+        matches = esquery(simpleProgram, ":nth-child(3)");
+        assert.includeMembers(matches, [
+            simpleProgram.body[2]
+        ]);
+
+        matches = esquery(simpleProgram, ":nth-last-child(2)");
+        assert.includeMembers(matches, [
+            simpleProgram.body[2]
+        ]);
     });
 });

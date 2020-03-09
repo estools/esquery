@@ -1,25 +1,19 @@
+import esquery from "../esquery.js";
+import conditional from "./fixtures/conditional.js";
 
-define([
-    "dist/esquery",
-    "jstestr/assert",
-    "jstestr/test",
-    "./fixtures/conditional"
-], function (esquery, assert, test, conditional) {
+describe("Compound query", function () {
 
-    test.defineSuite("Compound query", {
+    it("two attributes", function () {
+        var matches = esquery(conditional, '[left.name="x"][right.value=1]');
+        assert.includeMembers(matches, [
+            conditional.body[0].test
+        ]);
+    });
 
-        "two attributes": function () {
-            var matches = esquery(conditional, '[left.name="x"][right.value=1]');
-            assert.contains([
-                conditional.body[0].test
-            ], matches);
-        },
-
-        "type and pseudo": function () {
-            var matches = esquery(conditional, '[left.name="x"]:matches(*)');
-            assert.contains([
-                conditional.body[0].test
-            ], matches);
-        }
+    it("type and pseudo", function () {
+        var matches = esquery(conditional, '[left.name="x"]:matches(*)');
+        assert.includeMembers(matches, [
+            conditional.body[0].test
+        ]);
     });
 });

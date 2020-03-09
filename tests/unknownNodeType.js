@@ -1,17 +1,12 @@
-define([
-  "dist/esquery",
-  "jstestr/assert",
-  "jstestr/test",
-  "./fixtures/unknownNodeTypeAST",
-], function (esquery, assert, test, AST) {
+import esquery from "../esquery.js";
+import AST from "./fixtures/unknownNodeTypeAST.js";
 
-  test.defineSuite("Unknown node type", {
-    "does not throw": function () {
+describe("Unknown node type", function () {
+    it("does not throw", function () {
       try {
         esquery(AST, '*');
       } catch (e) {
         assert.fail();
       }
-    }
-  });
+    });
 });

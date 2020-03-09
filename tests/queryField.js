@@ -1,31 +1,31 @@
+import esquery from "../esquery.js";
+import conditional from "./fixtures/conditional.js";
+import simpleProgram from "./fixtures/simpleProgram.js";
 
-define([
-    "dist/esquery",
-    "jstestr/assert",
-    "jstestr/test",
-    "./fixtures/conditional",
-    "./fixtures/forLoop",
-    "./fixtures/simpleFunction",
-    "./fixtures/simpleProgram"
-], function (esquery, assert, test, conditional, forLoop, simpleFunction, simpleProgram) {
+describe("Field query", function () {
 
-    test.defineSuite("Field query", {
+    it("single field", function () {
+        var matches = esquery(conditional, ".test");
+        assert.includeMembers(matches, [
+            conditional.body[0].test,
+            conditional.body[1].test,
+            conditional.body[1].alternate.test
+        ]);
+    });
 
-        "single field": function () {
-            var matches = esquery(conditional, ".test");
-            assert.contains([
-                conditional.body[0].test,
-                conditional.body[1].test,
-                conditional.body[1].alternate.test
-            ], matches);
-        },
+    it("field sequence", function () {
+        var matches = esquery(simpleProgram, ".declarations.init");
+        assert.includeMembers(matches, [
+            simpleProgram.body[0].declarations[0].init,
+            simpleProgram.body[1].declarations[0].init
+        ]);
+    });
 
-        "field sequence": function () {
-            var matches = esquery(simpleProgram, ".declarations.init");
-            assert.contains([
-                simpleProgram.body[0].declarations[0].init,
-                simpleProgram.body[1].declarations[0].init
-            ], matches);
-        }
+    it("field sequence (long)", function () {
+        var matches = esquery(simpleProgram, ".body.declarations.init");
+        assert.includeMembers(matches, [
+            simpleProgram.body[0].declarations[0].init,
+            simpleProgram.body[1].declarations[0].init
+        ]);
     });
 });

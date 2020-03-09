@@ -1,245 +1,266 @@
+import esquery from "../esquery.js";
+import literal from "./fixtures/literal.js";
+import conditional from "./fixtures/conditional.js";
+import forLoop from "./fixtures/forLoop.js";
+import simpleFunction from "./fixtures/simpleFunction.js";
+import simpleProgram from "./fixtures/simpleProgram.js";
 
-define([
-    "dist/esquery",
-    "jstestr/assert",
-    "jstestr/test",
-    "./fixtures/conditional",
-    "./fixtures/forLoop",
-    "./fixtures/simpleFunction",
-    "./fixtures/simpleProgram"
-], function (esquery, assert, test, conditional, forLoop, simpleFunction, simpleProgram) {
+describe("Attribute query", function () {
 
-    test.defineSuite("Attribute query", {
+    it("conditional", function () {
+        var matches = esquery(conditional, "[name=\"x\"]");
+        assert.includeMembers(matches, [
+            conditional.body[0].test.left,
+            conditional.body[0].alternate.body[0].expression.left,
+            conditional.body[1].test.left.left.left,
+            conditional.body[1].test.right
+        ]);
 
-        "conditional": function () {
-            var matches = esquery(conditional, "[name=\"x\"]");
-            assert.contains([
-                conditional.body[0].test.left,
-                conditional.body[0].alternate.body[0].expression.left,
-                conditional.body[1].test.left.left.left,
-                conditional.body[1].test.right
-            ], matches);
+        matches = esquery(conditional, "[callee.name=\"foo\"]");
+        assert.includeMembers(matches, [
+            conditional.body[0].consequent.body[0].expression
+        ]);
 
-            matches = esquery(conditional, "[callee.name=\"foo\"]");
-            assert.contains([
-                conditional.body[0].consequent.body[0].expression
-            ], matches);
+        matches = esquery(conditional, "[operator]");
+        assert.includeMembers(matches, [
+            conditional.body[0].test,
+            conditional.body[0].alternate.body[0].expression,
+            conditional.body[1].test,
+            conditional.body[1].test.left,
+            conditional.body[1].test.left.left
+        ]);
 
-            matches = esquery(conditional, "[operator]");
-            assert.contains([
-                conditional.body[0].test,
-                conditional.body[0].alternate.body[0].expression,
-                conditional.body[1].test,
-                conditional.body[1].test.left,
-                conditional.body[1].test.left.left
-            ], matches);
-
-            matches = esquery(conditional, "[prefix=true]");
-            assert.contains([
-                conditional.body[1].consequent.body[0].expression.right
-            ], matches);
-        },
-
-        "for loop": function () {
-            var matches = esquery(forLoop, "[operator=\"=\"]");
-            assert.contains([
-                forLoop.body[0].init
-            ], matches);
-
-            matches = esquery(forLoop, "[object.name=\"foo\"]");
-            assert.contains([
-                forLoop.body[0].test.right
-            ], matches);
-
-            matches = esquery(forLoop, "[operator]");
-            assert.contains([
-                forLoop.body[0].init,
-                forLoop.body[0].test,
-                forLoop.body[0].update
-            ], matches);
-        },
-
-        "simple function": function () {
-            var matches = esquery(simpleFunction, "[kind=\"var\"]");
-            assert.contains([
-                simpleFunction.body[0].body.body[0]
-            ], matches);
-
-            matches = esquery(simpleFunction, "[id.name=\"foo\"]");
-            assert.contains([
-                simpleFunction.body[0]
-            ], matches);
-
-            matches = esquery(simpleFunction, "[left]");
-            assert.contains([
-                simpleFunction.body[0].body.body[0].declarations[0].init
-            ], matches);
-        },
-
-        "simple program": function () {
-            var matches = esquery(simpleProgram, "[kind=\"var\"]");
-            assert.contains([
-                simpleProgram.body[0],
-                simpleProgram.body[1]
-            ], matches);
-
-            matches = esquery(simpleProgram, "[id.name=\"y\"]");
-            assert.contains([
-                simpleProgram.body[1].declarations[0]
-            ], matches);
-
-            matches = esquery(simpleProgram, "[body]");
-            assert.contains([
-                simpleProgram,
-                simpleProgram.body[3].consequent
-            ], matches);
-        },
-
-        "conditional regexp": function () {
-            var matches = esquery(conditional, "[name=/x|foo/]");
-            assert.contains([
-                conditional.body[0].test.left,
-                conditional.body[0].consequent.body[0].expression.callee,
-                conditional.body[0].alternate.body[0].expression.left
-            ], matches);
-        },
-
-        "simple function regexp": function () {
-            var matches = esquery(simpleFunction, "[name=/x|foo/]");
-            assert.contains([
-                simpleFunction.body[0].id,
-                simpleFunction.body[0].params[0],
-                simpleFunction.body[0].body.body[0].declarations[0].init.left
-            ], matches);
-        },
-
-        "simple function numeric": function () {
-            var matches = esquery(simpleFunction, "FunctionDeclaration[params.0.name=x]");
-            assert.contains([
-                simpleFunction.body[0]
-            ], matches);
-        },
-
-        "simple program regexp": function () {
-            var matches = esquery(simpleProgram, "[name=/[asdfy]/]");
-            assert.contains([
-                simpleProgram.body[1].declarations[0].id,
-                simpleProgram.body[3].test,
-                simpleProgram.body[3].consequent.body[0].expression.left
-            ], matches);
-        },
-
-        "for loop regexp": function () {
-            var matches = esquery(forLoop, "[name=/i|foo/]");
-            assert.contains([
-                forLoop.body[0].init.left,
-                forLoop.body[0].test.left,
-                forLoop.body[0].test.right.object,
-                forLoop.body[0].update.argument,
-                forLoop.body[0].body.body[0].expression.callee.object,
-                forLoop.body[0].body.body[0].expression.callee.property
-            ], matches);
-        },
-
-        "nonexistent attribute regexp": function () {
-            var matches = esquery(conditional, '[foobar=/./]');
-            assert.isSame(0, matches.length);
-        },
-
-        "not string": function () {
-            var matches = esquery(conditional, '[name!="x"]');
-            assert.contains([
-                conditional.body[0].consequent.body[0].expression.callee,
-                conditional.body[1].consequent.body[0].expression.left
-            ], matches);
-        },
-
-        "not type": function () {
-            var matches = esquery(conditional, '[value!=type(number)]');
-            assert.contains([
-                conditional.body[1].test.left.left.right,
-                conditional.body[1].test.left.right,
-                conditional.body[1].alternate
-            ], matches);
-        },
-
-        "not regexp": function () {
-            var matches = esquery(conditional, '[name!=/x|y/]');
-            assert.contains([
-                conditional.body[0].consequent.body[0].expression.callee
-            ], matches);
-        },
-
-        "less than": function () {
-            var matches = esquery(conditional, "[body.length<2]");
-            assert.contains([
-                conditional.body[0].consequent,
-                conditional.body[0].alternate,
-                conditional.body[1].consequent,
-                conditional.body[1].alternate.consequent
-            ], matches);
-        },
-
-        "greater than": function () {
-            var matches = esquery(conditional, "[body.length>1]");
-            assert.contains([
-                conditional
-            ], matches);
-        },
-
-        "less than or equal": function () {
-            var matches = esquery(conditional, "[body.length<=2]");
-            assert.contains([
-                conditional,
-                conditional.body[0].consequent,
-                conditional.body[0].alternate,
-                conditional.body[1].consequent,
-                conditional.body[1].alternate.consequent
-            ], matches);
-        },
-
-        "greater than or equal": function () {
-            var matches = esquery(conditional, "[body.length>=1]");
-            assert.contains([
-                conditional,
-                conditional.body[0].consequent,
-                conditional.body[0].alternate,
-                conditional.body[1].consequent,
-                conditional.body[1].alternate.consequent
-            ], matches);
-        },
-
-        "attribute type": function () {
-            var matches = esquery(conditional, "[test=type(object)]");
-            assert.contains([
-                conditional.body[0],
-                conditional.body[1],
-                conditional.body[1].alternate
-            ], matches);
-
-            matches = esquery(conditional, "[value=type(boolean)]");
-            assert.contains([
-                conditional.body[1].test.left.right,
-                conditional.body[1].alternate.test
-            ], matches);
-        },
-
-        "unknown type": function () {
-            assert.doesThrow(Error, function () {
-                esquery.match(forLoop, {
-                    type: 'attribute',
-                    name: 'foo',
-                    operator: '=',
-                    value: { type: 'foobar' } });
-            });
-
-            assert.doesThrow(Error, function () {
-                esquery.match(forLoop, {
-                    type: 'attribute',
-                    name: 'foo',
-                    operator: '!=',
-                    value: { type: 'foobar' } });
-            });
-        }
+        matches = esquery(conditional, "[prefix=true]");
+        assert.includeMembers(matches, [
+            conditional.body[1].consequent.body[0].expression.right
+        ]);
     });
+
+    it("literal with special escapes", function () {
+        var matches = esquery(literal, "Literal[value='\\b\\f\\n\\r\\t\\v and just a \\ back\\slash']");
+        assert.includeMembers(matches, [
+            literal.body[0].declarations[0].init
+        ]);
+    });
+
+    it("literal with decimal", function () {
+        var matches = esquery(literal, "Literal[value=21.35]");
+        assert.includeMembers(matches, [
+            literal.body[1].declarations[0].init
+        ]);
+    });
+
+    it("literal with extra whitespace", function () {
+        var matches = esquery(literal, "Literal[value  =  21.35]");
+        assert.includeMembers(matches, [
+            literal.body[1].declarations[0].init
+        ]);
+    });
+
+    // Not sure what AST would be producing an empty string, so
+    //  just checking this acceptable grammar doesn't fail and is
+    //  covered.
+    it("literal with empty string and dot", function () {
+        var matches = esquery(literal, "Literal[.value='abc']");
+        assert.lengthOf(matches, 0);
+    });
+
+    it("literal with backslashes", function () {
+        var matches = esquery(literal, "Literal[value=\"\\z\"]");
+        assert.includeMembers(matches, [
+            literal.body[2].declarations[0].init
+        ]);
+    });
+
+    it("literal with backslash after beginning", function () {
+        var matches = esquery(literal, "Literal[value=\"abc\\z\"]");
+        assert.includeMembers(matches, [
+            literal.body[3].declarations[0].init
+        ]);
+    });
+
+    it("for loop", function () {
+        var matches = esquery(forLoop, "[operator=\"=\"]");
+        assert.includeMembers(matches, [
+            forLoop.body[0].init
+        ]);
+
+        matches = esquery(forLoop, "[object.name=\"foo\"]");
+        assert.includeMembers(matches, [
+            forLoop.body[0].test.right
+        ]);
+
+        matches = esquery(forLoop, "[operator]");
+        assert.includeMembers(matches, [
+            forLoop.body[0].init,
+            forLoop.body[0].test,
+            forLoop.body[0].update
+        ]);
+    });
+
+    it("simple function", function () {
+        var matches = esquery(simpleFunction, "[kind=\"var\"]");
+        assert.includeMembers(matches, [
+            simpleFunction.body[0].body.body[0]
+        ]);
+
+        matches = esquery(simpleFunction, "[id.name=\"foo\"]");
+        assert.includeMembers(matches, [
+            simpleFunction.body[0]
+        ]);
+
+        matches = esquery(simpleFunction, "[left]");
+        assert.includeMembers(matches, [
+            simpleFunction.body[0].body.body[0].declarations[0].init
+        ]);
+    });
+
+    it("simple program", function () {
+        var matches = esquery(simpleProgram, "[kind=\"var\"]");
+        assert.includeMembers(matches, [
+            simpleProgram.body[0],
+            simpleProgram.body[1]
+        ]);
+
+        matches = esquery(simpleProgram, "[id.name=\"y\"]");
+        assert.includeMembers(matches, [
+            simpleProgram.body[1].declarations[0]
+        ]);
+
+        matches = esquery(simpleProgram, "[body]");
+        assert.includeMembers(matches, [
+            simpleProgram,
+            simpleProgram.body[3].consequent
+        ]);
+    });
+
+    it("conditional regexp", function () {
+        var matches = esquery(conditional, "[name=/x|foo/]");
+        assert.includeMembers(matches, [
+            conditional.body[0].test.left,
+            conditional.body[0].consequent.body[0].expression.callee,
+            conditional.body[0].alternate.body[0].expression.left
+        ]);
+    });
+
+    it("simple function regexp", function () {
+        var matches = esquery(simpleFunction, "[name=/x|foo/]");
+        assert.includeMembers(matches, [
+            simpleFunction.body[0].id,
+            simpleFunction.body[0].params[0],
+            simpleFunction.body[0].body.body[0].declarations[0].init.left
+        ]);
+    });
+
+    it("simple function numeric", function () {
+        var matches = esquery(simpleFunction, "FunctionDeclaration[params.0.name=x]");
+        assert.includeMembers(matches, [
+            simpleFunction.body[0]
+        ]);
+    });
+
+    it("simple program regexp", function () {
+        var matches = esquery(simpleProgram, "[name=/[asdfy]/]");
+        assert.includeMembers(matches, [
+            simpleProgram.body[1].declarations[0].id,
+            simpleProgram.body[3].test,
+            simpleProgram.body[3].consequent.body[0].expression.left
+        ]);
+    });
+
+    it("for loop regexp", function () {
+        var matches = esquery(forLoop, "[name=/i|foo/]");
+        assert.includeMembers(matches, [
+            forLoop.body[0].init.left,
+            forLoop.body[0].test.left,
+            forLoop.body[0].test.right.object,
+            forLoop.body[0].update.argument,
+            forLoop.body[0].body.body[0].expression.callee.object,
+            forLoop.body[0].body.body[0].expression.callee.property
+        ]);
+    });
+
+    it("nonexistent attribute regexp", function () {
+        var matches = esquery(conditional, '[foobar=/./]');
+        assert.lengthOf(matches, 0);
+    });
+
+    it("not string", function () {
+        var matches = esquery(conditional, '[name!="x"]');
+        assert.includeMembers(matches, [
+            conditional.body[0].consequent.body[0].expression.callee,
+            conditional.body[1].consequent.body[0].expression.left
+        ]);
+    });
+
+    it("not type", function () {
+        var matches = esquery(conditional, '[value!=type(number)]');
+        assert.includeMembers(matches, [
+            conditional.body[1].test.left.left.right,
+            conditional.body[1].test.left.right,
+            conditional.body[1].alternate
+        ]);
+    });
+
+    it("not regexp", function () {
+        var matches = esquery(conditional, '[name!=/x|y/]');
+        assert.includeMembers(matches, [
+            conditional.body[0].consequent.body[0].expression.callee
+        ]);
+    });
+
+    it("less than", function () {
+        var matches = esquery(conditional, "[body.length<2]");
+        assert.includeMembers(matches, [
+            conditional.body[0].consequent,
+            conditional.body[0].alternate,
+            conditional.body[1].consequent,
+            conditional.body[1].alternate.consequent
+        ]);
+    });
+
+    it("greater than", function () {
+        var matches = esquery(conditional, "[body.length>1]");
+        assert.includeMembers(matches, [
+            conditional
+        ]);
+    });
+
+    it("less than or equal", function () {
+        var matches = esquery(conditional, "[body.length<=2]");
+        assert.includeMembers(matches, [
+            conditional,
+            conditional.body[0].consequent,
+            conditional.body[0].alternate,
+            conditional.body[1].consequent,
+            conditional.body[1].alternate.consequent
+        ]);
+    });
+
+    it("greater than or equal", function () {
+        var matches = esquery(conditional, "[body.length>=1]");
+        assert.includeMembers(matches, [
+            conditional,
+            conditional.body[0].consequent,
+            conditional.body[0].alternate,
+            conditional.body[1].consequent,
+            conditional.body[1].alternate.consequent
+        ]);
+    });
+
+    it("attribute type", function () {
+        var matches = esquery(conditional, "[test=type(object)]");
+        assert.includeMembers(matches, [
+            conditional.body[0],
+            conditional.body[1],
+            conditional.body[1].alternate
+        ]);
+
+        matches = esquery(conditional, "[value=type(boolean)]");
+        assert.includeMembers(matches, [
+            conditional.body[1].test.left.right,
+            conditional.body[1].alternate.test
+        ]);
+    });
+
 });
