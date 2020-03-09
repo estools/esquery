@@ -5,12 +5,12 @@ module.exports = {
         es6: true,
         node: true
     },
-    extends: "eslint:recommended",
+    extends: 'eslint:recommended',
     globals: {
-        Atomics: "readonly",
-        SharedArrayBuffer: "readonly",
+        Atomics: 'readonly',
+        SharedArrayBuffer: 'readonly',
         // Remove after converting to ESM
-        define: "readonly"
+        define: 'readonly'
     },
     overrides: [{
         files: 'tests/**',
@@ -26,6 +26,16 @@ module.exports = {
         ecmaVersion: 2018
     },
     rules: {
-        semi: ["error"]
+        semi: ['error'],
+        indent: ['error', 4, { SwitchCase: 1 }],
+        'prefer-const': ['error'],
+        'no-var': ['error'],
+        'prefer-destructuring': ['error'],
+        'object-shorthand': ['error'],
+        'object-curly-spacing': ['error', 'always'],
+        quotes: ['error', 'single'],
+        'quote-props': ['error', 'as-needed'],
+        'brace-style': ['error', '1tbs', { allowSingleLine: true }],
+        'prefer-template': ['error']
     }
 };
