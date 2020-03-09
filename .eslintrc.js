@@ -29,9 +29,9 @@ module.exports = {
         semi: ['error'],
         indent: ['error', 4, {SwitchCase: 1}],
         'prefer-const': ['error'],
-        'no-var': [2],
-        'prefer-destructuring': [2],
-        'object-shorthand': [2],
-        'quotes': [2, 'single']
+        'no-var': ['error'],
+        'prefer-destructuring': ['error'],
+        'object-shorthand': ['error'],
+        'quotes': ['error', 'single']
     }
 };
