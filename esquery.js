@@ -2,8 +2,6 @@
 import estraverse from 'estraverse';
 import parser from './parser.js';
 
-const {isArray} = Array;
-
 const LEFT_SIDE = {};
 const RIGHT_SIDE = {};
 
@@ -27,7 +25,7 @@ function inPath(node, ancestor, path) {
     if (ancestor == null) { return false; }
     const field = ancestor[path[0]];
     const remainingPath = path.slice(1);
-    if (isArray(field)) {
+    if (Array.isArray(field)) {
         for (let i = 0, l = field.length; i < l; ++i) {
             if (inPath(node, field[i], remainingPath)) { return true; }
         }
@@ -199,7 +197,7 @@ function sibling(node, selector, ancestry, side) {
     const keys = estraverse.VisitorKeys[parent.type];
     for (let i = 0, l = keys.length; i < l; ++i) {
         const listProp = parent[keys[i]];
-        if (isArray(listProp)) {
+        if (Array.isArray(listProp)) {
             const startIndex = listProp.indexOf(node);
             if (startIndex < 0) { continue; }
             let lowerBound, upperBound;
@@ -229,7 +227,7 @@ function adjacent(node, selector, ancestry, side) {
     const keys = estraverse.VisitorKeys[parent.type];
     for (let i = 0, l = keys.length; i < l; ++i) {
         const listProp = parent[keys[i]];
-        if (isArray(listProp)) {
+        if (Array.isArray(listProp)) {
             const idx = listProp.indexOf(node);
             if (idx < 0) { continue; }
             if (side === LEFT_SIDE && idx > 0 && matches(listProp[idx - 1], selector, ancestry)) {
@@ -252,7 +250,7 @@ function nthChild(node, ancestry, idxFn) {
     const keys = estraverse.VisitorKeys[parent.type];
     for (let i = 0, l = keys.length; i < l; ++i) {
         const listProp = parent[keys[i]];
-        if (isArray(listProp)) {
+        if (Array.isArray(listProp)) {
             const idx = listProp.indexOf(node);
             if (idx >= 0 && idx === idxFn(listProp.length)) { return true; }
         }
