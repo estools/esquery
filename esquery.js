@@ -118,23 +118,23 @@ function matches(node, selector, ancestry) {
                 case '=':
                     switch (selector.value.type) {
                         case 'regexp': return typeof p === 'string' && selector.value.value.test(p);
-                        case 'literal': return '' + selector.value.value === '' + p;
+                        case 'literal': return `${selector.value.value}` === `${p}`;
                         case 'type': return selector.value.value === typeof p;
                     }
-                    throw new Error('Unknown selector value type: ' + selector.value.type);
+                    throw new Error(`Unknown selector value type: ${selector.value.type}`);
                 case '!=':
                     switch (selector.value.type) {
                         case 'regexp': return !selector.value.value.test(p);
-                        case 'literal': return '' + selector.value.value !== '' + p;
+                        case 'literal': return `${selector.value.value}` !== `${p}`;
                         case 'type': return selector.value.value !== typeof p;
                     }
-                    throw new Error('Unknown selector value type: ' + selector.value.type);
+                    throw new Error(`Unknown selector value type: ${selector.value.type}`);
                 case '<=': return p <= selector.value.value;
                 case '<': return p < selector.value.value;
                 case '>': return p > selector.value.value;
                 case '>=': return p >= selector.value.value;
             }
-            throw new Error('Unknown operator: ' + selector.operator);
+            throw new Error(`Unknown operator: ${selector.operator}`);
         }
         case 'sibling':
             return matches(node, selector.right, ancestry) &&
@@ -184,10 +184,10 @@ function matches(node, selector, ancestry) {
                         node.type === 'FunctionExpression' ||
                         node.type === 'ArrowFunctionExpression';
             }
-            throw new Error('Unknown class name: ' + selector.name);
+            throw new Error(`Unknown class name: ${selector.name}`);
     }
 
-    throw new Error('Unknown selector type: ' + selector.type);
+    throw new Error(`Unknown selector type: ${selector.type}`);
 }
 
 /*

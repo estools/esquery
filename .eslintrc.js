@@ -33,6 +33,7 @@ module.exports = {
         'prefer-destructuring': ['error'],
         'object-shorthand': ['error'],
         'quotes': ['error', 'single'],
-        'brace-style': ['error', '1tbs', {allowSingleLine: true}]
+        'brace-style': ['error', '1tbs', {allowSingleLine: true}],
+        'prefer-template': ['error']
     }
 };
