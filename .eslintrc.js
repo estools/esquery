@@ -32,6 +32,7 @@ module.exports = {
         'no-var': ['error'],
         'prefer-destructuring': ['error'],
         'object-shorthand': ['error'],
-        'quotes': ['error', 'single']
+        'quotes': ['error', 'single'],
+        'brace-style': ['error', '1tbs', {allowSingleLine: true}]
     }
 };
