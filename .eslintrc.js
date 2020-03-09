@@ -33,7 +33,8 @@ module.exports = {
         'prefer-destructuring': ['error'],
         'object-shorthand': ['error'],
         'object-curly-spacing': ['error', 'always'],
-        'quotes': ['error', 'single'],
+        quotes: ['error', 'single'],
+        'quote-props': ['error', 'as-needed'],
         'brace-style': ['error', '1tbs', { allowSingleLine: true }],
         'prefer-template': ['error']
     }
