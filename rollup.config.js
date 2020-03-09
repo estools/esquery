@@ -1,4 +1,4 @@
-import {terser} from 'rollup-plugin-terser';
+import { terser } from 'rollup-plugin-terser';
 
 import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
@@ -16,7 +16,7 @@ import json from '@rollup/plugin-json';
  * @param {string} [config.format='umd']
  * @returns {external:RollupConfig}
  */
-function getRollupObject ({minifying, format = 'umd'} = {}) {
+function getRollupObject ({ minifying, format = 'umd' } = {}) {
     const nonMinified = {
         input: 'esquery.js',
         output: {
@@ -40,8 +40,8 @@ function getRollupObject ({minifying, format = 'umd'} = {}) {
 }
 
 export default [
-    getRollupObject({minifying: true, format: 'umd'}),
-    getRollupObject({minifying: false, format: 'umd'}),
-    getRollupObject({minifying: true, format: 'esm'}),
-    getRollupObject({minifying: false, format: 'esm'})
+    getRollupObject({ minifying: true, format: 'umd' }),
+    getRollupObject({ minifying: false, format: 'umd' }),
+    getRollupObject({ minifying: true, format: 'esm' }),
+    getRollupObject({ minifying: false, format: 'esm' })
 ];

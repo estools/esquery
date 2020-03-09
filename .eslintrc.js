@@ -27,13 +27,14 @@ module.exports = {
     },
     rules: {
         semi: ['error'],
-        indent: ['error', 4, {SwitchCase: 1}],
+        indent: ['error', 4, { SwitchCase: 1 }],
         'prefer-const': ['error'],
         'no-var': ['error'],
         'prefer-destructuring': ['error'],
         'object-shorthand': ['error'],
+        'object-curly-spacing': ['error', 'always'],
         'quotes': ['error', 'single'],
-        'brace-style': ['error', '1tbs', {allowSingleLine: true}],
+        'brace-style': ['error', '1tbs', { allowSingleLine: true }],
         'prefer-template': ['error']
     }
 };

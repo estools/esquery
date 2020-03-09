@@ -33,8 +33,8 @@ describe('Pseudo matches query', function () {
                 type: 'VariableDeclaration',
                 declarations: [{
                     type: 'VariableDeclarator',
-                    id: {type: 'Identifier', name: 'x'},
-                    init: {type: 'Literal', value: 1, raw: '1'}
+                    id: { type: 'Identifier', name: 'x' },
+                    init: { type: 'Literal', value: 1, raw: '1' }
                 }],
                 kind: 'var'
             }]
