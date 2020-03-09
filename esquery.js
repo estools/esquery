@@ -57,7 +57,8 @@ function matches(node, selector, ancestry) {
             const ancestor = ancestry[path.length - 1];
             return inPath(node, ancestor, path);
 
-        } case 'matches':
+        }
+        case 'matches':
             for (let i = 0, l = selector.selectors.length; i < l; ++i) {
                 if (matches(node, selector.selectors[i], ancestry)) { return true; }
             }
@@ -92,7 +93,8 @@ function matches(node, selector, ancestry) {
             }
             return collector.length !== 0;
 
-        } case 'child':
+        }
+        case 'child':
             if (matches(node, selector.right, ancestry)) {
                 return matches(ancestry[0], selector.left, ancestry.slice(1));
             }
@@ -133,7 +135,8 @@ function matches(node, selector, ancestry) {
                 case '>=': return p >= selector.value.value;
             }
             throw new Error('Unknown operator: ' + selector.operator);
-        } case 'sibling':
+        }
+        case 'sibling':
             return matches(node, selector.right, ancestry) &&
                 sibling(node, selector.left, ancestry, LEFT_SIDE) ||
                 selector.left.subject &&
