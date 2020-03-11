@@ -5,44 +5,44 @@ var selectorAstNode = document.getElementById("selectorAst");
 var outputNode = document.getElementById("output");
 
 function update() {
-var ast = esprima.parse(sourceNode.value);
+    var ast = esprima.parse(sourceNode.value);
 
-var selector = selectorNode.value;
-selectorAstNode.innerHTML = "";
-outputNode.innerHTML = "";
+    var selector = selectorNode.value;
+    selectorAstNode.innerHTML = "";
+    outputNode.innerHTML = "";
 
-var start, end, selectorAst, selectorAstOutput, matches, matchesOutput;
+    var start, end, selectorAst, selectorAstOutput, matches, matchesOutput;
 
-try {
-  start = performance.now();
-} catch (e) {
-  start = Date.now();
-}
+    try {
+      start = performance.now();
+    } catch (e) {
+      start = Date.now();
+    }
 
-try {
-    selectorAst = esquery.parse(selector);
-} catch (e) {
-    selectorAstOutput = e.message;
-}
+    try {
+        selectorAst = esquery.parse(selector);
+    } catch (e) {
+        selectorAstOutput = e.message;
+    }
 
-try {
-    matches = esquery.match(ast, selectorAst);
-} catch (e) {
-    matchesOutput = e.message;
-}
+    try {
+        matches = esquery.match(ast, selectorAst);
+    } catch (e) {
+        matchesOutput = e.message;
+    }
 
-try {
-  end = performance.now();
-} catch (e) {
-  end = Date.now();
-}
+    try {
+      end = performance.now();
+    } catch (e) {
+      end = Date.now();
+    }
 
-selectorAstOutput = selectorAstOutput || JSON.stringify(selectorAst, null, "  ");
-matchesOutput = matchesOutput || JSON.stringify(matches, null, "  ");
+    selectorAstOutput = selectorAstOutput || JSON.stringify(selectorAst, null, "  ");
+    matchesOutput = matchesOutput || JSON.stringify(matches, null, "  ");
 
-selectorAstNode.appendChild(document.createTextNode(selectorAstOutput));
-outputNode.appendChild(document.createTextNode((matches ? matches.length : 0) +
-        " nodes found in " + (end - start) + "ms\n" + matchesOutput));
+    selectorAstNode.appendChild(document.createTextNode(selectorAstOutput));
+    outputNode.appendChild(document.createTextNode((matches ? matches.length : 0) +
+            " nodes found in " + (end - start) + "ms\n" + matchesOutput));
 }
 
 update();
