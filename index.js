@@ -1,11 +1,11 @@
-/* globals espree, esquery */
+/* globals esprima, esquery */
 var sourceNode = document.getElementById("source");
 var selectorNode = document.getElementById("selector");
 var selectorAstNode = document.getElementById("selectorAst");
 var outputNode = document.getElementById("output");
 
 function update() {
-var ast = espree.parse(sourceNode.value);
+var ast = esprima.parse(sourceNode.value);
 
 var selector = selectorNode.value;
 selectorAstNode.innerHTML = "";

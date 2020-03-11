@@ -24,8 +24,8 @@
   },
   "scripts": {
     "build-esquery": "rollup -c",
-    "build-espree": "rollup -c rollup.espree.js",
-    "rollup": "npm run build-esquery && npm run build-espree",
+    "build-esprima": "rollup -c rollup.esprima.js",
+    "rollup": "npm run build-esquery && npm run build-esprima",
     "lint": "eslint ."
   },
   "repository": {
@@ -46,7 +46,7 @@
     "@rollup/plugin-node-resolve": "^7.1.1",
     "eslint": "^6.8.0",
     "esm": "^3.2.25",
-    "espree": "^6.1.2",
+    "esprima": "^4.0.1",
     "rollup": "^1.32.0",
     "rollup-plugin-terser": "^5.2.0"
   },
