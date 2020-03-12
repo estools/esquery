@@ -8,6 +8,7 @@
   "module": "dist/esquery.esm.min.js",
   "files": [
     "dist/*.js",
+    "dist/*.map",
     "parser.js",
     "license.txt",
     "README.md"
