@@ -17,7 +17,9 @@
 }
 
 start
-  = _ ss:selectors _ { return ss.length === 1 ? ss[0] : { type: 'matches', selectors: ss }; }
+  = _ ss:selectors _ {
+    return ss.length === 1 ? ss[0] : { type: 'matches', selectors: ss };
+  }
   / _ { return void 0; }
 
 _ = " "*
@@ -41,7 +43,7 @@ selector
 
 sequence
   = subject:"!"? as:atom+ {
-    var b = as.length === 1 ? as[0] : { type: 'compound', selectors: as };
+    const b = as.length === 1 ? as[0] : { type: 'compound', selectors: as };
     if(subject) b.subject = true;
     return b;
   }
@@ -76,7 +78,7 @@ attr
     number
       = a:([0-9]* ".")? b:[0-9]+ {
         // Can use `a.flat().join('')` once supported
-        var leadingDecimals = a ? [].concat.apply([], a).join('') : '';
+        const leadingDecimals = a ? [].concat.apply([], a).join('') : '';
         return { type: 'literal', value: parseFloat(leadingDecimals + b.join('')) };
       }
     path = i:identifierName { return { type: 'literal', value: i }; }

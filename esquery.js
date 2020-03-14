@@ -2,11 +2,35 @@
 import estraverse from 'estraverse';
 import parser from './parser.js';
 
-const LEFT_SIDE = {};
-const RIGHT_SIDE = {};
+/**
+* @typedef {"LEFT_SIDE"|"RIGHT_SIDE"} Side
+*/
+
+const LEFT_SIDE = 'LEFT_SIDE';
+const RIGHT_SIDE = 'RIGHT_SIDE';
 
 /**
- * Get the value of a property which may be multiple levels down in the object.
+ * @external AST
+ * @see https://esprima.readthedocs.io/en/latest/syntax-tree-format.html
+ */
+
+/**
+ * One of the rules of `grammar.pegjs`
+ * @typedef {PlainObject} SelectorAST
+ * @see grammar.pegjs
+*/
+
+/**
+ * The `sequence` production of `grammar.pegjs`
+ * @typedef {PlainObject} SelectorSequenceAST
+*/
+
+/**
+ * Get the value of a property which may be multiple levels down
+ * in the object.
+ * @param {?PlainObject} obj
+ * @param {string} key
+ * @returns {undefined|boolean|string|number|external:AST}
  */
 function getPath(obj, key) {
     const keys = key.split('.');
@@ -18,7 +42,12 @@ function getPath(obj, key) {
 }
 
 /**
- * Determine whether `node` can be reached by following `path`, starting at `ancestor`.
+ * Determine whether `node` can be reached by following `path`,
+ * starting at `ancestor`.
+ * @param {?external:AST} node
+ * @param {?external:AST} ancestor
+ * @param {string[]} path
+ * @returns {boolean}
  */
 function inPath(node, ancestor, path) {
     if (path.length === 0) { return node === ancestor; }
@@ -36,7 +65,14 @@ function inPath(node, ancestor, path) {
 }
 
 /**
- * Given a `node` and its ancestors, determine if `node` is matched by `selector`.
+ * Given a `node` and its ancestors, determine if `node` is matched
+ * by `selector`.
+ * @param {?external:AST} node
+ * @param {?SelectorAST} selector
+ * @param {external:AST[]} [ancestry=[]]
+ * @throws {Error} Unknowns (operator, class name, selector type, or
+ * selector value type)
+ * @returns {boolean}
  */
 function matches(node, selector, ancestry) {
     if (!selector) { return true; }
@@ -188,8 +224,14 @@ function matches(node, selector, ancestry) {
     throw new Error(`Unknown selector type: ${selector.type}`);
 }
 
-/*
- * Determines if the given node has a sibling that matches the given selector.
+/**
+ * Determines if the given node has a sibling that matches the
+ * given selector.
+ * @param {external:AST} node
+ * @param {SelectorSequenceAST} selector
+ * @param {external:AST[]} ancestry
+ * @param {Side} side
+ * @returns {boolean}
  */
 function sibling(node, selector, ancestry, side) {
     const [parent] = ancestry;
@@ -218,8 +260,14 @@ function sibling(node, selector, ancestry, side) {
     return false;
 }
 
-/*
- * Determines if the given node has an adjacent sibling that matches the given selector.
+/**
+ * Determines if the given node has an adjacent sibling that matches
+ * the given selector.
+ * @param {external:AST} node
+ * @param {SelectorSequenceAST} selector
+ * @param {external:AST[]} ancestry
+ * @param {Side} side
+ * @returns {boolean}
  */
 function adjacent(node, selector, ancestry, side) {
     const [parent] = ancestry;
@@ -241,8 +289,19 @@ function adjacent(node, selector, ancestry, side) {
     return false;
 }
 
-/*
- * Determines if the given node is the nth child, determined by idxFn, which is given the containing list's length.
+/**
+* @callback IndexFunction
+* @param {Integer} len Containing list's length
+* @returns {Integer}
+*/
+
+/**
+ * Determines if the given node is the nth child, determined by
+ * `idxFn`, which is given the containing list's length.
+ * @param {external:AST} node
+ * @param {external:AST[]} ancestry
+ * @param {IndexFunction} idxFn
+ * @returns {boolean}
  */
 function nthChild(node, ancestry, idxFn) {
     const [parent] = ancestry;
@@ -258,22 +317,29 @@ function nthChild(node, ancestry, idxFn) {
     return false;
 }
 
-/*
- * For each selector node marked as a subject, find the portion of the selector that the subject must match.
+/**
+ * For each selector node marked as a subject, find the portion of the
+ * selector that the subject must match.
+ * @param {SelectorAST} selector
+ * @param {SelectorAST} [ancestor] Defaults to `selector`
+ * @returns {SelectorAST[]}
  */
 function subjects(selector, ancestor) {
     if (selector == null || typeof selector != 'object') { return []; }
     if (ancestor == null) { ancestor = selector; }
     const results = selector.subject ? [ancestor] : [];
-    for (const p in selector) {
-        if(!{}.hasOwnProperty.call(selector, p)) { continue; }
-        [].push.apply(results, subjects(selector[p], p === 'left' ? selector[p] : ancestor));
+    for (const [p, sel] of Object.entries(selector)) {
+        results.push(...subjects(sel, p === 'left' ? sel : ancestor));
     }
     return results;
 }
 
 /**
- * From a JS AST and a selector AST, collect all JS AST nodes that match the selector.
+ * From a JS AST and a selector AST, collect all JS AST nodes that
+ * match the selector.
+ * @param {external:AST} ast
+ * @param {?SelectorAST} selector
+ * @returns {external:AST[]}
  */
 function match(ast, selector) {
     const ancestry = [], results = [];
@@ -305,6 +371,8 @@ function match(ast, selector) {
 
 /**
  * Parse a selector string and return its AST.
+ * @param {string} selector
+ * @returns {SelectorAST}
  */
 function parse(selector) {
     return parser.parse(selector);
@@ -312,6 +380,9 @@ function parse(selector) {
 
 /**
  * Query the code AST using the selector string.
+ * @param {external:AST} ast
+ * @param {string} selector
+ * @returns {external:AST[]}
  */
 function query(ast, selector) {
     return match(ast, parse(selector));
