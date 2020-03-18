@@ -168,6 +168,29 @@ describe('Attribute query', function () {
         ]);
     });
 
+    it('multiple regexp flags (i and u)', function () {
+        const matches = esquery(simpleProgram, '[name=/\\u{61}|[SDFY]/iu]');
+        assert.includeMembers(matches, [
+            simpleProgram.body[1].declarations[0].id,
+            simpleProgram.body[3].test,
+            simpleProgram.body[3].consequent.body[0].expression.left
+        ]);
+    });
+
+    it('regexp flag (s)', function () {
+        const matches = esquery(literal, '[value=/\f.\r/s]');
+        assert.includeMembers(matches, [
+            literal.body[0].declarations[0].init
+        ]);
+    });
+
+    it('regexp flag (m)', function () {
+        const matches = esquery(literal, '[value=/^\r/m]');
+        assert.includeMembers(matches, [
+            literal.body[0].declarations[0].init
+        ]);
+    });
+
     it('for loop regexp', function () {
         const matches = esquery(forLoop, '[name=/i|foo/]');
         assert.includeMembers(matches, [
