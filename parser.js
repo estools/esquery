@@ -147,7 +147,9 @@
         peg$startRuleFunctions = { start: peg$parsestart },
         peg$startRuleFunction  = peg$parsestart,
 
-        peg$c0 = function(ss) { return ss.length === 1 ? ss[0] : { type: 'matches', selectors: ss }; },
+        peg$c0 = function(ss) {
+            return ss.length === 1 ? ss[0] : { type: 'matches', selectors: ss };
+          },
         peg$c1 = function() { return void 0; },
         peg$c2 = " ",
         peg$c3 = peg$literalExpectation(" ", false),
@@ -177,7 +179,7 @@
         peg$c21 = "!",
         peg$c22 = peg$literalExpectation("!", false),
         peg$c23 = function(subject, as) {
-            var b = as.length === 1 ? as[0] : { type: 'compound', selectors: as };
+            const b = as.length === 1 ? as[0] : { type: 'compound', selectors: as };
             if(subject) b.subject = true;
             return b;
           },
@@ -224,7 +226,7 @@
         peg$c60 = peg$classExpectation([["0", "9"]], false, false),
         peg$c61 = function(a, b) {
                 // Can use `a.flat().join('')` once supported
-                var leadingDecimals = a ? [].concat.apply([], a).join('') : '';
+                const leadingDecimals = a ? [].concat.apply([], a).join('') : '';
                 return { type: 'literal', value: parseFloat(leadingDecimals + b.join('')) };
               },
         peg$c62 = function(i) { return { type: 'literal', value: i }; },

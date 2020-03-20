@@ -57,18 +57,4 @@ describe('match', function () {
                 value: { type: 'foobar' } });
         }, Error);
     });
-
-    // Can remove need for this if remove `subjects`' `hasOwnProperty`
-    //  check in favor of for-of (Node >=6.9.2) or use `Object.keys`
-    it('selector with non-own properties', function () {
-        assert.throws(function () {
-            function Selector () {}
-            Selector.prototype.inheritedMethod = function () {};
-            const sel = new Selector();
-            sel.type = 'class';
-            sel.name = 'badName';
-            sel.value = { type: 'foobar' };
-            esquery.match(ast, sel);
-        }, Error);
-    });
 });
