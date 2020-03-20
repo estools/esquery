@@ -83,7 +83,10 @@ attr
       }
     path = i:identifierName { return { type: 'literal', value: i }; }
     type = "type(" _ t:[^ )]+ _ ")" { return { type: 'type', value: t.join('') }; }
-    regex = "/" d:[^/]+ "/" { return { type: 'regexp', value: new RegExp(d.join('')) }; }
+    flags = [imsu]+
+    regex = "/" d:[^/]+ "/" flgs:flags? { return {
+      type: 'regexp', value: new RegExp(d.join(''), flgs ? flgs.join('') : '') };
+    }
 
 field = "." i:identifierName is:("." identifierName)* {
   return { type: 'field', name: is.reduce(function(memo, p){ return memo + p[0] + p[1]; }, i)};
