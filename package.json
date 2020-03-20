@@ -32,7 +32,7 @@
     "build-browser-only": "rollup -c",
     "build-browser": "npm run build-parser && npm run build-browser-only",
     "mocha": "mocha --require chai/register-assert --require esm tests",
-    "test": "npm run lint && nyc npm run mocha",
+    "test": "nyc npm run mocha && npm run lint",
     "lint": "eslint ."
   },
   "repository": {
