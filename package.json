@@ -28,11 +28,12 @@
     ]
   },
   "scripts": {
-    "build-parser": "rm parser.js && pegjs --cache --format umd -o \"parser.js\" \"grammar.pegjs\"",
-    "build-browser-only": "rollup -c",
-    "build-browser": "npm run build-parser && npm run build-browser-only",
+    "build:parser": "rm parser.js && pegjs --cache --format umd -o \"parser.js\" \"grammar.pegjs\"",
+    "build:browser": "rollup -c",
+    "build": "npm run build:parser && npm run build:browser",
     "mocha": "mocha --require chai/register-assert --require esm tests",
-    "test": "nyc npm run mocha",
+    "test": "nyc npm run mocha && npm run lint",
+    "test:ci": "npm run mocha",
     "lint": "eslint ."
   },
   "repository": {
