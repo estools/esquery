@@ -24,7 +24,7 @@ import commonjs from '@rollup/plugin-commonjs';
  */
 function getRollupObject ({minifying, format = 'umd'} = {}) {
     const nonMinified = {
-        input: 'node_modules/esquery/esquery.js',
+        input: require.resolve('esquery'),
         output: {
             format,
             sourcemap: minifying,

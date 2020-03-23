@@ -20,7 +20,7 @@ import commonjs from '@rollup/plugin-commonjs';
  */
 function getRollupObject ({minifying, format = 'umd'} = {}) {
     const nonMinified = {
-        input: 'node_modules/esprima/dist/esprima.js',
+        input: require.resolve('esprima'),
         output: {
             format,
             sourcemap: minifying,
