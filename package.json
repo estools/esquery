@@ -69,6 +69,6 @@
     "node": ">=8.0"
   },
   "dependencies": {
-    "estraverse": "^4.3.0"
+    "estraverse": "^5.0.0"
   }
 }
