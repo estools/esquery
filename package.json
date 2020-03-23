@@ -8,6 +8,7 @@
   "module": "dist/esquery.esm.min.js",
   "files": [
     "dist/*.js",
+    "dist/*.map",
     "parser.js",
     "license.txt",
     "README.md"
@@ -28,6 +29,7 @@
     ]
   },
   "scripts": {
+    "prepublishOnly": "npm run build && npm test",
     "build:parser": "rm parser.js && pegjs --cache --format umd -o \"parser.js\" \"grammar.pegjs\"",
     "build:browser": "rollup -c",
     "build": "npm run build:parser && npm run build:browser",
