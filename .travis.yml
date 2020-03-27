@@ -12,6 +12,23 @@ node_js:
   - 10
   - 12
 
+before_install:
+  - npm config set depth 0
+before_script: >
+  node_version=$(node -v);
+  if [ ${node_version:3:1} = "." ]; then
+    echo "Node 10+"
+    npm install --no-save "eslint@6"
+    else
+      if [ ${node_version:1:1} -ge 8 ]; then
+        echo "Node 8+"
+        npm install --no-save "eslint@5"
+      else
+        echo "Node <= 6"
+        npm install --no-save "eslint@5" mocha@6.2.2 nyc@14.1.1
+      fi
+  fi
+
 matrix:
   include:
     - name: Lint
