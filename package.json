@@ -51,6 +51,9 @@
     "query"
   ],
   "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "7.8.7",
+    "rollup-plugin-babel": "^4.4.0",
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-json": "^4.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
@@ -65,9 +68,6 @@
     "rollup-plugin-terser": "^5.2.0"
   },
   "license": "BSD-3-Clause",
-  "engines": {
-    "node": ">=8.0"
-  },
   "dependencies": {
     "estraverse": "^5.0.0"
   }
