@@ -4,6 +4,8 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 
+import babel from 'rollup-plugin-babel';
+
 /**
  * @external RollupConfig
  * @type {PlainObject}
@@ -30,7 +32,8 @@ function getRollupObject ({ minifying, format = 'umd' } = {}) {
         plugins: [
             json(),
             nodeResolve(),
-            commonjs()
+            commonjs(),
+            babel()
         ]
     };
     if (minifying) {

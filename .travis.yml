@@ -4,6 +4,10 @@ script:
   - npm run build
   - npm run test:ci
 node_js:
+  - 0.10
+  - 2
+  - 4
+  - 6
   - 8
   - 10
   - 12
