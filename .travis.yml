@@ -25,7 +25,7 @@ before_script: >
         npm install --no-save "eslint@5"
       else
         echo "Node <= 6"
-        npm install --no-save "eslint@5" mocha@6.2.2 nyc@14.1.1
+        npm install --no-save "eslint@5" mocha@6.2.2 nyc@14.1.1 rollup-plugin-babel@2.7.1 @rollup/plugin-json@3.1.0 @rollup/plugin-node-resolve@5 @rollup/plugin-commonjs@10
       fi
   fi
 
