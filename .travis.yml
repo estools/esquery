@@ -1,7 +1,5 @@
 sudo: false
 language: node_js
-script:
-  - npm run test:ci
 node_js:
   - 0.10
   - 2
@@ -19,22 +17,27 @@ before_script: >
     echo "Node 10+"
     npm install --no-save "eslint@6"
     npm run build
+    npm run test:ci
     else
       if [ ${node_version:1:1} -ge 8 ]; then
         echo "Node 8+"
         npm install --no-save "eslint@5"
         npm run build
+        npm run test:ci
       else
         if [ ${node_version:1:1} -ge 6 ]; then
           echo "Node 6+"
           npm install --no-save "eslint@5" mocha@6.2.2 nyc@14.1.1
+          npm run test:ci
         else
           if [ ${node_version:1:1} -ge 4 ]; then
             echo "Node 4+"
-            npm install --no-save "eslint@5" mocha@5 nyc@14.1.1
+            npm install --no-save "eslint@5" mocha@5 nyc@14.1.1 babel-register
+            mocha --require core-js/es/regexp/constructor --require chai/register-assert --require babel-register tests
           else
             echo "Node <4"
-            npm install --no-save "eslint@5" mocha@3 nyc@14.1.1
+            npm install --no-save "eslint@5" mocha@3 nyc@14.1.1 babel-register
+            mocha --require core-js/es/regexp/constructor --require chai/register-assert --require babel-register tests
           fi
         fi
       fi
