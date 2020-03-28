@@ -25,8 +25,18 @@ before_script: >
         npm install --no-save "eslint@5"
         npm run build
       else
-        echo "Node <= 6"
-        npm install --no-save "eslint@5" mocha@6.2.2 nyc@14.1.1
+        if [ ${node_version:1:1} -ge 6 ]; then
+          echo "Node 6+"
+          npm install --no-save "eslint@5" mocha@6.2.2 nyc@14.1.1
+        else
+          if [ ${node_version:1:1} -ge 4 ]; then
+            echo "Node 4+"
+            npm install --no-save "eslint@5" mocha@5 nyc@14.1.1
+          else
+            echo "Node <4"
+            npm install --no-save "eslint@5" mocha@3 nyc@14.1.1
+          fi
+        fi
       fi
   fi
 
