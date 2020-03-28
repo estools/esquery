@@ -71,7 +71,7 @@
   },
   "license": "BSD-3-Clause",
   "engines": {
-    "node": ">=8.0"
+    "node": ">=0.10"
   },
   "dependencies": {
     "estraverse": "^5.0.0"
