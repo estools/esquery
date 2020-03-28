@@ -1,7 +1,6 @@
 sudo: false
 language: node_js
 script:
-  - npm run build
   - npm run test:ci
 node_js:
   - 0.10
@@ -19,13 +18,15 @@ before_script: >
   if [ ${node_version:3:1} = "." ]; then
     echo "Node 10+"
     npm install --no-save "eslint@6"
+    npm run build
     else
       if [ ${node_version:1:1} -ge 8 ]; then
         echo "Node 8+"
         npm install --no-save "eslint@5"
+        npm run build
       else
         echo "Node <= 6"
-        npm install --no-save "eslint@5" mocha@6.2.2 nyc@14.1.1 rollup-plugin-babel@2.7.1 @rollup/plugin-json@3.1.0 @rollup/plugin-node-resolve@5 @rollup/plugin-commonjs@10
+        npm install --no-save "eslint@5" mocha@6.2.2 nyc@14.1.1
       fi
   fi
 
