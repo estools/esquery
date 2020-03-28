@@ -3,6 +3,7 @@
     ["@babel/preset-env"]
   ],
   "plugins": [
-    ["transform-es2017-object-entries"]
+    ["transform-es2017-object-entries"],
+    ["@babel/plugin-transform-dotall-regex"]
   ]
 }
