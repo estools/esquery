@@ -33,7 +33,7 @@
     "build:parser": "rm parser.js && pegjs --cache --format umd -o \"parser.js\" \"grammar.pegjs\"",
     "build:browser": "rollup -c",
     "build": "npm run build:parser && npm run build:browser",
-    "mocha": "mocha --require core-js/es/regexp/constructor --require chai/register-assert --require @babel/register tests",
+    "mocha": "mocha --require chai/register-assert --require @babel/register tests",
     "test": "nyc npm run mocha && npm run lint",
     "test:ci": "npm run mocha",
     "lint": "eslint ."
@@ -52,6 +52,7 @@
   ],
   "devDependencies": {
     "@babel/core": "^7.9.0",
+    "@babel/plugin-transform-dotall-regex": "^7.8.3",
     "@babel/preset-env": "^7.9.0",
     "@babel/register": "^7.9.0",
     "@rollup/plugin-commonjs": "^11.0.2",
@@ -59,7 +60,6 @@
     "@rollup/plugin-node-resolve": "^7.1.1",
     "babel-plugin-transform-es2017-object-entries": "0.0.5",
     "chai": "^4.2.0",
-    "core-js": "^3.6.4",
     "eslint": "^6.8.0",
     "esprima": "~4.0.1",
     "mocha": "^7.1.1",
