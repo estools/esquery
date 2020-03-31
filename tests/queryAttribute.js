@@ -177,12 +177,14 @@ describe('Attribute query', function () {
         ]);
     });
 
-    it('regexp flag (s)', function () {
-        const matches = esquery(literal, '[value=/\f.\r/s]');
-        assert.includeMembers(matches, [
-            literal.body[0].declarations[0].init
-        ]);
-    });
+    if ((/^(?:[89]|\d{2,})\./).test(process.version)) {
+        it('regexp flag (s)', function () {
+            const matches = esquery(literal, '[value=/\f.\r/s]');
+            assert.includeMembers(matches, [
+                literal.body[0].declarations[0].init
+            ]);
+        });
+    }
 
     it('regexp flag (m)', function () {
         const matches = esquery(literal, '[value=/^\r/m]');
