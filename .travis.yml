@@ -13,7 +13,7 @@ before_script: >
   node_version=$(node -v);
   if [ ${node_version:3:1} = "." ]; then
     echo "Node 10+"
-    npm install --no-save "eslint@6"
+    npm install
     else
       if [ ${node_version:1:1} -ge 8 ]; then
         echo "Node 8+"
