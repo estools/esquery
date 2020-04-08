@@ -9,8 +9,6 @@ node_js:
   - 10
   - 12
 
-before_install:
-  - npm config set depth 0
 before_script: >
   node_version=$(node -v);
   if [ ${node_version:3:1} = "." ]; then
