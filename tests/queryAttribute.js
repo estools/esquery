@@ -177,7 +177,7 @@ describe('Attribute query', function () {
         ]);
     });
 
-    if ((/^(?:[89]|\d{2,})\./).test(process.version)) {
+    if (parseInt(process.version) >= 8) {
         it('regexp flag (s)', function () {
             const matches = esquery(literal, '[value=/\f.\r/s]');
             assert.includeMembers(matches, [
