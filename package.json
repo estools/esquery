@@ -33,7 +33,7 @@
     "build:parser": "rm parser.js && pegjs --cache --format umd -o \"parser.js\" \"grammar.pegjs\"",
     "build:browser": "rollup -c",
     "build": "npm run build:parser && npm run build:browser",
-    "mocha": "mocha --require chai/register-assert --require esm tests",
+    "mocha": "mocha --require chai/register-assert --require @babel/register tests",
     "test": "nyc npm run mocha && npm run lint",
     "test:ci": "npm run mocha",
     "lint": "eslint ."
@@ -51,22 +51,26 @@
     "query"
   ],
   "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.0",
+    "@babel/register": "^7.9.0",
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-json": "^4.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
+    "babel-plugin-transform-es2017-object-entries": "0.0.5",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
-    "esm": "^3.2.25",
     "esprima": "~4.0.1",
     "mocha": "^7.1.1",
     "nyc": "^15.0.0",
     "pegjs": "~0.10.0",
     "rollup": "^1.32.0",
+    "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-terser": "^5.2.0"
   },
   "license": "BSD-3-Clause",
   "engines": {
-    "node": ">=8.0"
+    "node": ">=0.10"
   },
   "dependencies": {
     "estraverse": "^5.0.0"
