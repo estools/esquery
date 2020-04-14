@@ -360,16 +360,16 @@ function traverse(ast, selector, visitor) {
                 if (altSubjects.length) {
                     for (let i = 0, l = altSubjects.length; i < l; ++i) {
                         if (matches(node, altSubjects[i], ancestry)) {
-                            visitor(node, parent, ancestry.slice());
+                            visitor(node, parent, ancestry);
                         }
                         for (let k = 0, m = ancestry.length; k < m; ++k) {
                             if (matches(ancestry[k], altSubjects[i], ancestry.slice(k + 1))) {
-                                visitor(ancestry[k], parent, ancestry.slice());
+                                visitor(ancestry[k], parent, ancestry);
                             }
                         }
                     }
                 } else {
-                    visitor(node, parent, ancestry.slice());
+                    visitor(node, parent, ancestry);
                 }
             }
         },

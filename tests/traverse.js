@@ -10,7 +10,7 @@ describe('traverse', function () {
         esquery.traverse(conditional, selector, (match, parent, ancestry) => {
             parents.push(parent);
             matches.push(match);
-            ancestries.push(ancestry);
+            ancestries.push(ancestry.slice());
         });
         assert.deepEqual(matches, [
             conditional.body[0],
