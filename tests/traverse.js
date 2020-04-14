@@ -12,24 +12,23 @@ describe('traverse', function () {
             matches.push(match);
             ancestries.push(ancestry);
         });
-        assert.includeMembers(matches, [
+        assert.deepEqual(matches, [
             conditional.body[0],
             conditional.body[1],
             conditional.body[1].alternate
         ]);
-        assert.includeMembers(parents, [
+        assert.deepEqual(parents, [
+            conditional,
             conditional,
             conditional.body[1]
         ]);
-        assert.includeMembers(ancestries[0], [
-            conditional
-        ]);
-        assert.includeMembers(ancestries[1], [
-            conditional
-        ]);
-        assert.includeMembers(ancestries[2], [
-            conditional.body[1],
-            conditional
+        assert.deepEqual(ancestries, [
+            [conditional],
+            [conditional],
+            [
+                conditional.body[1],
+                conditional
+            ]
         ]);
     });
 });
