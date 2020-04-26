@@ -1,3 +1,4 @@
+'use strict';
 module.exports = {
     env: {
         browser: true,
@@ -8,11 +9,17 @@ module.exports = {
     extends: 'eslint:recommended',
     globals: {
         Atomics: 'readonly',
-        SharedArrayBuffer: 'readonly',
-        // Remove after converting to ESM
-        define: 'readonly'
+        SharedArrayBuffer: 'readonly'
     },
     overrides: [{
+        files: '.eslintrc.js',
+        parserOptions: {
+            sourceType: 'script'
+        },
+        rules: {
+            strict: 'error'
+        }
+    }, {
         files: 'tests/**',
         globals: {
             assert: true
