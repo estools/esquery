@@ -16,18 +16,26 @@ import babel from 'rollup-plugin-babel';
  * @param {PlainObject} [config= {}]
  * @param {boolean} [config.minifying=false]
  * @param {string} [config.format='umd']
+ * @param {boolean} [config.lite=false]
  * @returns {external:RollupConfig}
  */
-function getRollupObject ({ minifying, format = 'umd' } = {}) {
+function getRollupObject ({ minifying, format = 'umd', lite } = {}) {
     const nonMinified = {
         input: 'esquery.js',
         output: {
             format,
             sourcemap: minifying,
-            file: `dist/esquery${
-                format === 'umd' ? '' : `.${format}`
-            }${minifying ? '.min' : ''}.js`,
-            name: 'esquery'
+            file: [
+                'dist/esquery',
+                lite ? '.lite' : '',
+                format === 'umd' ? '' : `.${format}`,
+                minifying ? '.min' : '',
+                '.js'
+            ].join(''),
+            name: 'esquery',
+            globals: {
+                estraverse: 'estraverse'
+            }
         },
         plugins: [
             json(),
@@ -36,6 +44,9 @@ function getRollupObject ({ minifying, format = 'umd' } = {}) {
             babel()
         ]
     };
+    if (lite) {
+        nonMinified.external = ['estraverse'];
+    }
     if (minifying) {
         nonMinified.plugins.push(terser());
     }
@@ -46,5 +57,7 @@ export default [
     getRollupObject({ minifying: true, format: 'umd' }),
     getRollupObject({ minifying: false, format: 'umd' }),
     getRollupObject({ minifying: true, format: 'esm' }),
-    getRollupObject({ minifying: false, format: 'esm' })
+    getRollupObject({ minifying: false, format: 'esm' }),
+    getRollupObject({ minifying: true, format: 'umd', lite: true }),
+    getRollupObject({ minifying: false, format: 'umd', lite: true })
 ];
