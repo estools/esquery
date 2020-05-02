@@ -34,9 +34,9 @@ const RIGHT_SIDE = 'RIGHT_SIDE';
  */
 function getPath(obj, key) {
     const keys = key.split('.');
-    for (let i = 0; i < keys.length; i++) {
+    for (const key of keys) {
         if (obj == null) { return obj; }
-        obj = obj[keys[i]];
+        obj = obj[key];
     }
     return obj;
 }
@@ -55,8 +55,8 @@ function inPath(node, ancestor, path) {
     const field = ancestor[path[0]];
     const remainingPath = path.slice(1);
     if (Array.isArray(field)) {
-        for (let i = 0, l = field.length; i < l; ++i) {
-            if (inPath(node, field[i], remainingPath)) { return true; }
+        for (const component of field) {
+            if (inPath(node, component, remainingPath)) { return true; }
         }
         return false;
     } else {
@@ -93,31 +93,31 @@ function matches(node, selector, ancestry) {
 
         }
         case 'matches':
-            for (let i = 0, l = selector.selectors.length; i < l; ++i) {
-                if (matches(node, selector.selectors[i], ancestry)) { return true; }
+            for (const sel of selector.selectors) {
+                if (matches(node, sel, ancestry)) { return true; }
             }
             return false;
 
         case 'compound':
-            for (let i = 0, l = selector.selectors.length; i < l; ++i) {
-                if (!matches(node, selector.selectors[i], ancestry)) { return false; }
+            for (const sel of selector.selectors) {
+                if (!matches(node, sel, ancestry)) { return false; }
             }
             return true;
 
         case 'not':
-            for (let i = 0, l = selector.selectors.length; i < l; ++i) {
-                if (matches(node, selector.selectors[i], ancestry)) { return false; }
+            for (const sel of selector.selectors) {
+                if (matches(node, sel, ancestry)) { return false; }
             }
             return true;
 
         case 'has': {
             const collector = [];
-            for (let i = 0, l = selector.selectors.length; i < l; ++i) {
+            for (const sel of selector.selectors) {
                 const a = [];
                 estraverse.traverse(node, {
                     enter (node, parent) {
                         if (parent != null) { a.unshift(parent); }
-                        if (matches(node, selector.selectors[i], a)) {
+                        if (matches(node, sel, a)) {
                             collector.push(node);
                         }
                     },
@@ -237,8 +237,8 @@ function sibling(node, selector, ancestry, side) {
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = estraverse.VisitorKeys[parent.type];
-    for (let i = 0, l = keys.length; i < l; ++i) {
-        const listProp = parent[keys[i]];
+    for (const key of keys) {
+        const listProp = parent[key];
         if (Array.isArray(listProp)) {
             const startIndex = listProp.indexOf(node);
             if (startIndex < 0) { continue; }
@@ -273,8 +273,8 @@ function adjacent(node, selector, ancestry, side) {
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = estraverse.VisitorKeys[parent.type];
-    for (let i = 0, l = keys.length; i < l; ++i) {
-        const listProp = parent[keys[i]];
+    for (const key of keys) {
+        const listProp = parent[key];
         if (Array.isArray(listProp)) {
             const idx = listProp.indexOf(node);
             if (idx < 0) { continue; }
@@ -307,8 +307,8 @@ function nthChild(node, ancestry, idxFn) {
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = estraverse.VisitorKeys[parent.type];
-    for (let i = 0, l = keys.length; i < l; ++i) {
-        const listProp = parent[keys[i]];
+    for (const key of keys) {
+        const listProp = parent[key];
         if (Array.isArray(listProp)) {
             const idx = listProp.indexOf(node);
             if (idx >= 0 && idx === idxFn(listProp.length)) { return true; }
