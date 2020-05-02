@@ -55,8 +55,8 @@ function inPath(node, ancestor, path) {
     const field = ancestor[path[0]];
     const remainingPath = path.slice(1);
     if (Array.isArray(field)) {
-        for (const fld of field) {
-            if (inPath(node, fld, remainingPath)) { return true; }
+        for (const component of field) {
+            if (inPath(node, component, remainingPath)) { return true; }
         }
         return false;
     } else {
