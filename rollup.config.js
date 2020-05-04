@@ -5,6 +5,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 
 import babel from 'rollup-plugin-babel';
+import packageJson from './package.json';
 
 /**
  * @external RollupConfig
@@ -45,7 +46,7 @@ function getRollupObject ({ minifying, format = 'umd', lite } = {}) {
         ]
     };
     if (lite) {
-        nonMinified.external = ['estraverse'];
+        nonMinified.external = Object.keys(packageJson.dependencies);
     }
     if (minifying) {
         nonMinified.plugins.push(terser());
