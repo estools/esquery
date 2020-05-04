@@ -20,7 +20,7 @@ import packageJson from './package.json';
  * @param {boolean} [config.lite=false]
  * @returns {external:RollupConfig}
  */
-function getRollupObject ({ minifying, format = 'umd', lite } = {}) {
+function getRollupObject ({ minifying = false, format = 'umd', lite = false } = {}) {
     const nonMinified = {
         input: 'esquery.js',
         output: {
