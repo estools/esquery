@@ -4,7 +4,7 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 
-import babel from 'rollup-plugin-babel';
+import babel from '@rollup/plugin-babel';
 import packageJson from './package.json';
 
 /**
@@ -42,7 +42,9 @@ function getRollupObject ({ minifying = false, format = 'umd', lite = false } = 
             json(),
             nodeResolve(),
             commonjs(),
-            babel()
+            babel({
+                babelHelpers: 'bundled'
+            })
         ]
     };
     if (lite) {
