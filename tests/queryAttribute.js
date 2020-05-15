@@ -57,14 +57,6 @@ describe('Attribute query', function () {
         ]);
     });
 
-    // Not sure what AST would be producing an empty string, so
-    //  just checking this acceptable grammar doesn't fail and is
-    //  covered.
-    it('literal with empty string and dot', function () {
-        const matches = esquery(literal, 'Literal[.value=\'abc\']');
-        assert.lengthOf(matches, 0);
-    });
-
     it('literal with backslashes', function () {
         const matches = esquery(literal, 'Literal[value="\\z"]');
         assert.includeMembers(matches, [
