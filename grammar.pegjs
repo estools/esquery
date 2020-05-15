@@ -59,7 +59,7 @@ attr
   = "[" _ v:attrValue _ "]" { return v; }
   attrOps = a:[><!]? "=" { return (a || '') + '='; } / [><]
   attrEqOps = a:"!"? "="  { return (a || '') + '='; }
-  attrName = i:(identifierName / ".")+ { return i.join(''); }
+  attrName = a:identifierName as:("." identifierName)* { return [a, ...as.reduce((acc, val) => acc.concat(val), [])].join(''); }
   attrValue
     = name:attrName _ op:attrEqOps _ value:(type / regex) {
       return { type: 'attribute', name: name, operator: op, value: value };
