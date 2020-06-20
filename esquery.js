@@ -65,16 +65,28 @@ function inPath(node, ancestor, path) {
 }
 
 /**
+ * @callback TraverseOptionFallback
+ * @param {external:AST} node The given node.
+ * @returns {string[]} An array of visitor keys for the given node.
+ */
+/**
+ * @typedef {object} ESQueryOptions
+ * @property { { [nodeType: string]: string[] } } [visitorKeys] By passing `visitorKeys` mapping, we can extend the properties of the nodes that traverse the node.
+ * @property {TraverseOptionFallback} [fallback] By passing `fallback` option, we can control the properties of traversing nodes when encountering unknown nodes.
+ */
+
+/**
  * Given a `node` and its ancestors, determine if `node` is matched
  * by `selector`.
  * @param {?external:AST} node
  * @param {?SelectorAST} selector
  * @param {external:AST[]} [ancestry=[]]
+ * @param {ESQueryOptions} [options]
  * @throws {Error} Unknowns (operator, class name, selector type, or
  * selector value type)
  * @returns {boolean}
  */
-function matches(node, selector, ancestry) {
+function matches(node, selector, ancestry, options) {
     if (!selector) { return true; }
     if (!node) { return false; }
     if (!ancestry) { ancestry = []; }
@@ -94,19 +106,19 @@ function matches(node, selector, ancestry) {
         }
         case 'matches':
             for (const sel of selector.selectors) {
-                if (matches(node, sel, ancestry)) { return true; }
+                if (matches(node, sel, ancestry, options)) { return true; }
             }
             return false;
 
         case 'compound':
             for (const sel of selector.selectors) {
-                if (!matches(node, sel, ancestry)) { return false; }
+                if (!matches(node, sel, ancestry, options)) { return false; }
             }
             return true;
 
         case 'not':
             for (const sel of selector.selectors) {
-                if (matches(node, sel, ancestry)) { return false; }
+                if (matches(node, sel, ancestry, options)) { return false; }
             }
             return true;
 
@@ -117,27 +129,28 @@ function matches(node, selector, ancestry) {
                 estraverse.traverse(node, {
                     enter (node, parent) {
                         if (parent != null) { a.unshift(parent); }
-                        if (matches(node, sel, a)) {
+                        if (matches(node, sel, a, options)) {
                             collector.push(node);
                         }
                     },
                     leave () { a.shift(); },
-                    fallback: 'iteration'
+                    keys: options && options.visitorKeys,
+                    fallback: options && options.fallback || 'iteration'
                 });
             }
             return collector.length !== 0;
 
         }
         case 'child':
-            if (matches(node, selector.right, ancestry)) {
-                return matches(ancestry[0], selector.left, ancestry.slice(1));
+            if (matches(node, selector.right, ancestry, options)) {
+                return matches(ancestry[0], selector.left, ancestry.slice(1), options);
             }
             return false;
 
         case 'descendant':
-            if (matches(node, selector.right, ancestry)) {
+            if (matches(node, selector.right, ancestry, options)) {
                 for (let i = 0, l = ancestry.length; i < l; ++i) {
-                    if (matches(ancestry[i], selector.left, ancestry.slice(i + 1))) {
+                    if (matches(ancestry[i], selector.left, ancestry.slice(i + 1), options)) {
                         return true;
                     }
                 }
@@ -171,29 +184,29 @@ function matches(node, selector, ancestry) {
             throw new Error(`Unknown operator: ${selector.operator}`);
         }
         case 'sibling':
-            return matches(node, selector.right, ancestry) &&
-                sibling(node, selector.left, ancestry, LEFT_SIDE) ||
+            return matches(node, selector.right, ancestry, options) &&
+                sibling(node, selector.left, ancestry, LEFT_SIDE, options) ||
                 selector.left.subject &&
-                matches(node, selector.left, ancestry) &&
-                sibling(node, selector.right, ancestry, RIGHT_SIDE);
+                matches(node, selector.left, ancestry, options) &&
+                sibling(node, selector.right, ancestry, RIGHT_SIDE, options);
         case 'adjacent':
-            return matches(node, selector.right, ancestry) &&
-                adjacent(node, selector.left, ancestry, LEFT_SIDE) ||
+            return matches(node, selector.right, ancestry, options) &&
+                adjacent(node, selector.left, ancestry, LEFT_SIDE, options) ||
                 selector.right.subject &&
-                matches(node, selector.left, ancestry) &&
-                adjacent(node, selector.right, ancestry, RIGHT_SIDE);
+                matches(node, selector.left, ancestry, options) &&
+                adjacent(node, selector.right, ancestry, RIGHT_SIDE, options);
 
         case 'nth-child':
-            return matches(node, selector.right, ancestry) &&
+            return matches(node, selector.right, ancestry, options) &&
                 nthChild(node, ancestry, function () {
                     return selector.index.value - 1;
-                });
+                }, options);
 
         case 'nth-last-child':
-            return matches(node, selector.right, ancestry) &&
+            return matches(node, selector.right, ancestry, options) &&
                 nthChild(node, ancestry, function (length) {
                     return length - selector.index.value;
-                });
+                }, options);
 
         case 'class':
             switch(selector.name.toLowerCase()){
@@ -225,18 +238,54 @@ function matches(node, selector, ancestry) {
 }
 
 /**
+ * Get visitor keys of a given node.
+ * @param {external:AST} node node The AST node to get keys.
+ * @param {ESQueryOptions|undefined} options
+ * @returns {string[]} Visitor keys of the node.
+ */
+function getVisitorKeys(node, options) {
+    const nodeType = node.type;
+    let candidates;
+    if (options && options.visitorKeys && options.visitorKeys[nodeType]) {
+        candidates = options.visitorKeys[nodeType];
+    } else {
+        candidates = estraverse.VisitorKeys[nodeType];
+    }
+    if(!candidates) {
+        if (options && typeof options.fallback === 'function') {
+            candidates = options.fallback(node);
+        } else {
+            // 'iteration' fallback
+            candidates = Object.keys(node);
+        }
+    }
+    return candidates;
+}
+
+
+/**
+ * Check whether the given value is an ASTNode or not.
+ * @param {any} node The value to check.
+ * @returns {boolean} `true` if the value is an ASTNode.
+ */
+function isNode(node) {
+    return node !== null && typeof node === 'object' && typeof node.type === 'string';
+}
+
+/**
  * Determines if the given node has a sibling that matches the
  * given selector.
  * @param {external:AST} node
  * @param {SelectorSequenceAST} selector
  * @param {external:AST[]} ancestry
  * @param {Side} side
+ * @param {ESQueryOptions|undefined} options
  * @returns {boolean}
  */
-function sibling(node, selector, ancestry, side) {
+function sibling(node, selector, ancestry, side, options) {
     const [parent] = ancestry;
     if (!parent) { return false; }
-    const keys = estraverse.VisitorKeys[parent.type];
+    const keys = getVisitorKeys(parent, options);
     for (const key of keys) {
         const listProp = parent[key];
         if (Array.isArray(listProp)) {
@@ -251,7 +300,7 @@ function sibling(node, selector, ancestry, side) {
                 upperBound = listProp.length;
             }
             for (let k = lowerBound; k < upperBound; ++k) {
-                if (matches(listProp[k], selector, ancestry)) {
+                if (isNode(listProp[k]) && matches(listProp[k], selector, ancestry, options)) {
                     return true;
                 }
             }
@@ -267,21 +316,22 @@ function sibling(node, selector, ancestry, side) {
  * @param {SelectorSequenceAST} selector
  * @param {external:AST[]} ancestry
  * @param {Side} side
+ * @param {ESQueryOptions|undefined} options
  * @returns {boolean}
  */
-function adjacent(node, selector, ancestry, side) {
+function adjacent(node, selector, ancestry, side, options) {
     const [parent] = ancestry;
     if (!parent) { return false; }
-    const keys = estraverse.VisitorKeys[parent.type];
+    const keys = getVisitorKeys(parent, options);
     for (const key of keys) {
         const listProp = parent[key];
         if (Array.isArray(listProp)) {
             const idx = listProp.indexOf(node);
             if (idx < 0) { continue; }
-            if (side === LEFT_SIDE && idx > 0 && matches(listProp[idx - 1], selector, ancestry)) {
+            if (side === LEFT_SIDE && idx > 0 && isNode(listProp[idx - 1]) && matches(listProp[idx - 1], selector, ancestry, options)) {
                 return true;
             }
-            if (side === RIGHT_SIDE && idx < listProp.length - 1 && matches(listProp[idx + 1], selector, ancestry)) {
+            if (side === RIGHT_SIDE && idx < listProp.length - 1 && isNode(listProp[idx + 1]) &&  matches(listProp[idx + 1], selector, ancestry, options)) {
                 return true;
             }
         }
@@ -301,12 +351,13 @@ function adjacent(node, selector, ancestry, side) {
  * @param {external:AST} node
  * @param {external:AST[]} ancestry
  * @param {IndexFunction} idxFn
+ * @param {ESQueryOptions|undefined} options
  * @returns {boolean}
  */
-function nthChild(node, ancestry, idxFn) {
+function nthChild(node, ancestry, idxFn, options) {
     const [parent] = ancestry;
     if (!parent) { return false; }
-    const keys = estraverse.VisitorKeys[parent.type];
+    const keys = getVisitorKeys(parent, options);
     for (const key of keys) {
         const listProp = parent[key];
         if (Array.isArray(listProp)) {
@@ -347,24 +398,25 @@ function subjects(selector, ancestor) {
  * @param {external:AST} ast
  * @param {?SelectorAST} selector
  * @param {TraverseVisitor} visitor
+ * @param {ESQueryOptions} [options]
  * @returns {external:AST[]}
  */
-function traverse(ast, selector, visitor) {
+function traverse(ast, selector, visitor, options) {
     if (!selector) { return; }
     const ancestry = [];
     const altSubjects = subjects(selector);
     estraverse.traverse(ast, {
         enter (node, parent) {
             if (parent != null) { ancestry.unshift(parent); }
-            if (matches(node, selector, ancestry)) {
+            if (matches(node, selector, ancestry, options)) {
                 if (altSubjects.length) {
                     for (let i = 0, l = altSubjects.length; i < l; ++i) {
-                        if (matches(node, altSubjects[i], ancestry)) {
+                        if (matches(node, altSubjects[i], ancestry, options)) {
                             visitor(node, parent, ancestry);
                         }
                         for (let k = 0, m = ancestry.length; k < m; ++k) {
                             const succeedingAncestry = ancestry.slice(k + 1);
-                            if (matches(ancestry[k], altSubjects[i], succeedingAncestry)) {
+                            if (matches(ancestry[k], altSubjects[i], succeedingAncestry, options)) {
                                 visitor(ancestry[k], parent, succeedingAncestry);
                             }
                         }
@@ -375,7 +427,8 @@ function traverse(ast, selector, visitor) {
             }
         },
         leave () { ancestry.shift(); },
-        fallback: 'iteration'
+        keys: options && options.visitorKeys,
+        fallback: options && options.fallback || 'iteration'
     });
 }
 
@@ -385,13 +438,14 @@ function traverse(ast, selector, visitor) {
  * match the selector.
  * @param {external:AST} ast
  * @param {?SelectorAST} selector
+ * @param {ESQueryOptions} [options]
  * @returns {external:AST[]}
  */
-function match(ast, selector) {
+function match(ast, selector, options) {
     const results = [];
     traverse(ast, selector, function (node) {
         results.push(node);
-    });
+    }, options);
     return results;
 }
 
@@ -408,10 +462,11 @@ function parse(selector) {
  * Query the code AST using the selector string.
  * @param {external:AST} ast
  * @param {string} selector
+ * @param {ESQueryOptions} [options]
  * @returns {external:AST[]}
  */
-function query(ast, selector) {
-    return match(ast, parse(selector));
+function query(ast, selector, options) {
+    return match(ast, parse(selector), options);
 }
 
 query.parse = parse;
