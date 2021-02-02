@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [10, 12]
+        node-version: [10, 12, 14]
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
@@ -34,35 +34,5 @@ jobs:
       run: npm install
     - name: Build
       run: npm run build
-    - name: Test
-      run: npm run test:ci
-  test-with-node8:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 8
-      uses: actions/setup-node@v2
-      with:
-        node-version: 8
-    - name: Install Packages
-      run: |+
-        npm install
-        npm install --no-save "eslint@5"
-    - name: Build
-      run: npm run build
-    - name: Test
-      run: npm run test:ci
-  test-with-node6:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 6
-      uses: actions/setup-node@v2
-      with:
-        node-version: 6
-    - name: Install Packages
-      run: |+
-        npm install
-        npm install --no-save "eslint@5" mocha@6.2.2 nyc@14.1.1
     - name: Test
       run: npm run test:ci
