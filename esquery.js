@@ -239,27 +239,25 @@ function matches(node, selector, ancestry, options) {
 
 /**
  * Get visitor keys of a given node.
- * @param {external:AST} node node The AST node to get keys.
+ * @param {external:AST} node The AST node to get keys.
  * @param {ESQueryOptions|undefined} options
  * @returns {string[]} Visitor keys of the node.
  */
 function getVisitorKeys(node, options) {
     const nodeType = node.type;
-    let candidates;
     if (options && options.visitorKeys && options.visitorKeys[nodeType]) {
-        candidates = options.visitorKeys[nodeType];
-    } else {
-        candidates = estraverse.VisitorKeys[nodeType];
+        return options.visitorKeys[nodeType];
     }
-    if(!candidates) {
-        if (options && typeof options.fallback === 'function') {
-            candidates = options.fallback(node);
-        } else {
-            // 'iteration' fallback
-            candidates = Object.keys(node);
-        }
+    if(estraverse.VisitorKeys[nodeType]) {
+        return estraverse.VisitorKeys[nodeType];
     }
-    return candidates;
+    if (options && typeof options.fallback === 'function') {
+        return options.fallback(node);
+    }
+    // 'iteration' fallback
+    return Object.keys(node).filter(function (key) {
+        return key !== 'type';
+    });
 }
 
 
