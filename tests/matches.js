@@ -2,6 +2,7 @@ import esquery from '../esquery.js';
 import forLoop from './fixtures/forLoop.js';
 import simpleProgram from './fixtures/simpleProgram.js';
 import conditional from './fixtures/conditional.js';
+import customNodes from './fixtures/customNodes.js';
 
 describe('matches', function () {
     it('falsey node', function () {
@@ -130,6 +131,88 @@ describe('matches', function () {
                 conditional.body[1],
                 selector,
                 conditional.body
+            );
+        });
+    });
+});
+
+describe('matches with custom AST and custom visitor keys', function () {
+    it('adjacent/sibling', function () {
+        const options = {
+            visitorKeys: {
+                CustomRoot: ['list'],
+                CustomChild: ['sublist'],
+                CustomGrandChild: []
+            }
+        };
+        let selector = esquery.parse('CustomChild + CustomChild');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                customNodes.list[1],
+                selector,
+                [customNodes],
+                options
+            );
+        });
+
+        selector = esquery.parse('CustomChild ~ CustomChild');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                customNodes.list[1],
+                selector,
+                [customNodes],
+                options
+            );
+        });
+    });
+});
+
+describe('matches with custom AST and fallback option', function () {
+    it('adjacent/sibling', function () {
+        const options = {
+            fallback (node) {
+                return node.type === 'CustomRoot' ? ['list'] : node.type === 'CustomChild' ? ['sublist'] : [];
+            }
+        };
+        let selector = esquery.parse('CustomChild + CustomChild');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                customNodes.list[1],
+                selector,
+                [customNodes],
+                options
+            );
+        });
+
+        selector = esquery.parse('CustomChild ~ CustomChild');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                customNodes.list[1],
+                selector,
+                [customNodes],
+                options
+            );
+        });
+    });
+});
+
+describe('matches with custom AST and default fallback', function () {
+    it('adjacent/sibling', function () {
+        let selector = esquery.parse('CustomChild + CustomChild');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                customNodes.list[1],
+                selector,
+                [customNodes],
+            );
+        });
+
+        selector = esquery.parse('CustomChild ~ CustomChild');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                customNodes.list[1],
+                selector,
+                [customNodes],
             );
         });
     });

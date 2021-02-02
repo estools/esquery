@@ -4,6 +4,7 @@ import conditionalLong from './fixtures/conditionalLong.js';
 import forLoop from './fixtures/forLoop.js';
 import simpleFunction from './fixtures/simpleFunction.js';
 import simpleProgram from './fixtures/simpleProgram.js';
+import customNodes from './fixtures/customNodes.js';
 
 describe('Pseudo *-child query', function () {
 
@@ -152,6 +153,108 @@ describe('Pseudo *-child query', function () {
         matches = esquery(simpleProgram, ':nth-last-child(2)');
         assert.includeMembers(matches, [
             simpleProgram.body[2]
+        ]);
+    });
+});
+
+describe('Pseudo *-child query with custom ast', function () {
+    const visitorKeys = {
+        CustomRoot: ['list'],
+        CustomChild: ['sublist'],
+        CustomGrandChild: []
+    };
+
+    it('conditional first child', function () {
+        const matches = esquery(customNodes, ':first-child', { visitorKeys });
+        assert.includeMembers(matches, [
+            customNodes.list[0],
+            customNodes.list[0].sublist[0],
+            customNodes.list[2].sublist[0],
+            customNodes.list[3].sublist[0],
+        ]);
+    });
+
+    it('conditional first child with fallback', function () {
+        const matches = esquery(customNodes, ':first-child', {
+            fallback (node) {
+                return node.type === 'CustomRoot' ? ['list'] : node.type === 'CustomChild' ? ['sublist'] : [];
+            }
+        });
+        assert.includeMembers(matches, [
+            customNodes.list[0],
+            customNodes.list[0].sublist[0],
+            customNodes.list[2].sublist[0],
+            customNodes.list[3].sublist[0],
+        ]);
+    });
+
+    it('conditional first child with default fallback', function () {
+        const matches = esquery(customNodes, ':first-child');
+        assert.includeMembers(matches, [
+            customNodes.list[0],
+            customNodes.list[0].sublist[0],
+            customNodes.list[2].sublist[0],
+            customNodes.list[3].sublist[0],
+        ]);
+    });
+
+    it('conditional last child', function () {
+        const matches = esquery(customNodes, ':last-child', { visitorKeys });
+        assert.includeMembers(matches, [
+            customNodes.list[3],
+            customNodes.list[0].sublist[0],
+            customNodes.list[2].sublist[1],
+            customNodes.list[3].sublist[2],
+        ]);
+    });
+
+    it('conditional nth child', function () {
+        let matches = esquery(customNodes, ':nth-child(2)', { visitorKeys });
+        assert.includeMembers(matches, [
+            customNodes.list[1],
+            customNodes.list[2].sublist[1],
+            customNodes.list[3].sublist[1],
+        ]);
+
+        matches = esquery(customNodes, ':nth-last-child(2)', { visitorKeys });
+        assert.includeMembers(matches, [
+            customNodes.list[2],
+            customNodes.list[2].sublist[0],
+            customNodes.list[3].sublist[1],
+        ]);
+    });
+
+    it('conditional nth child combination', function () {
+        let matches = esquery(customNodes, ':matches(:nth-child(2), :nth-last-child(2))', { visitorKeys });
+        assert.includeMembers(matches, [
+            customNodes.list[1],
+            customNodes.list[2],
+            customNodes.list[2].sublist[0],
+            customNodes.list[2].sublist[1],
+            customNodes.list[3].sublist[1],
+        ]);
+
+        matches = esquery(customNodes, ':not(:nth-child(2)):nth-last-child(2)', { visitorKeys });
+        assert.includeMembers(matches, [
+            customNodes.list[2],
+            customNodes.list[2].sublist[0],
+        ]);
+
+
+        matches = esquery(customNodes, ':nth-last-child(2) > :nth-child(2)', { visitorKeys });
+        assert.includeMembers(matches, [
+            customNodes.list[2].sublist[1],
+        ]);
+
+        matches = esquery(customNodes, ':nth-last-child(2) :nth-child(2)', { visitorKeys });
+        assert.includeMembers(matches, [
+            customNodes.list[2].sublist[1],
+        ]);
+
+        matches = esquery(customNodes, '*:has(:nth-child(2))', { visitorKeys });
+        assert.includeMembers(matches, [
+            customNodes.list[2],
+            customNodes.list[3],
         ]);
     });
 });

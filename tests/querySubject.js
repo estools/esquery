@@ -6,6 +6,7 @@ import simpleProgram from './fixtures/simpleProgram.js';
 
 import nestedFunctions from './fixtures/nestedFunctions.js';
 import bigArray from './fixtures/bigArray.js';
+import customNodes from './fixtures/customNodes.js';
 
 describe('Query subject', function () {
 
@@ -153,5 +154,49 @@ describe('Query subject', function () {
             bigArray.body[0].expression.elements[8]
         ]);
         assert.equal(3, matches.length);
+    });
+});
+
+describe('Query subject with custom ast', function () {
+    const visitorKeys = {
+        CustomRoot: ['list'],
+        CustomChild: ['sublist'],
+        CustomGrandChild: []
+    };
+
+    it('sibling', function () {
+        const matches = esquery(customNodes, 'CustomChild[name=two] ~ CustomChild', { visitorKeys });
+        assert.includeMembers(matches, [
+            customNodes.list[2],
+            customNodes.list[3],
+        ]);
+    });
+
+
+    it('sibling with fallback', function () {
+        const matches = esquery(customNodes, 'CustomChild[name=two] ~ CustomChild', {
+            fallback (node) {
+                return node.type === 'CustomRoot' ? ['list'] : node.type === 'CustomChild' ? ['sublist'] : [];
+            }
+        });
+        assert.includeMembers(matches, [
+            customNodes.list[2],
+            customNodes.list[3],
+        ]);
+    });
+
+    it('sibling with default fallback', function () {
+        const matches = esquery(customNodes, 'CustomChild[name=two] ~ CustomChild');
+        assert.includeMembers(matches, [
+            customNodes.list[2],
+            customNodes.list[3],
+        ]);
+    });
+
+    it('adjacent', function () {
+        const matches = esquery(customNodes, 'CustomChild[name=two] + CustomChild', { visitorKeys });
+        assert.includeMembers(matches, [
+            customNodes.list[2],
+        ]);
     });
 });
