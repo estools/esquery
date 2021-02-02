@@ -248,7 +248,7 @@ function getVisitorKeys(node, options) {
     if (options && options.visitorKeys && options.visitorKeys[nodeType]) {
         return options.visitorKeys[nodeType];
     }
-    if(estraverse.VisitorKeys[nodeType]) {
+    if (estraverse.VisitorKeys[nodeType]) {
         return estraverse.VisitorKeys[nodeType];
     }
     if (options && typeof options.fallback === 'function') {
