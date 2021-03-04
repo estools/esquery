@@ -86,8 +86,8 @@ attr
     path = i:identifierName { return { type: 'literal', value: i }; }
     type = "type(" _ t:[^ )]+ _ ")" { return { type: 'type', value: t.join('') }; }
     flags = [imsu]+
-    regex = "/" d:[^/]+ "/" flgs:flags? { return {
-      type: 'regexp', value: new RegExp(d.join(''), flgs ? flgs.join('') : '') };
+    regex = "/" pattern:$RegularExpressionBody "/" flgs:flags? { return {
+      type: 'regexp', value: new RegExp(pattern, flgs ? flgs.join('') : '') };
     }
 
 field = "." i:identifierName is:("." identifierName)* {
@@ -107,3 +107,35 @@ nthLastChild = ":nth-last-child(" _ n:[0-9]+ _ ")" { return nthLast(parseInt(n.j
 class = ":" c:("statement"i / "expression"i / "declaration"i / "function"i / "pattern"i) {
   return { type: 'class', name: c };
 }
+
+RegularExpressionBody
+  = RegularExpressionFirstChar RegularExpressionChar*
+
+RegularExpressionFirstChar
+  = ![*\\/[] RegularExpressionNonTerminator
+  / RegularExpressionBackslashSequence
+  / RegularExpressionClass
+
+RegularExpressionChar
+  = ![\\/[] RegularExpressionNonTerminator
+  / RegularExpressionBackslashSequence
+  / RegularExpressionClass
+
+RegularExpressionBackslashSequence
+  = "\\" RegularExpressionNonTerminator
+
+RegularExpressionNonTerminator
+  = !LineTerminator SourceCharacter
+
+RegularExpressionClass
+  = "[" RegularExpressionClassChar* "]"
+
+RegularExpressionClassChar
+  = ![\]\\] RegularExpressionNonTerminator
+  / RegularExpressionBackslashSequence
+
+LineTerminator
+  = [\n\r\u2028\u2029]
+  
+SourceCharacter
+  = .
