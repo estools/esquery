@@ -55,10 +55,7 @@ function inPath(node, ancestor, path) {
     const field = ancestor[path[0]];
     const remainingPath = path.slice(1);
     if (Array.isArray(field)) {
-        for (const component of field) {
-            if (inPath(node, component, remainingPath)) { return true; }
-        }
-        return false;
+        return field.some((component) => inPath(node, component, remainingPath));
     } else {
         return inPath(node, field, remainingPath);
     }
@@ -105,22 +102,13 @@ function matches(node, selector, ancestry, options) {
 
         }
         case 'matches':
-            for (const sel of selector.selectors) {
-                if (matches(node, sel, ancestry, options)) { return true; }
-            }
-            return false;
+            return selector.selectors.some(sel => matches(node, sel, ancestry, options));
 
         case 'compound':
-            for (const sel of selector.selectors) {
-                if (!matches(node, sel, ancestry, options)) { return false; }
-            }
-            return true;
+            return selector.selectors.every(sel => matches(node, sel, ancestry, options));
 
         case 'not':
-            for (const sel of selector.selectors) {
-                if (matches(node, sel, ancestry, options)) { return false; }
-            }
-            return true;
+            return selector.selectors.every(sel => !matches(node, sel, ancestry, options));
 
         case 'has': {
             const collector = [];
