@@ -1,6 +1,6 @@
 /* vim: set sw=4 sts=4 : */
 import estraverse from 'estraverse';
-import parser from './parser.js';
+import parser from './parser.cjs';
 
 /**
 * @typedef {"LEFT_SIDE"|"RIGHT_SIDE"} Side
