@@ -98,6 +98,9 @@ function matches(node, selector, ancestry, options) {
         case 'identifier':
             return selector.value.toLowerCase() === node.type.toLowerCase();
 
+        case 'exactNode':
+            return selector.value === node;
+
         case 'field': {
             const path = selector.name.split('.');
             const ancestor = ancestry[path.length - 1];
@@ -126,10 +129,15 @@ function matches(node, selector, ancestry, options) {
             const collector = [];
             for (const sel of selector.selectors) {
                 const a = [];
+                const selClone = { ...sel };
+                if (!selClone.left) {
+                    selClone.left = { type: 'exactNode', value: node };
+                }
+
                 estraverse.traverse(node, {
-                    enter (node, parent) {
+                    enter (innerNode, parent) {
                         if (parent != null) { a.unshift(parent); }
-                        if (matches(node, sel, a, options)) {
+                        if (matches(innerNode, sel, a, options)) {
                             collector.push(node);
                         }
                     },

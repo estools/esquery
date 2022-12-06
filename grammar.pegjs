@@ -35,7 +35,7 @@ selectors = s:selector ss:(_ "," _ selector)* {
 }
 
 selector
-  = a:sequence ops:(binaryOp sequence)* {
+  = a:sequence? ops:(binaryOp sequence)* {
     return ops.reduce(function (memo, rhs) {
       return { type: rhs[0], left: memo, right: rhs[1] };
     }, a);
