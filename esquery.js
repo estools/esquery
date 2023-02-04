@@ -29,11 +29,10 @@ const RIGHT_SIDE = 'RIGHT_SIDE';
  * Get the value of a property which may be multiple levels down
  * in the object.
  * @param {?PlainObject} obj
- * @param {string} key
+ * @param {string[]} keys
  * @returns {undefined|boolean|string|number|external:AST}
  */
-function getPath(obj, key) {
-    const keys = key.split('.');
+function getPath(obj, keys) {
     for (const key of keys) {
         if (obj == null) { return obj; }
         obj = obj[key];
@@ -69,12 +68,14 @@ function createMatcher(selector) {
         case 'wildcard':
             return () => true;
 
-        case 'identifier':
-            return (node) => selector.value.toLowerCase() === node.type.toLowerCase();
+        case 'identifier': {
+            const value = selector.value.toLowerCase();
+            return (node) => value === node.type.toLowerCase();
+        }
 
         case 'field': {
+            const path = selector.name.split('.');
             return (node, ancestry) => {
-                const path = selector.name.split('.');
                 const ancestor = ancestry[path.length - 1];
                 return inPath(node, ancestor, path);
             };
@@ -144,8 +145,9 @@ function createMatcher(selector) {
             };
 
         case 'attribute': {
+            const path = selector.name.split('.');
             return (node) => {
-                const p = getPath(node, selector.name);
+                const p = getPath(node, path);
                 switch (selector.operator) {
                     case void 0:
                         return p != null;
@@ -189,25 +191,26 @@ function createMatcher(selector) {
                     adjacent(node, selector.right, ancestry, RIGHT_SIDE, options);
             };
 
-        case 'nth-child':
+        case 'nth-child': {
+            const idxFn = () => selector.index.value - 1;
             return (node, ancestry, options) => {
                 return matches(node, selector.right, ancestry, options) &&
-                    nthChild(node, ancestry, function () {
-                        return selector.index.value - 1;
-                    }, options);
+                    nthChild(node, ancestry, idxFn, options);
             };
+        }
 
-        case 'nth-last-child':
+        case 'nth-last-child': {
+            const idxFn = (length) => length - selector.index.value;
             return (node, ancestry, options) => {
                 return matches(node, selector.right, ancestry, options) &&
-                    nthChild(node, ancestry, function (length) {
-                        return length - selector.index.value;
-                    }, options);
+                    nthChild(node, ancestry, idxFn, options);
             };
+        }
 
-        case 'class':
+        case 'class': {
+            const name = selector.name.toLowerCase();
             return (node, ancestry) => {
-                switch(selector.name.toLowerCase()){
+                switch(name){
                     case 'statement':
                         if(node.type.slice(-9) === 'Statement') return true;
                         // fallthrough: interface Declaration <: Statement { }
@@ -231,6 +234,7 @@ function createMatcher(selector) {
                 }
                 throw new Error(`Unknown class name: ${selector.name}`);
             };
+        }
     }
 
     throw new Error(`Unknown selector type: ${selector.type}`);
