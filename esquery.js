@@ -33,9 +33,9 @@ const RIGHT_SIDE = 'RIGHT_SIDE';
  * @returns {undefined|boolean|string|number|external:AST}
  */
 function getPath(obj, keys) {
-    for (const key of keys) {
+    for (let i = 0; i < keys.length; i++) {
         if (obj == null) { return obj; }
-        obj = obj[key];
+        obj = obj[keys[i]];
     }
     return obj;
 }
@@ -54,8 +54,8 @@ function inPath(node, ancestor, path) {
     const field = ancestor[path[0]];
     const remainingPath = path.slice(1);
     if (Array.isArray(field)) {
-        for (const component of field) {
-            if (inPath(node, component, remainingPath)) { return true; }
+        for (let i = 0; i < field.length; i++) {
+            if (inPath(node, field[i], remainingPath)) { return true; }
         }
         return false;
     } else {
@@ -80,34 +80,42 @@ function createMatcher(selector) {
                 return inPath(node, ancestor, path);
             };
         }
-        case 'matches':
+        case 'matches': {
+            const { selectors } = selector;
             return (node, ancestry, options) => {
-                for (const sel of selector.selectors) {
-                    if (matches(node, sel, ancestry, options)) { return true; }
+                for (let i = 0; i < selectors.length; i++) {
+                    if (matches(node, selectors[i], ancestry, options)) { return true; }
                 }
                 return false;
             };
+        }
 
-        case 'compound':
+        case 'compound': {
+            const { selectors } = selector;
             return (node, ancestry, options) => {
-                for (const sel of selector.selectors) {
-                    if (!matches(node, sel, ancestry, options)) { return false; }
+                for (let i = 0; i < selectors.length; i++) {
+                    if (!matches(node, selectors[i], ancestry, options)) { return false; }
                 }
                 return true;
             };
+        }
 
-        case 'not':
+        case 'not': {
+            const { selectors } = selector;
             return (node, ancestry, options) => {
-                for (const sel of selector.selectors) {
-                    if (matches(node, sel, ancestry, options)) { return false; }
+                for (let i = 0; i < selectors.length; i++) {
+                    if (matches(node, selectors[i], ancestry, options)) { return false; }
                 }
                 return true;
             };
+        }
 
         case 'has': {
+            const { selectors } = selector;
             return (node, ancestry, options) => {
                 const collector = [];
-                for (const sel of selector.selectors) {
+                for (let i = 0; i < selectors.length; i++) {
+                    const sel = selectors[i];
                     const a = [];
                     estraverse.traverse(node, {
                         enter (node, parent) {
@@ -336,8 +344,8 @@ function sibling(node, selector, ancestry, side, options) {
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = getVisitorKeys(parent, options);
-    for (const key of keys) {
-        const listProp = parent[key];
+    for (let i = 0; i < keys.length; i++) {
+        const listProp = parent[keys[i]];
         if (Array.isArray(listProp)) {
             const startIndex = listProp.indexOf(node);
             if (startIndex < 0) { continue; }
@@ -373,8 +381,8 @@ function adjacent(node, selector, ancestry, side, options) {
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = getVisitorKeys(parent, options);
-    for (const key of keys) {
-        const listProp = parent[key];
+    for (let i = 0; i < keys.length; i++) {
+        const listProp = parent[keys[i]];
         if (Array.isArray(listProp)) {
             const idx = listProp.indexOf(node);
             if (idx < 0) { continue; }
@@ -408,8 +416,8 @@ function nthChild(node, ancestry, idxFn, options) {
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = getVisitorKeys(parent, options);
-    for (const key of keys) {
-        const listProp = parent[key];
+    for (let i = 0; i < keys.length; i++) {
+        const listProp = parent[keys[i]];
         if (Array.isArray(listProp)) {
             const idx = listProp.indexOf(node);
             if (idx >= 0 && idx === idxFn(listProp.length)) { return true; }
@@ -429,7 +437,10 @@ function subjects(selector, ancestor) {
     if (selector == null || typeof selector != 'object') { return []; }
     if (ancestor == null) { ancestor = selector; }
     const results = selector.subject ? [ancestor] : [];
-    for (const [p, sel] of Object.entries(selector)) {
+    const keys = Object.keys(selector);
+    for (let i = 0; i < keys.length; i++) {
+        const p = keys[i];
+        const sel = selector[p];
         results.push(...subjects(sel, p === 'left' ? sel : ancestor));
     }
     return results;
