@@ -113,7 +113,7 @@ function createMatcher(selector) {
         case 'has': {
             const { selectors } = selector;
             return (node, ancestry, options) => {
-                const collector = [];
+                let result = false;
                 for (let i = 0; i < selectors.length; i++) {
                     const sel = selectors[i];
                     const a = [];
@@ -121,7 +121,7 @@ function createMatcher(selector) {
                         enter (node, parent) {
                             if (parent != null) { a.unshift(parent); }
                             if (matches(node, sel, a, options)) {
-                                collector.push(node);
+                                result = true;
                             }
                         },
                         leave () { a.shift(); },
@@ -129,7 +129,7 @@ function createMatcher(selector) {
                         fallback: options && options.fallback || 'iteration'
                     });
                 }
-                return collector.length !== 0;
+                return result;
             };
         }
         case 'child':
