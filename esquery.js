@@ -114,21 +114,25 @@ function createMatcher(selector) {
             const { selectors } = selector;
             return (node, ancestry, options) => {
                 let result = false;
-                for (let i = 0; i < selectors.length; i++) {
-                    const sel = selectors[i];
-                    const a = [];
-                    estraverse.traverse(node, {
-                        enter (node, parent) {
-                            if (parent != null) { a.unshift(parent); }
-                            if (matches(node, sel, a, options)) {
+
+                const a = [];
+                estraverse.traverse(node, {
+                    enter (node, parent) {
+                        if (parent != null) { a.unshift(parent); }
+
+                        for (let i = 0; i < selectors.length; i++) {
+                            if (matches(node, selectors[i], a, options)) {
                                 result = true;
+                                this.break();
+                                return;
                             }
-                        },
-                        leave () { a.shift(); },
-                        keys: options && options.visitorKeys,
-                        fallback: options && options.fallback || 'iteration'
-                    });
-                }
+                        }
+                    },
+                    leave () { a.shift(); },
+                    keys: options && options.visitorKeys,
+                    fallback: options && options.fallback || 'iteration'
+                });
+
                 return result;
             };
         }
