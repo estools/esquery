@@ -46,21 +46,27 @@ function getPath(obj, keys) {
  * @param {?external:AST} node
  * @param {?external:AST} ancestor
  * @param {string[]} path
+ * @param {Integer} fromPathIndex
  * @returns {boolean}
  */
-function inPath(node, ancestor, path) {
-    if (path.length === 0) { return node === ancestor; }
-    if (ancestor == null) { return false; }
-    const field = ancestor[path[0]];
-    const remainingPath = path.slice(1);
-    if (Array.isArray(field)) {
-        for (let i = 0; i < field.length; i++) {
-            if (inPath(node, field[i], remainingPath)) { return true; }
+function inPath(node, ancestor, path, fromPathIndex) {
+    let current = ancestor;
+    for (let i = fromPathIndex; i < path.length; i++) {
+        if (current == null) {
+            return false;
         }
-        return false;
-    } else {
-        return inPath(node, field, remainingPath);
+        const field = current[path[i]];
+        if (Array.isArray(field)) {
+            for (let j = 0; j < field.length; j++) {
+                if (inPath(node, field[j], path, i + 1)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        current = field;
     }
+    return node === current;
 }
 
 function createMatcher(selector) {
@@ -77,7 +83,7 @@ function createMatcher(selector) {
             const path = selector.name.split('.');
             return (node, ancestry) => {
                 const ancestor = ancestry[path.length - 1];
-                return inPath(node, ancestor, path);
+                return inPath(node, ancestor, path, 0);
             };
         }
         case 'matches': {
