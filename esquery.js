@@ -216,18 +216,18 @@ function createMatcher(selector) {
             };
 
         case 'nth-child': {
-            const idxFn = () => selector.index.value - 1;
+            const nth = selector.index.value;
             return (node, ancestry, options) => {
                 return matches(node, selector.right, ancestry, options) &&
-                    nthChild(node, ancestry, idxFn, options);
+                    nthChild(node, ancestry, nth, false, options);
             };
         }
 
         case 'nth-last-child': {
-            const idxFn = (length) => length - selector.index.value;
+            const nth = selector.index.value;
             return (node, ancestry, options) => {
                 return matches(node, selector.right, ancestry, options) &&
-                    nthChild(node, ancestry, idxFn, options);
+                    nthChild(node, ancestry, nth, true, options);
             };
         }
 
@@ -398,29 +398,26 @@ function adjacent(node, selector, ancestry, side, options) {
 }
 
 /**
-* @callback IndexFunction
-* @param {Integer} len Containing list's length
-* @returns {Integer}
-*/
-
-/**
  * Determines if the given node is the nth child, determined by
  * `idxFn`, which is given the containing list's length.
  * @param {external:AST} node
  * @param {external:AST[]} ancestry
- * @param {IndexFunction} idxFn
+ * @param {Integer} nth
+ * @param {boolean} fromEnd
  * @param {ESQueryOptions|undefined} options
  * @returns {boolean}
  */
-function nthChild(node, ancestry, idxFn, options) {
+function nthChild(node, ancestry, nth, fromEnd, options) {
+    if (nth <= 0) { return false; }
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = getVisitorKeys(parent, options);
     for (let i = 0; i < keys.length; i++) {
         const listProp = parent[keys[i]];
-        if (Array.isArray(listProp)) {
-            const idx = listProp.indexOf(node);
-            if (idx >= 0 && idx === idxFn(listProp.length)) { return true; }
+        if (Array.isArray(listProp)){
+            if (nth <= listProp.length && listProp[fromEnd ? listProp.length-nth : nth-1] === node) {
+                return true;
+            }
         }
     }
     return false;
