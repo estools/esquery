@@ -57,7 +57,7 @@ function inPath(node, ancestor, path, fromPathIndex) {
         }
         const field = current[path[i]];
         if (Array.isArray(field)) {
-            for (let k = 0; k < field.length; k++) {
+            for (let k = 0; k < field.length; ++k) {
                 if (inPath(node, field[k], path, i + 1)) {
                     return true;
                 }
