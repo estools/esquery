@@ -33,7 +33,7 @@ const RIGHT_SIDE = 'RIGHT_SIDE';
  * @returns {undefined|boolean|string|number|external:AST}
  */
 function getPath(obj, keys) {
-    for (let i = 0; i < keys.length; i++) {
+    for (let i = 0; i < keys.length; ++i) {
         if (obj == null) { return obj; }
         obj = obj[keys[i]];
     }
@@ -51,14 +51,14 @@ function getPath(obj, keys) {
  */
 function inPath(node, ancestor, path, fromPathIndex) {
     let current = ancestor;
-    for (let i = fromPathIndex; i < path.length; i++) {
+    for (let i = fromPathIndex; i < path.length; ++i) {
         if (current == null) {
             return false;
         }
         const field = current[path[i]];
         if (Array.isArray(field)) {
-            for (let j = 0; j < field.length; j++) {
-                if (inPath(node, field[j], path, i + 1)) {
+            for (let k = 0; k < field.length; k++) {
+                if (inPath(node, field[k], path, i + 1)) {
                     return true;
                 }
             }
@@ -89,7 +89,7 @@ function createMatcher(selector) {
         case 'matches': {
             const { selectors } = selector;
             return (node, ancestry, options) => {
-                for (let i = 0; i < selectors.length; i++) {
+                for (let i = 0; i < selectors.length; ++i) {
                     if (matches(node, selectors[i], ancestry, options)) { return true; }
                 }
                 return false;
@@ -99,7 +99,7 @@ function createMatcher(selector) {
         case 'compound': {
             const { selectors } = selector;
             return (node, ancestry, options) => {
-                for (let i = 0; i < selectors.length; i++) {
+                for (let i = 0; i < selectors.length; ++i) {
                     if (!matches(node, selectors[i], ancestry, options)) { return false; }
                 }
                 return true;
@@ -109,7 +109,7 @@ function createMatcher(selector) {
         case 'not': {
             const { selectors } = selector;
             return (node, ancestry, options) => {
-                for (let i = 0; i < selectors.length; i++) {
+                for (let i = 0; i < selectors.length; ++i) {
                     if (matches(node, selectors[i], ancestry, options)) { return false; }
                 }
                 return true;
@@ -126,7 +126,7 @@ function createMatcher(selector) {
                     enter (node, parent) {
                         if (parent != null) { a.unshift(parent); }
 
-                        for (let i = 0; i < selectors.length; i++) {
+                        for (let i = 0; i < selectors.length; ++i) {
                             if (matches(node, selectors[i], a, options)) {
                                 result = true;
                                 this.break();
@@ -175,29 +175,22 @@ function createMatcher(selector) {
                         };
                         case 'literal': {
                             const literal = `${selector.value.value}`;
-                            return (node) => {
-                                return literal === `${getPath(node, path)}`;
-                            };
+                            return (node) => literal === `${getPath(node, path)}`;
                         }
-                        case 'type': return (node) => {
-                            return selector.value.value === typeof getPath(node, path);
-                        };
+                        case 'type':
+                            return (node) => selector.value.value === typeof getPath(node, path);
                     }
                     throw new Error(`Unknown selector value type: ${selector.value.type}`);
                 case '!=':
                     switch (selector.value.type) {
-                        case 'regexp': return (node) => {
-                            return !selector.value.value.test(getPath(node, path));
-                        };
+                        case 'regexp':
+                            return (node) => !selector.value.value.test(getPath(node, path));
                         case 'literal': {
                             const literal = `${selector.value.value}`;
-                            return (node) => {
-                                return literal !== `${getPath(node, path)}`;
-                            };
+                            return (node) => literal !== `${getPath(node, path)}`;
                         }
-                        case 'type': return (node) => {
-                            return selector.value.value !== typeof getPath(node, path);
-                        };
+                        case 'type':
+                            return (node) => selector.value.value !== typeof getPath(node, path);
                     }
                     throw new Error(`Unknown selector value type: ${selector.value.type}`);
                 case '<=': return (node) => getPath(node, path) <= selector.value.value;
@@ -354,7 +347,7 @@ function sibling(node, selector, ancestry, side, options) {
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = getVisitorKeys(parent, options);
-    for (let i = 0; i < keys.length; i++) {
+    for (let i = 0; i < keys.length; ++i) {
         const listProp = parent[keys[i]];
         if (Array.isArray(listProp)) {
             const startIndex = listProp.indexOf(node);
@@ -391,7 +384,7 @@ function adjacent(node, selector, ancestry, side, options) {
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = getVisitorKeys(parent, options);
-    for (let i = 0; i < keys.length; i++) {
+    for (let i = 0; i < keys.length; ++i) {
         const listProp = parent[keys[i]];
         if (Array.isArray(listProp)) {
             const idx = listProp.indexOf(node);
@@ -422,10 +415,10 @@ function nthChild(node, ancestry, nth, fromEnd, options) {
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = getVisitorKeys(parent, options);
-    for (let i = 0; i < keys.length; i++) {
+    for (let i = 0; i < keys.length; ++i) {
         const listProp = parent[keys[i]];
         if (Array.isArray(listProp)){
-            if (nth <= listProp.length && listProp[fromEnd ? listProp.length-nth : nth-1] === node) {
+            if (nth <= listProp.length && listProp[fromEnd ? listProp.length - nth : nth - 1] === node) {
                 return true;
             }
         }
@@ -445,7 +438,7 @@ function subjects(selector, ancestor) {
     if (ancestor == null) { ancestor = selector; }
     const results = selector.subject ? [ancestor] : [];
     const keys = Object.keys(selector);
-    for (let i = 0; i < keys.length; i++) {
+    for (let i = 0; i < keys.length; ++i) {
         const p = keys[i];
         const sel = selector[p];
         results.push(...subjects(sel, p === 'left' ? sel : ancestor));
