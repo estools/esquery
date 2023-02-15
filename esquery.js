@@ -69,56 +69,89 @@ function inPath(node, ancestor, path, fromPathIndex) {
     return node === current;
 }
 
-function createMatcher(selector) {
+/**
+ * A generated matcher function for a selector.
+ * @typedef {function} SelectorMatcher
+*/
+
+/**
+ * A WeakMap for holding cached matcher functions for selectors.
+ * @type {WeakMap<SelectorAST, SelectorMatcher>}
+*/
+const MATCHER_CACHE = new WeakMap();
+
+/**
+ * Create and cache a matcher function for `selector`,
+ * or return a cached matcher if one already exists.
+ * @param {?SelectorAST} selector
+ * @returns {SelectorMatcher}
+ */
+function getMatcher(selector) {
+    if (!selector) {
+        return () => true;
+    }
+
+    let matcher = MATCHER_CACHE.get(selector);
+    if (matcher) {
+        return matcher;
+    }
+
     switch(selector.type) {
         case 'wildcard':
-            return () => true;
+            matcher = () => true;
+            break;
 
         case 'identifier': {
             const value = selector.value.toLowerCase();
-            return (node) => value === node.type.toLowerCase();
+            matcher = (node) => value === node.type.toLowerCase();
+            break;
         }
 
         case 'field': {
             const path = selector.name.split('.');
-            return (node, ancestry) => {
+            matcher = (node, ancestry) => {
                 const ancestor = ancestry[path.length - 1];
                 return inPath(node, ancestor, path, 0);
             };
+            break;
         }
+
         case 'matches': {
-            const { selectors } = selector;
-            return (node, ancestry, options) => {
-                for (let i = 0; i < selectors.length; ++i) {
-                    if (matches(node, selectors[i], ancestry, options)) { return true; }
+            const matchers = selector.selectors.map(getMatcher);
+            matcher = (node, ancestry, options) => {
+                for (let i = 0; i < matchers.length; ++i) {
+                    if (matchers[i](node, ancestry, options)) { return true; }
                 }
                 return false;
             };
+            break;
         }
 
         case 'compound': {
-            const { selectors } = selector;
-            return (node, ancestry, options) => {
-                for (let i = 0; i < selectors.length; ++i) {
-                    if (!matches(node, selectors[i], ancestry, options)) { return false; }
+            const matchers = selector.selectors.map(getMatcher);
+            matcher = (node, ancestry, options) => {
+                for (let i = 0; i < matchers.length; ++i) {
+                    if (!matchers[i](node, ancestry, options)) { return false; }
                 }
                 return true;
             };
+            break;
         }
 
         case 'not': {
-            const { selectors } = selector;
-            return (node, ancestry, options) => {
-                for (let i = 0; i < selectors.length; ++i) {
-                    if (matches(node, selectors[i], ancestry, options)) { return false; }
+            const matchers = selector.selectors.map(getMatcher);
+            matcher = (node, ancestry, options) => {
+                for (let i = 0; i < matchers.length; ++i) {
+                    if (matchers[i](node, ancestry, options)) { return false; }
                 }
                 return true;
             };
+            break;
         }
 
         case 'has': {
-            const { selectors } = selector;
-            return (node, ancestry, options) => {
+            const matchers = selector.selectors.map(getMatcher);
+            matcher = (node, ancestry, options) => {
                 let result = false;
 
                 const a = [];
@@ -126,8 +159,8 @@ function createMatcher(selector) {
                     enter (node, parent) {
                         if (parent != null) { a.unshift(parent); }
 
-                        for (let i = 0; i < selectors.length; ++i) {
-                            if (matches(node, selectors[i], a, options)) {
+                        for (let i = 0; i < matchers.length; ++i) {
+                            if (matchers[i](node, a, options)) {
                                 result = true;
                                 this.break();
                                 return;
@@ -141,102 +174,147 @@ function createMatcher(selector) {
 
                 return result;
             };
+            break;
         }
-        case 'child':
-            return (node, ancestry, options) => {
-                if (matches(node, selector.right, ancestry, options)) {
-                    return matches(ancestry[0], selector.left, ancestry.slice(1), options);
+
+        case 'child': {
+            const left = getMatcher(selector.left);
+            const right = getMatcher(selector.right);
+            matcher = (node, ancestry, options) => {
+                if (right(node, ancestry, options)) {
+                    return left(ancestry[0], ancestry.slice(1), options);
                 }
                 return false;
             };
+            break;
+        }
 
-        case 'descendant':
-            return (node, ancestry, options) => {
-                if (matches(node, selector.right, ancestry, options)) {
+        case 'descendant': {
+            const left = getMatcher(selector.left);
+            const right = getMatcher(selector.right);
+            matcher = (node, ancestry, options) => {
+                if (right(node, ancestry, options)) {
                     for (let i = 0, l = ancestry.length; i < l; ++i) {
-                        if (matches(ancestry[i], selector.left, ancestry.slice(i + 1), options)) {
+                        if (left(ancestry[i], ancestry.slice(i + 1), options)) {
                             return true;
                         }
                     }
                 }
                 return false;
             };
+            break;
+        }
 
         case 'attribute': {
             const path = selector.name.split('.');
             switch (selector.operator) {
                 case void 0:
-                    return (node) => getPath(node, path) != null;
+                    matcher = (node) => getPath(node, path) != null;
+                    break;
                 case '=':
                     switch (selector.value.type) {
-                        case 'regexp': return (node) => {
-                            const p = getPath(node, path);
-                            return typeof p === 'string' && selector.value.value.test(p);
-                        };
+                        case 'regexp':
+                            matcher = (node) => {
+                                const p = getPath(node, path);
+                                return typeof p === 'string' && selector.value.value.test(p);
+                            };
+                            break;
                         case 'literal': {
                             const literal = `${selector.value.value}`;
-                            return (node) => literal === `${getPath(node, path)}`;
+                            matcher = (node) => literal === `${getPath(node, path)}`;
+                            break;
                         }
                         case 'type':
-                            return (node) => selector.value.value === typeof getPath(node, path);
+                            matcher = (node) => selector.value.value === typeof getPath(node, path);
+                            break;
+                        default:
+                            throw new Error(`Unknown selector value type: ${selector.value.type}`);
                     }
-                    throw new Error(`Unknown selector value type: ${selector.value.type}`);
+                    break;
                 case '!=':
                     switch (selector.value.type) {
                         case 'regexp':
-                            return (node) => !selector.value.value.test(getPath(node, path));
+                            matcher = (node) => !selector.value.value.test(getPath(node, path));
+                            break;
                         case 'literal': {
                             const literal = `${selector.value.value}`;
-                            return (node) => literal !== `${getPath(node, path)}`;
+                            matcher = (node) => literal !== `${getPath(node, path)}`;
+                            break;
                         }
                         case 'type':
-                            return (node) => selector.value.value !== typeof getPath(node, path);
+                            matcher = (node) => selector.value.value !== typeof getPath(node, path);
+                            break;
+                        default:
+                            throw new Error(`Unknown selector value type: ${selector.value.type}`);
                     }
-                    throw new Error(`Unknown selector value type: ${selector.value.type}`);
-                case '<=': return (node) => getPath(node, path) <= selector.value.value;
-                case '<': return (node) => getPath(node, path) < selector.value.value;
-                case '>': return (node) => getPath(node, path) > selector.value.value;
-                case '>=': return (node) => getPath(node, path) >= selector.value.value;
+                    break;
+                case '<=':
+                    matcher = (node) => getPath(node, path) <= selector.value.value;
+                    break;
+                case '<':
+                    matcher = (node) => getPath(node, path) < selector.value.value;
+                    break;
+                case '>':
+                    matcher = (node) => getPath(node, path) > selector.value.value;
+                    break;
+                case '>=':
+                    matcher = (node) => getPath(node, path) >= selector.value.value;
+                    break;
+                default:
+                    throw new Error(`Unknown operator: ${selector.operator}`);
             }
-            throw new Error(`Unknown operator: ${selector.operator}`);
+            break;
         }
-        case 'sibling':
-            return (node, ancestry, options) => {
-                return matches(node, selector.right, ancestry, options) &&
-                    sibling(node, selector.left, ancestry, LEFT_SIDE, options) ||
-                    selector.left.subject &&
-                    matches(node, selector.left, ancestry, options) &&
-                    sibling(node, selector.right, ancestry, RIGHT_SIDE, options);
-            };
 
-        case 'adjacent':
-            return (node, ancestry, options) => {
-                return matches(node, selector.right, ancestry, options) &&
-                    adjacent(node, selector.left, ancestry, LEFT_SIDE, options) ||
-                    selector.right.subject &&
-                    matches(node, selector.left, ancestry, options) &&
-                    adjacent(node, selector.right, ancestry, RIGHT_SIDE, options);
+        case 'sibling': {
+            const left = getMatcher(selector.left);
+            const right = getMatcher(selector.right);
+            matcher = (node, ancestry, options) => {
+                return right(node, ancestry, options) &&
+                    sibling(node, left, ancestry, LEFT_SIDE, options) ||
+                    selector.left.subject &&
+                    left(node, ancestry, options) &&
+                    sibling(node, right, ancestry, RIGHT_SIDE, options);
             };
+            break;
+        }
+
+        case 'adjacent': {
+            const left = getMatcher(selector.left);
+            const right = getMatcher(selector.right);
+            matcher = (node, ancestry, options) => {
+                return right(node, ancestry, options) &&
+                    adjacent(node, left, ancestry, LEFT_SIDE, options) ||
+                    selector.right.subject &&
+                    left(node, ancestry, options) &&
+                    adjacent(node, right, ancestry, RIGHT_SIDE, options);
+            };
+            break;
+        }
 
         case 'nth-child': {
             const nth = selector.index.value;
-            return (node, ancestry, options) => {
-                return matches(node, selector.right, ancestry, options) &&
+            const right = getMatcher(selector.right);
+            matcher = (node, ancestry, options) => {
+                return right(node, ancestry, options) &&
                     nthChild(node, ancestry, nth, options);
             };
+            break;
         }
 
         case 'nth-last-child': {
             const nth = -selector.index.value;
-            return (node, ancestry, options) => {
-                return matches(node, selector.right, ancestry, options) &&
+            const right = getMatcher(selector.right);
+            matcher = (node, ancestry, options) => {
+                return right(node, ancestry, options) &&
                     nthChild(node, ancestry, nth, options);
             };
+            break;
         }
 
         case 'class': {
             const name = selector.name.toLowerCase();
-            return (node, ancestry) => {
+            matcher = (node, ancestry) => {
                 switch(name){
                     case 'statement':
                         if(node.type.slice(-9) === 'Statement') return true;
@@ -261,10 +339,15 @@ function createMatcher(selector) {
                 }
                 throw new Error(`Unknown class name: ${selector.name}`);
             };
+            break;
         }
     }
 
-    throw new Error(`Unknown selector type: ${selector.type}`);
+    if (!matcher) {
+        throw new Error(`Unknown selector type: ${selector.type}`);
+    }
+    MATCHER_CACHE.set(selector, matcher);
+    return matcher;
 }
 
 /**
@@ -294,10 +377,8 @@ function matches(node, selector, ancestry, options) {
     if (!node) { return false; }
     if (!ancestry) { ancestry = []; }
 
-    if (!selector._match) {
-        selector._match = createMatcher(selector);
-    }
-    return selector._match(node, ancestry, options);
+    const matcher = getMatcher(selector);
+    return matcher(node, ancestry, options);
 }
 
 /**
@@ -335,15 +416,15 @@ function isNode(node) {
 
 /**
  * Determines if the given node has a sibling that matches the
- * given selector.
+ * given selector matcher.
  * @param {external:AST} node
- * @param {SelectorSequenceAST} selector
+ * @param {SelectorMatcher} matcher
  * @param {external:AST[]} ancestry
  * @param {Side} side
  * @param {ESQueryOptions|undefined} options
  * @returns {boolean}
  */
-function sibling(node, selector, ancestry, side, options) {
+function sibling(node, matcher, ancestry, side, options) {
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = getVisitorKeys(parent, options);
@@ -361,7 +442,7 @@ function sibling(node, selector, ancestry, side, options) {
                 upperBound = listProp.length;
             }
             for (let k = lowerBound; k < upperBound; ++k) {
-                if (isNode(listProp[k]) && matches(listProp[k], selector, ancestry, options)) {
+                if (isNode(listProp[k]) && matcher(listProp[k], ancestry, options)) {
                     return true;
                 }
             }
@@ -372,15 +453,15 @@ function sibling(node, selector, ancestry, side, options) {
 
 /**
  * Determines if the given node has an adjacent sibling that matches
- * the given selector.
+ * the given selector matcher.
  * @param {external:AST} node
- * @param {SelectorSequenceAST} selector
+ * @param {SelectorMatcher} matcher
  * @param {external:AST[]} ancestry
  * @param {Side} side
  * @param {ESQueryOptions|undefined} options
  * @returns {boolean}
  */
-function adjacent(node, selector, ancestry, side, options) {
+function adjacent(node, matcher, ancestry, side, options) {
     const [parent] = ancestry;
     if (!parent) { return false; }
     const keys = getVisitorKeys(parent, options);
@@ -389,10 +470,10 @@ function adjacent(node, selector, ancestry, side, options) {
         if (Array.isArray(listProp)) {
             const idx = listProp.indexOf(node);
             if (idx < 0) { continue; }
-            if (side === LEFT_SIDE && idx > 0 && isNode(listProp[idx - 1]) && matches(listProp[idx - 1], selector, ancestry, options)) {
+            if (side === LEFT_SIDE && idx > 0 && isNode(listProp[idx - 1]) && matcher(listProp[idx - 1], ancestry, options)) {
                 return true;
             }
-            if (side === RIGHT_SIDE && idx < listProp.length - 1 && isNode(listProp[idx + 1]) &&  matches(listProp[idx + 1], selector, ancestry, options)) {
+            if (side === RIGHT_SIDE && idx < listProp.length - 1 && isNode(listProp[idx + 1]) &&  matcher(listProp[idx + 1], ancestry, options)) {
                 return true;
             }
         }
@@ -468,19 +549,20 @@ function subjects(selector, ancestor) {
 function traverse(ast, selector, visitor, options) {
     if (!selector) { return; }
     const ancestry = [];
-    const altSubjects = subjects(selector);
+    const matcher = getMatcher(selector);
+    const altSubjects = subjects(selector).map(getMatcher);
     estraverse.traverse(ast, {
         enter (node, parent) {
             if (parent != null) { ancestry.unshift(parent); }
-            if (matches(node, selector, ancestry, options)) {
+            if (matcher(node, ancestry, options)) {
                 if (altSubjects.length) {
                     for (let i = 0, l = altSubjects.length; i < l; ++i) {
-                        if (matches(node, altSubjects[i], ancestry, options)) {
+                        if (altSubjects[i](node, ancestry, options)) {
                             visitor(node, parent, ancestry);
                         }
                         for (let k = 0, m = ancestry.length; k < m; ++k) {
                             const succeedingAncestry = ancestry.slice(k + 1);
-                            if (matches(ancestry[k], altSubjects[i], succeedingAncestry, options)) {
+                            if (altSubjects[i](ancestry[k], succeedingAncestry, options)) {
                                 visitor(ancestry[k], parent, succeedingAncestry);
                             }
                         }
