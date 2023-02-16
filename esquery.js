@@ -84,6 +84,24 @@ const MATCHER_CACHE = typeof WeakMap === 'function' ? new WeakMap : null;
 const truelyMatcher = () => true;
 
 /**
+ * A gurd helper for mather with some preflight assets
+ *
+ * @param {SelectorMatcher} matcher
+ * @returns {SelectorMatcher}
+ */
+const matcherGurd = (matcher) => {
+    return (node, ancestry, ...args) => {
+        if (!node) {
+            return false;
+        }
+        if (!ancestry) {
+            ancestry = [];
+        }
+        return matcher(node, ancestry, ...args);
+    };
+};
+
+/**
  * Look up a matcher function for `selector` in the cache.
  * If it does not exist, generate it with `generateMatcher` and add it to the cache.
  * In engines without WeakMap, the caching is skipped and matchers are generated with every call.
@@ -100,12 +118,12 @@ function getMatcher(selector) {
         if (matcher != null) {
             return matcher;
         }
-        matcher = generateMatcher(selector);
+        matcher = matcherGurd(generateMatcher(selector));
         MATCHER_CACHE.set(selector, matcher);
         return matcher;
     }
 
-    return generateMatcher(selector);
+    return matcherGurd(generateMatcher(selector));
 }
 
 /**
