@@ -42,6 +42,6 @@ describe('Complex selector query', function () {
     it('can not match a top level node', function () {
         // Test fix for issue #135: half of a child selector matches a top-level node.
         const matches = esquery(simpleProgram, 'NonExistingNodeType > *');
-        assert.includeMembers(matches, []);
+        assert.isEmpty(matches);
     });
 });
