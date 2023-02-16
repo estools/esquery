@@ -111,56 +111,63 @@ function getMatcher(selector) {
  * @returns {SelectorMatcher}
  */
 function generateMatcher(selector) {
+    let matcher
     switch(selector.type) {
         case 'wildcard':
-            return () => true;
+            matcher = () => true;
+            break;
 
         case 'identifier': {
             const value = selector.value.toLowerCase();
-            return (node) => value === node.type.toLowerCase();
+            matcher = (node) => value === node.type.toLowerCase();
+            break;
         }
 
         case 'field': {
             const path = selector.name.split('.');
-            return (node, ancestry) => {
+            matcher = (node, ancestry) => {
                 const ancestor = ancestry[path.length - 1];
                 return inPath(node, ancestor, path, 0);
             };
+            break;
         }
 
         case 'matches': {
             const matchers = selector.selectors.map(getMatcher);
-            return (node, ancestry, options) => {
+            matcher = (node, ancestry, options) => {
                 for (let i = 0; i < matchers.length; ++i) {
                     if (matchers[i](node, ancestry, options)) { return true; }
                 }
                 return false;
             };
+            break;
         }
 
         case 'compound': {
             const matchers = selector.selectors.map(getMatcher);
-            return (node, ancestry, options) => {
+            matcher = (node, ancestry, options) => {
                 for (let i = 0; i < matchers.length; ++i) {
                     if (!matchers[i](node, ancestry, options)) { return false; }
                 }
                 return true;
             };
+            break;
         }
 
         case 'not': {
             const matchers = selector.selectors.map(getMatcher);
-            return (node, ancestry, options) => {
+            matcher = (node, ancestry, options) => {
                 for (let i = 0; i < matchers.length; ++i) {
                     if (matchers[i](node, ancestry, options)) { return false; }
                 }
                 return true;
             };
+            break;
         }
 
         case 'has': {
             const matchers = selector.selectors.map(getMatcher);
-            return (node, ancestry, options) => {
+            matcher = (node, ancestry, options) => {
                 let result = false;
 
                 const a = [];
@@ -183,23 +190,25 @@ function generateMatcher(selector) {
 
                 return result;
             };
+            break;
         }
 
         case 'child': {
             const left = getMatcher(selector.left);
             const right = getMatcher(selector.right);
-            return (node, ancestry, options) => {
+            matcher = (node, ancestry, options) => {
                 if (right(node, ancestry, options)) {
                     return left(ancestry[0], ancestry.slice(1), options);
                 }
                 return false;
             };
+            break;
         }
 
         case 'descendant': {
             const left = getMatcher(selector.left);
             const right = getMatcher(selector.right);
-            return (node, ancestry, options) => {
+            matcher = (node, ancestry, options) => {
                 if (right(node, ancestry, options)) {
                     for (let i = 0, l = ancestry.length; i < l; ++i) {
                         if (left(ancestry[i], ancestry.slice(i + 1), options)) {
@@ -209,93 +218,116 @@ function generateMatcher(selector) {
                 }
                 return false;
             };
+            break;
         }
 
         case 'attribute': {
             const path = selector.name.split('.');
             switch (selector.operator) {
                 case void 0:
-                    return (node) => getPath(node, path) != null;
+                    matcher = (node) => getPath(node, path) != null;
+                    break;
                 case '=':
                     switch (selector.value.type) {
                         case 'regexp':
-                            return (node) => {
+                            matcher = (node) => {
                                 const p = getPath(node, path);
                                 return typeof p === 'string' && selector.value.value.test(p);
                             };
+                            break;
                         case 'literal': {
                             const literal = `${selector.value.value}`;
-                            return (node) => literal === `${getPath(node, path)}`;
+                            matcher = (node) => literal === `${getPath(node, path)}`;
+                            break;
                         }
                         case 'type':
-                            return (node) => selector.value.value === typeof getPath(node, path);
+                            matcher = (node) => selector.value.value === typeof getPath(node, path);
+                            break;
+
+                        default:
+                            throw new Error(`Unknown selector value type: ${selector.value.type}`);
                     }
-                    throw new Error(`Unknown selector value type: ${selector.value.type}`);
+                    break;
                 case '!=':
                     switch (selector.value.type) {
                         case 'regexp':
-                            return (node) => !selector.value.value.test(getPath(node, path));
+                            matcher = (node) => !selector.value.value.test(getPath(node, path));
+                            break;
                         case 'literal': {
                             const literal = `${selector.value.value}`;
-                            return (node) => literal !== `${getPath(node, path)}`;
+                            matcher = (node) => literal !== `${getPath(node, path)}`;
+                            break;
                         }
                         case 'type':
-                            return (node) => selector.value.value !== typeof getPath(node, path);
+                            matcher = (node) => selector.value.value !== typeof getPath(node, path);
+                            break;
+                        default:
+                            throw new Error(`Unknown selector value type: ${selector.value.type}`);
                     }
-                    throw new Error(`Unknown selector value type: ${selector.value.type}`);
+                    break;
                 case '<=':
-                    return (node) => getPath(node, path) <= selector.value.value;
+                    matcher = (node) => getPath(node, path) <= selector.value.value;
+                    break;
                 case '<':
-                    return (node) => getPath(node, path) < selector.value.value;
+                    matcher = (node) => getPath(node, path) < selector.value.value;
+                    break;
                 case '>':
-                    return (node) => getPath(node, path) > selector.value.value;
+                    matcher = (node) => getPath(node, path) > selector.value.value;
+                    break;
                 case '>=':
-                    return (node) => getPath(node, path) >= selector.value.value;
+                    matcher = (node) => getPath(node, path) >= selector.value.value;
+                    break;
+                default:
+                    throw new Error(`Unknown operator: ${selector.operator}`);
             }
-            throw new Error(`Unknown operator: ${selector.operator}`);
+            break;
         }
 
         case 'sibling': {
             const left = getMatcher(selector.left);
             const right = getMatcher(selector.right);
-            return (node, ancestry, options) =>
+            matcher = (node, ancestry, options) =>
                 right(node, ancestry, options) &&
                     sibling(node, left, ancestry, LEFT_SIDE, options) ||
                     selector.left.subject &&
                     left(node, ancestry, options) &&
                     sibling(node, right, ancestry, RIGHT_SIDE, options);
+            break;
         }
 
         case 'adjacent': {
             const left = getMatcher(selector.left);
             const right = getMatcher(selector.right);
-            return (node, ancestry, options) =>
+            matcher = (node, ancestry, options) =>
                 right(node, ancestry, options) &&
                     adjacent(node, left, ancestry, LEFT_SIDE, options) ||
                     selector.right.subject &&
                     left(node, ancestry, options) &&
                     adjacent(node, right, ancestry, RIGHT_SIDE, options);
+            break;
         }
 
         case 'nth-child': {
             const nth = selector.index.value;
             const right = getMatcher(selector.right);
-            return (node, ancestry, options) =>
+            matcher = (node, ancestry, options) =>
                 right(node, ancestry, options) &&
                     nthChild(node, ancestry, nth, options);
+            break;
         }
 
         case 'nth-last-child': {
             const nth = -selector.index.value;
             const right = getMatcher(selector.right);
-            return (node, ancestry, options) =>
+            matcher = (node, ancestry, options) =>
                 right(node, ancestry, options) &&
                     nthChild(node, ancestry, nth, options);
+            break;
         }
 
         case 'class': {
             const name = selector.name.toLowerCase();
-            return (node, ancestry) => {
+            matcher = (node, ancestry) => {
                 switch(name){
                     case 'statement':
                         if(node.type.slice(-9) === 'Statement') return true;
@@ -320,10 +352,20 @@ function generateMatcher(selector) {
                 }
                 throw new Error(`Unknown class name: ${selector.name}`);
             };
+            break;
         }
     }
 
-    throw new Error(`Unknown selector type: ${selector.type}`);
+    if (!matcher) {
+        throw new Error(`Unknown selector type: ${selector.type}`);
+    }
+
+    return (node, ancestry, options)=> {
+        if (!node) { return false; }
+        if (!ancestry) { ancestry = []; }
+
+        return matcher(node, ancestry, options);
+    }
 }
 
 /**
