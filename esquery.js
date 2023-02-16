@@ -189,7 +189,7 @@ function generateMatcher(selector) {
             const left = getMatcher(selector.left);
             const right = getMatcher(selector.right);
             return (node, ancestry, options) => {
-                if (right(node, ancestry, options)) {
+                if (ancestry.length > 0 && right(node, ancestry, options)) {
                     return left(ancestry[0], ancestry.slice(1), options);
                 }
                 return false;
