@@ -80,6 +80,9 @@ function inPath(node, ancestor, path, fromPathIndex) {
 */
 const MATCHER_CACHE = typeof WeakMap === 'function' ? new WeakMap : null;
 
+// constant for truely matcher
+const truelyMatcher = () => true;
+
 /**
  * Look up a matcher function for `selector` in the cache.
  * If it does not exist, generate it with `generateMatcher` and add it to the cache.
@@ -89,7 +92,7 @@ const MATCHER_CACHE = typeof WeakMap === 'function' ? new WeakMap : null;
  */
 function getMatcher(selector) {
     if (selector == null) {
-        return () => true;
+        return truelyMatcher;
     }
 
     if (MATCHER_CACHE != null) {
