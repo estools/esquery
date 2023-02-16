@@ -474,10 +474,8 @@ function nthChild(node, ancestry, nth, options) {
     for (let i = 0; i < keys.length; ++i) {
         const listProp = parent[keys[i]];
         if (Array.isArray(listProp)){
-            if (nth > 0 && nth <= listProp.length && listProp[nth - 1] === node) {
-                return true;
-            }
-            if (nth < 0 && -nth <= listProp.length && listProp[listProp.length + nth] === node) {
+            const idx = nth < 0 ? listProp.length + nth : nth - 1;
+            if (idx >= 0 && idx < listProp.length && listProp[idx] === node) {
                 return true;
             }
         }
