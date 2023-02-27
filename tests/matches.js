@@ -174,7 +174,9 @@ describe('matches with custom AST and nodeTypeKey and custom visitor keys', func
             visitorKeys: {
                 CustomRoot: ['list'],
                 CustomChild: ['sublist'],
-                CustomGrandChild: []
+                CustomGrandChild: [],
+                CustomStatement: [],
+                CustomExpression: []
             },
             nodeTypeKey: 'kind'
         };

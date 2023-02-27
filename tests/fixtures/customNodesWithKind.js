@@ -28,5 +28,11 @@ export default {
                 { kind: 'CustomGrandChild' },
             ],
         },
+        {
+            kind: 'CustomExpression'
+        },
+        {
+            kind: 'CustomStatement'
+        }
     ],
 };

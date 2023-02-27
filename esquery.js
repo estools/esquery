@@ -297,31 +297,33 @@ function generateMatcher(selector) {
         }
 
         case 'class': {
+
             const name = selector.name.toLowerCase();
             return (node, ancestry, options) => {
-                const nodeTypeKey = (options && options.nodeTypeKey) || 'type';
+
+                if (options && options.nodeTypeKey) return false;
 
                 switch(name){
                     case 'statement':
-                        if(node[nodeTypeKey].slice(-9) === 'Statement') return true;
+                        if(node.type.slice(-9) === 'Statement') return true;
                         // fallthrough: interface Declaration <: Statement { }
                     case 'declaration':
-                        return node[nodeTypeKey].slice(-11) === 'Declaration';
+                        return node.type.slice(-11) === 'Declaration';
                     case 'pattern':
-                        if(node[nodeTypeKey].slice(-7) === 'Pattern') return true;
+                        if(node.type.slice(-7) === 'Pattern') return true;
                         // fallthrough: interface Expression <: Node, Pattern { }
                     case 'expression':
-                        return node[nodeTypeKey].slice(-10) === 'Expression' ||
-                            node[nodeTypeKey].slice(-7) === 'Literal' ||
+                        return node.type.slice(-10) === 'Expression' ||
+                            node.type.slice(-7) === 'Literal' ||
                             (
-                                node[nodeTypeKey] === 'Identifier' &&
-                                (ancestry.length === 0 || ancestry[0][nodeTypeKey] !== 'MetaProperty')
+                                node.type === 'Identifier' &&
+                                (ancestry.length === 0 || ancestry[0].type !== 'MetaProperty')
                             ) ||
-                            node[nodeTypeKey] === 'MetaProperty';
+                            node.type === 'MetaProperty';
                     case 'function':
-                        return node[nodeTypeKey] === 'FunctionDeclaration' ||
-                            node[nodeTypeKey] === 'FunctionExpression' ||
-                            node[nodeTypeKey] === 'ArrowFunctionExpression';
+                        return node.type === 'FunctionDeclaration' ||
+                            node.type === 'FunctionExpression' ||
+                            node.type === 'ArrowFunctionExpression';
                 }
                 throw new Error(`Unknown class name: ${selector.name}`);
             };

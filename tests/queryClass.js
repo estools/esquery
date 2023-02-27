@@ -1,5 +1,6 @@
 import esquery from '../esquery.js';
 import ast from './fixtures/allClasses.js';
+import customNodesWithKind from './fixtures/customNodesWithKind.js';
 
 describe('Class query', function () {
 
@@ -65,5 +66,25 @@ describe('Class query', function () {
         ]);
         assert.equal(10, matches.length);
     });
+
+    it('custom nodes with :expression, :statement', function () {
+        const options = {
+            visitorKeys: {
+                CustomRoot: ['list'],
+                CustomChild: ['sublist'],
+                CustomGrandChild: [],
+                CustomStatement: [],
+                CustomExpression: []
+            },
+            nodeTypeKey: 'kind'
+        };
+
+        const matches1 = esquery(customNodesWithKind, ':expression', options);
+        assert.equal(0, matches1.length);
+
+        const matches2 = esquery(customNodesWithKind, ':statement', options);
+        assert.equal(0, matches2.length);
+    });
+
 
 });
