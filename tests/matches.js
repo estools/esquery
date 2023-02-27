@@ -3,6 +3,7 @@ import forLoop from './fixtures/forLoop.js';
 import simpleProgram from './fixtures/simpleProgram.js';
 import conditional from './fixtures/conditional.js';
 import customNodes from './fixtures/customNodes.js';
+import customNodesWithKind from './fixtures/customNodesWithKind.js';
 
 describe('matches', function () {
     it('falsey node', function () {
@@ -161,6 +162,41 @@ describe('matches with custom AST and custom visitor keys', function () {
                 customNodes.list[1],
                 selector,
                 [customNodes],
+                options
+            );
+        });
+    });
+});
+
+describe('matches with custom AST and nodeTypeKey and custom visitor keys', function () {
+    it('adjacent/sibling', function () {
+        const options = {
+            visitorKeys: {
+                CustomRoot: ['list'],
+                CustomChild: ['sublist'],
+                CustomGrandChild: [],
+                CustomStatement: [],
+                CustomExpression: []
+            },
+            nodeTypeKey: 'kind'
+        };
+
+        let selector = esquery.parse('CustomChild + CustomChild');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                customNodesWithKind.list[1],
+                selector,
+                [customNodesWithKind],
+                options
+            );
+        });
+
+        selector = esquery.parse('CustomChild ~ CustomChild');
+        assert.doesNotThrow(() => {
+            esquery.matches(
+                customNodesWithKind.list[1],
+                selector,
+                [customNodesWithKind],
                 options
             );
         });

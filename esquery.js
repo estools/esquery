@@ -117,7 +117,10 @@ function generateMatcher(selector) {
 
         case 'identifier': {
             const value = selector.value.toLowerCase();
-            return (node) => value === node.type.toLowerCase();
+            return (node, ancestry, options) => {
+                const nodeTypeKey = (options && options.nodeTypeKey) || 'type';
+                return value === node[nodeTypeKey].toLowerCase();
+            };
         }
 
         case 'field': {
@@ -294,8 +297,12 @@ function generateMatcher(selector) {
         }
 
         case 'class': {
+
             const name = selector.name.toLowerCase();
-            return (node, ancestry) => {
+            return (node, ancestry, options) => {
+
+                if (options && options.nodeTypeKey) return false;
+
                 switch(name){
                     case 'statement':
                         if(node.type.slice(-9) === 'Statement') return true;
@@ -333,6 +340,7 @@ function generateMatcher(selector) {
  */
 /**
  * @typedef {object} ESQueryOptions
+ * @property {string} [nodeTypeKey="type"] By passing `nodeTypeKey`, we can allow other ASTs to use ESQuery.
  * @property { { [nodeType: string]: string[] } } [visitorKeys] By passing `visitorKeys` mapping, we can extend the properties of the nodes that traverse the node.
  * @property {TraverseOptionFallback} [fallback] By passing `fallback` option, we can control the properties of traversing nodes when encountering unknown nodes.
  */
@@ -363,7 +371,9 @@ function matches(node, selector, ancestry, options) {
  * @returns {string[]} Visitor keys of the node.
  */
 function getVisitorKeys(node, options) {
-    const nodeType = node.type;
+    const nodeTypeKey = (options && options.nodeTypeKey) || 'type';
+
+    const nodeType = node[nodeTypeKey];
     if (options && options.visitorKeys && options.visitorKeys[nodeType]) {
         return options.visitorKeys[nodeType];
     }
@@ -375,7 +385,7 @@ function getVisitorKeys(node, options) {
     }
     // 'iteration' fallback
     return Object.keys(node).filter(function (key) {
-        return key !== 'type';
+        return key !== nodeTypeKey;
     });
 }
 
@@ -383,10 +393,12 @@ function getVisitorKeys(node, options) {
 /**
  * Check whether the given value is an ASTNode or not.
  * @param {any} node The value to check.
+ * @param {ESQueryOptions|undefined} options The options to use.
  * @returns {boolean} `true` if the value is an ASTNode.
  */
-function isNode(node) {
-    return node !== null && typeof node === 'object' && typeof node.type === 'string';
+function isNode(node, options) {
+    const nodeTypeKey = (options && options.nodeTypeKey) || 'type';
+    return node !== null && typeof node === 'object' && typeof node[nodeTypeKey] === 'string';
 }
 
 /**
@@ -417,7 +429,7 @@ function sibling(node, matcher, ancestry, side, options) {
                 upperBound = listProp.length;
             }
             for (let k = lowerBound; k < upperBound; ++k) {
-                if (isNode(listProp[k]) && matcher(listProp[k], ancestry, options)) {
+                if (isNode(listProp[k], options) && matcher(listProp[k], ancestry, options)) {
                     return true;
                 }
             }
@@ -445,10 +457,10 @@ function adjacent(node, matcher, ancestry, side, options) {
         if (Array.isArray(listProp)) {
             const idx = listProp.indexOf(node);
             if (idx < 0) { continue; }
-            if (side === LEFT_SIDE && idx > 0 && isNode(listProp[idx - 1]) && matcher(listProp[idx - 1], ancestry, options)) {
+            if (side === LEFT_SIDE && idx > 0 && isNode(listProp[idx - 1], options) && matcher(listProp[idx - 1], ancestry, options)) {
                 return true;
             }
-            if (side === RIGHT_SIDE && idx < listProp.length - 1 && isNode(listProp[idx + 1]) &&  matcher(listProp[idx + 1], ancestry, options)) {
+            if (side === RIGHT_SIDE && idx < listProp.length - 1 && isNode(listProp[idx + 1], options) &&  matcher(listProp[idx + 1], ancestry, options)) {
                 return true;
             }
         }
