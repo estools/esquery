@@ -298,10 +298,15 @@ function generateMatcher(selector) {
 
         case 'class': {
 
-            const name = selector.name.toLowerCase();
             return (node, ancestry, options) => {
-
+                
+                if (options && options.matchClass) {
+                    return options.matchClass(selector.name, node, ancestry);
+                }
+                
                 if (options && options.nodeTypeKey) return false;
+                
+                const name = selector.name.toLowerCase();
 
                 switch(name){
                     case 'statement':
@@ -338,11 +343,21 @@ function generateMatcher(selector) {
  * @param {external:AST} node The given node.
  * @returns {string[]} An array of visitor keys for the given node.
  */
+
+/**
+ * @callback ClassMatcher
+ * @param {string} className The name of the class to match.
+ * @param {external:AST} node The node to match against.
+ * @param {Array<external:AST>} ancestry The ancestry of the node.
+ * @returns {boolean} True if the node matches the class, false if not.
+ */
+
 /**
  * @typedef {object} ESQueryOptions
  * @property {string} [nodeTypeKey="type"] By passing `nodeTypeKey`, we can allow other ASTs to use ESQuery.
  * @property { { [nodeType: string]: string[] } } [visitorKeys] By passing `visitorKeys` mapping, we can extend the properties of the nodes that traverse the node.
  * @property {TraverseOptionFallback} [fallback] By passing `fallback` option, we can control the properties of traversing nodes when encountering unknown nodes.
+ * @property {ClassMatcher} [matchClass] By passing `matchClass` option, we can customize the interpretation of classes.
  */
 
 /**
