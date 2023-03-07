@@ -297,6 +297,8 @@ function generateMatcher(selector) {
         }
 
         case 'class': {
+            
+            const name = selector.name.toLowerCase();
 
             return (node, ancestry, options) => {
                 
@@ -304,9 +306,7 @@ function generateMatcher(selector) {
                     return options.matchClass(selector.name, node, ancestry);
                 }
                 
-                if (options && options.nodeTypeKey) return false;
-                
-                const name = selector.name.toLowerCase();
+                if (options && options.nodeTypeKey) return false;    
 
                 switch(name){
                     case 'statement':
