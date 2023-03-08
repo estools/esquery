@@ -1,3 +1,7 @@
+![Github Actions CI](https://github.com/estools/esquery/actions/workflows/NodeCI.yml/badge.svg?branch=master)
+![NPM version](https://img.shields.io/npm/v/esquery)
+![NPM downloads per month](https://img.shields.io/npm/dm/esquery)
+
 ESQuery is a library for querying the AST output by Esprima for patterns of syntax using a CSS style selector system. Check out the demo:
 
 [demo](https://estools.github.io/esquery/)
@@ -23,5 +27,3 @@ The following selectors are supported:
 * [matches-any](http://dev.w3.org/csswg/selectors4/#matches): `:matches([attr] > :first-child, :last-child)`
 * [subject indicator](http://dev.w3.org/csswg/selectors4/#subject): `!IfStatement > [name="foo"]`
 * class of AST node: `:statement`, `:expression`, `:declaration`, `:function`, or `:pattern`
-
-[![Build Status](https://travis-ci.org/estools/esquery.png?branch=master)](https://travis-ci.org/estools/esquery)
