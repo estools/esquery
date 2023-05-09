@@ -4,16 +4,27 @@
   "author": "Joel Feenstra <jrfeenst+esquery@gmail.com>",
   "contributors": [],
   "description": "A query library for ECMAScript AST using a CSS selector like query language.",
-  "main": "dist/esquery.min.js",
-  "module": "dist/esquery.esm.min.js",
+  "type": "module",
+  "main": "./dist/esquery.min.js",
+  "module": "./dist/esquery.esm.min.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esquery.esm.min.js",
+      "require": "./dist/esquery.min.js"
+    },
+    "./lite": {
+      "import": "./dist/esquery.lite.esm.min.js",
+      "require": "./dist/esquery.lite.min.js"
+    }
+  },
   "files": [
     "dist/*.js",
     "dist/*.map",
-    "parser.js",
+    "parser.cjs",
     "license.txt",
     "README.md"
   ],
-  "nyc": {
+  "c8": {
     "branches": 100,
     "lines": 100,
     "functions": 100,
@@ -23,18 +34,18 @@
       "text"
     ],
     "exclude": [
-      "parser.js",
+      "parser.cjs",
       "dist",
       "tests"
     ]
   },
   "scripts": {
     "prepublishOnly": "npm run build && npm test",
-    "build:parser": "rm parser.js && pegjs --cache --format umd -o \"parser.js\" \"grammar.pegjs\"",
+    "build:parser": "rm parser.cjs && pegjs --cache --format umd -o \"parser.cjs\" \"grammar.pegjs\"",
     "build:browser": "rollup -c",
     "build": "npm run build:parser && npm run build:browser",
-    "mocha": "mocha --require chai/register-assert --require @babel/register tests",
-    "test": "nyc npm run mocha && npm run lint",
+    "mocha": "mocha --require chai/register-assert.js --require @babel/register tests",
+    "test": "c8 npm run mocha && npm run lint",
     "test:ci": "npm run mocha",
     "lint": "eslint ."
   },
@@ -51,28 +62,28 @@
     "query"
   ],
   "devDependencies": {
-    "@babel/core": "^7.9.0",
-    "@babel/preset-env": "^7.9.5",
-    "@babel/register": "^7.9.0",
-    "@rollup/plugin-commonjs": "^11.1.0",
-    "@rollup/plugin-json": "^4.0.2",
-    "@rollup/plugin-node-resolve": "^7.1.3",
+    "@babel/core": "^7.17.5",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/register": "^7.17.0",
+    "@rollup/plugin-commonjs": "^21.0.2",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.1.3",
     "babel-plugin-transform-es2017-object-entries": "0.0.5",
-    "chai": "4.2.0",
-    "eslint": "^6.8.0",
+    "c8": "^7.11.0",
+    "chai": "^4.3.6",
+    "eslint": "^8.11.0",
     "esprima": "~4.0.1",
-    "mocha": "7.1.1",
-    "nyc": "^15.0.1",
+    "mocha": "^9.2.2",
     "pegjs": "~0.10.0",
-    "rollup": "^1.32.1",
+    "rollup": "^2.70.0",
     "rollup-plugin-babel": "^4.4.0",
-    "rollup-plugin-terser": "^5.3.0"
+    "rollup-plugin-terser": "^7.0.2"
   },
   "license": "BSD-3-Clause",
   "engines": {
     "node": ">=0.10"
   },
   "dependencies": {
-    "estraverse": "^5.1.0"
+    "estraverse": "^5.3.0"
   }
 }
