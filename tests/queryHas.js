@@ -28,4 +28,11 @@ describe('Parent selector query', function () {
         assert.equal(0, matches.length);
     });
 
+    it('binary op', function () {
+        const deepChildMatches = esquery(conditional, 'IfStatement:has(> Identifier[name="x"])');
+        assert.equal(0, deepChildMatches.length);
+
+        const shallowChildMatches = esquery(conditional, 'IfStatement:has(> LogicalExpression.test, > Identifier[name="x"])');
+        assert.equal(1, shallowChildMatches.length);
+    });
 });

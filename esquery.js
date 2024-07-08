@@ -71,7 +71,11 @@ function inPath(node, ancestor, path, fromPathIndex) {
 
 /**
  * A generated matcher function for a selector.
- * @typedef {function} SelectorMatcher
+ * @callback SelectorMatcher
+ * @param {?SelectorAST} selector
+ * @param {external:AST[]} [ancestry=[]]
+ * @param {ESQueryOptions} [options]
+ * @returns {void}
 */
 
 /**
@@ -122,6 +126,11 @@ function generateMatcher(selector) {
                 return value === node[nodeTypeKey].toLowerCase();
             };
         }
+
+        case 'exactNode':
+            return (node, ancestry) => {
+                return ancestry.length === 0;
+            };
 
         case 'field': {
             const path = selector.name.split('.');
