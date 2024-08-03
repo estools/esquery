@@ -35,4 +35,29 @@ describe('Parent selector query', function () {
         const shallowChildMatches = esquery(conditional, 'IfStatement:has(> LogicalExpression.test, > Identifier[name="x"])');
         assert.equal(1, shallowChildMatches.length);
     });
+
+    it('has(>BlockStatement)', function () {
+        const matches = esquery(conditional, 'IfStatement:has(>BlockStatement)');
+        assert.equal(3, matches.length);
+    });
+    it('has(BlockStatement>ExpressionStatement)', function () {
+        const matches = esquery(conditional, 'IfStatement:has(BlockStatement>ExpressionStatement)');
+        assert.equal(3, matches.length);
+    });
+    it('fails has(>BlockStatement>ExpressionStatement)', function () {
+        const matches = esquery(conditional, 'IfStatement:has(>BlockStatement>ExpressionStatement)');
+        assert.equal(3, matches.length);
+    });
+    it('workaround has(>BlockStatement:has(>ExpressionStatement))', function () {
+        const matches = esquery(conditional, 'IfStatement:has(>BlockStatement:has(>ExpressionStatement))');
+        assert.equal(3, matches.length);
+    });
+    it('fails has(>BlockStatement ExpressionStatement)', function () {
+        const matches = esquery(conditional, 'IfStatement:has(>BlockStatement ExpressionStatement)');
+        assert.equal(3, matches.length);
+    });
+    it('workaround has(>BlockStatement:has(ExpressionStatement))', function () {
+        const matches = esquery(conditional, 'IfStatement:has(>BlockStatement:has(ExpressionStatement))');
+        assert.equal(3, matches.length);
+    });
 });
