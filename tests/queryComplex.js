@@ -44,4 +44,23 @@ describe('Complex selector query', function () {
         const matches = esquery(simpleProgram, 'NonExistingNodeType > *');
         assert.isEmpty(matches);
     });
+
+    it('fails field on a descendant', function () {
+        const matches = esquery(simpleProgram, 'ExpressionStatement AssignmentExpression.left');
+        assert.deepEqual([
+            { name: 'x', type: 'Identifier' },
+            { name: 'y', type: 'Identifier' }
+        ], matches);
+
+        const matches2 = esquery(simpleProgram, 'ExpressionStatement AssignmentExpression.left Identifier[name="y"]');
+        assert.equal(1, matches2.length);
+    });
+
+    it('fails field should not apply to a parent of descendant', function () {
+        const matches = esquery(simpleProgram, 'ExpressionStatement AssignmentExpression > *.left');
+        assert.deepEqual([], matches);
+
+        const matches2 = esquery(simpleProgram, 'ExpressionStatement AssignmentExpression Identifier[name="y"].left');
+        assert.equal(0, matches2.length);
+    });
 });
