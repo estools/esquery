@@ -44,19 +44,19 @@ describe('Parent selector query', function () {
         const matches = esquery(conditional, 'IfStatement:has(BlockStatement>ExpressionStatement)');
         assert.equal(3, matches.length);
     });
-    it('fails has(>BlockStatement>ExpressionStatement)', function () {
+    it('has(>BlockStatement>ExpressionStatement)', function () {
         const matches = esquery(conditional, 'IfStatement:has(>BlockStatement>ExpressionStatement)');
         assert.equal(3, matches.length);
     });
-    it('workaround has(>BlockStatement:has(>ExpressionStatement))', function () {
+    it('v1.6 workaround has(>BlockStatement:has(>ExpressionStatement))', function () {
         const matches = esquery(conditional, 'IfStatement:has(>BlockStatement:has(>ExpressionStatement))');
         assert.equal(3, matches.length);
     });
-    it('fails has(>BlockStatement ExpressionStatement)', function () {
+    it('has(>BlockStatement ExpressionStatement)', function () {
         const matches = esquery(conditional, 'IfStatement:has(>BlockStatement ExpressionStatement)');
         assert.equal(3, matches.length);
     });
-    it('workaround has(>BlockStatement:has(ExpressionStatement))', function () {
+    it('v1.6 workaround has(>BlockStatement:has(ExpressionStatement))', function () {
         const matches = esquery(conditional, 'IfStatement:has(>BlockStatement:has(ExpressionStatement))');
         assert.equal(3, matches.length);
     });
