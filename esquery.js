@@ -75,7 +75,7 @@ function inPath(node, ancestor, path, fromPathIndex) {
  * @param {?SelectorAST} selector
  * @param {external:AST[]} [ancestry=[]]
  * @param {ESQueryOptions} [options]
- * @returns {void}
+ * @returns {boolean}
 */
 
 /**
@@ -91,7 +91,7 @@ const MATCHER_CACHE = typeof WeakMap === 'function' ? new WeakMap : null;
  * @param {?SelectorAST} selector
  * @returns {SelectorMatcher}
  */
-function getMatcher(selector) {
+function getMatcherOrig(selector) {
     if (selector == null) {
         return () => true;
     }
@@ -107,6 +107,18 @@ function getMatcher(selector) {
     }
 
     return generateMatcher(selector);
+}
+/**
+ * @param {?SelectorAST} selector
+ * @returns {SelectorMatcher}
+ */
+function getMatcher(selector) {
+    const matcher = getMatcherOrig(selector);
+    return (node, ancestry, options) => {
+        // `has` traversal pushes its parent node into ancestry; so expect 1 ancestor even at the root
+        const satisfiesIsRoot = selector && selector.isRoot ? ancestry.length < 2 : true;
+        return matcher(node, ancestry, options) && satisfiesIsRoot;
+    };
 }
 
 /**
@@ -126,11 +138,6 @@ function generateMatcher(selector) {
                 return value === node[nodeTypeKey].toLowerCase();
             };
         }
-
-        case 'exactNode':
-            return (node, ancestry) => {
-                return ancestry.length === 0;
-            };
 
         case 'field': {
             const path = selector.name.split('.');
@@ -553,7 +560,7 @@ function subjects(selector, ancestor) {
  * @param {?SelectorAST} selector
  * @param {TraverseVisitor} visitor
  * @param {ESQueryOptions} [options]
- * @returns {external:AST[]}
+ * @returns {void}
  */
 function traverse(ast, selector, visitor, options) {
     if (!selector) { return; }
