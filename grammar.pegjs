@@ -30,20 +30,9 @@ binaryOp
   / _ "+" _ { return 'adjacent'; }
   / " " _ { return 'descendant'; }
 
-hasSelectors = s:hasSelector ss:(_ "," _ hasSelector)* {
-  return [s].concat(ss.map(function (s) { return s[3]; }));
-}
-
 selectors = s:selector ss:(_ "," _ selector)* {
   return [s].concat(ss.map(function (s) { return s[3]; }));
 }
-
-
-hasSelector
-  = op:binaryOp? s:selector {
-    if (!op) return s;
-    return { type: op, left: { type: 'exactNode' }, right: s };
-  }
 
 selector
   = a:sequence ops:(binaryOp sequence)* {
@@ -107,7 +96,7 @@ field = "." i:identifierName is:("." identifierName)* {
 
 negation = ":not(" _ ss:selectors _ ")" { return { type: 'not', selectors: ss }; }
 matches = ":matches(" _ ss:selectors _ ")" { return { type: 'matches', selectors: ss }; }
-has = ":has(" _ ss:hasSelectors _ ")" { return { type: 'has', selectors: ss }; }
+has = ":has(" _ ss:selectors _ ")" { return { type: 'has', selectors: ss }; }
 
 firstChild = ":first-child" { return nth(1); }
 lastChild = ":last-child" { return nthLast(1); }

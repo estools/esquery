@@ -127,11 +127,6 @@ function generateMatcher(selector) {
             };
         }
 
-        case 'exactNode':
-            return (node, ancestry) => {
-                return ancestry.length === 0;
-            };
-
         case 'field': {
             const path = selector.name.split('.');
             return (node, ancestry) => {
