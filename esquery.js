@@ -75,7 +75,7 @@ function inPath(node, ancestor, path, fromPathIndex) {
  * @param {?SelectorAST} selector
  * @param {external:AST[]} [ancestry=[]]
  * @param {ESQueryOptions} [options]
- * @returns {void}
+ * @returns {boolean}
 */
 
 /**
@@ -560,7 +560,7 @@ function subjects(selector, ancestor) {
  * @param {?SelectorAST} selector
  * @param {TraverseVisitor} visitor
  * @param {ESQueryOptions} [options]
- * @returns {external:AST[]}
+ * @returns {void}
  */
 function traverse(ast, selector, visitor, options) {
     if (!selector) { return; }
