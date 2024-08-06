@@ -91,7 +91,7 @@ const MATCHER_CACHE = typeof WeakMap === 'function' ? new WeakMap : null;
  * @param {?SelectorAST} selector
  * @returns {SelectorMatcher}
  */
-function getMatcher(selector) {
+function getMatcherOrig(selector) {
     if (selector == null) {
         return () => true;
     }
@@ -107,6 +107,18 @@ function getMatcher(selector) {
     }
 
     return generateMatcher(selector);
+}
+/**
+ * @param {?SelectorAST} selector
+ * @returns {SelectorMatcher}
+ */
+function getMatcher(selector) {
+    const matcher = getMatcherOrig(selector);
+    return (node, ancestry, options) => {
+        // `has` traversal pushes its parent node into ancestry; so expect 1 ancestor even at the root
+        const satisfiesIsRoot = selector && selector.isRoot ? ancestry.length < 2 : true;
+        return matcher(node, ancestry, options) && satisfiesIsRoot;
+    };
 }
 
 /**

@@ -42,9 +42,10 @@ selector
   }
 
 sequence
-  = subject:"!"? as:atom+ {
+  = subject:"!"? isRoot:(_">"_)? as:atom+ {
     const b = as.length === 1 ? as[0] : { type: 'compound', selectors: as };
     if(subject) b.subject = true;
+    if(isRoot) as[0].isRoot = true;
     return b;
   }
 
