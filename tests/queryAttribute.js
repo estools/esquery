@@ -182,7 +182,7 @@ describe('Attribute query', function () {
         ]);
     });
 
-    it('single backslash-escaped slash in a literal', function () {
+    it('double backslash-escaped slash in a literal', function () {
         const matches = esquery(literalSlash, '[value="foo\\/\\/bar"]');
         assert.includeMembers(matches, [
             literalSlash.body[3].declarations[0].init

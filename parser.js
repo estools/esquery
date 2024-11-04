@@ -251,6 +251,7 @@
         peg$c76 = /^[^\/]/,
         peg$c77 = peg$classExpectation(["/"], true, false),
         peg$c78 = function(d, flgs) {
+              // https://github.com/estools/esquery/issues/68
               const text = d.join('').replaceAll("\\\\x2F", "\\/");
               return {
                 type: 'regexp', value: new RegExp(text, flgs ? flgs.join('') : '')
@@ -2671,7 +2672,9 @@
       }
 
       // https://github.com/estools/esquery/issues/68
-      input = input.replaceAll("\\/", "\\\\x2F");
+      input = input.replaceAll(/\/((?:[^\/\\]|\\.)*?)\//g, (match) => {
+        return match.replaceAll("\\/", "\\\\x2F");
+      });
 
 
     peg$result = peg$startRuleFunction();
