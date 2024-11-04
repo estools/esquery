@@ -16,6 +16,7 @@
   }
 
   // https://github.com/estools/esquery/issues/68
+  // Inside all /regexp/ literals, we replace escaped-backslashes with the \x2F equivalent.
   input = input.replaceAll(/\/((?:[^\/\\]|\\.)*?)\//g, (match) => {
     return match.replaceAll("\\/", "\\\\x2F");
   });
