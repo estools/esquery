@@ -60,7 +60,7 @@ sequence
   }
 
 atom
-  = wildcard / identifier / attr / field / negation / matches
+  = wildcard / identifier / attr / field / negation / matches / is
   / has / firstChild / lastChild / nthChild / nthLastChild / class
 
 wildcard = a:"*" { return { type: 'wildcard', value: a }; }
@@ -107,6 +107,7 @@ field = "." i:identifierName is:("." identifierName)* {
 
 negation = ":not(" _ ss:selectors _ ")" { return { type: 'not', selectors: ss }; }
 matches = ":matches(" _ ss:selectors _ ")" { return { type: 'matches', selectors: ss }; }
+is = ":is(" _ ss:selectors _ ")" { return { type: 'matches', selectors: ss }; }
 has = ":has(" _ ss:hasSelectors _ ")" { return { type: 'has', selectors: ss }; }
 
 firstChild = ":first-child" { return nth(1); }

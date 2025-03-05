@@ -48,4 +48,12 @@ describe('Pseudo matches query', function () {
         ]);
     });
 
+    it('simple function is (alias)', function () {
+        const matches = esquery(simpleFunction, ':is([name="foo"], ReturnStatement)');
+        assert.includeMembers(matches, [
+            simpleFunction.body[0].id,
+            simpleFunction.body[0].body.body[2]
+        ]);
+    });
+
 });
