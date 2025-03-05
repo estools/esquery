@@ -14,6 +14,12 @@
       }
     });
   }
+
+  // https://github.com/estools/esquery/issues/68
+  // Inside all /regexp/ literals, we replace escaped-backslashes with the \x2F equivalent.
+  input = input.replaceAll(/\/((?:[^\/\\]|\\.)*?)\//g, (match) => {
+    return match.replaceAll("\\/", "\\\\x2F");
+  });
 }
 
 start
@@ -97,8 +103,12 @@ attr
     path = i:identifierName { return { type: 'literal', value: i }; }
     type = "type(" _ t:[^ )]+ _ ")" { return { type: 'type', value: t.join('') }; }
     flags = [imsu]+
-    regex = "/" d:[^/]+ "/" flgs:flags? { return {
-      type: 'regexp', value: new RegExp(d.join(''), flgs ? flgs.join('') : '') };
+    regex = "/" d:[^/]+ "/" flgs:flags? {
+      // https://github.com/estools/esquery/issues/68
+      const text = d.join('').replaceAll("\\\\x2F", "\\/");
+      return {
+        type: 'regexp', value: new RegExp(text, flgs ? flgs.join('') : '')
+      };
     }
 
 field = "." i:identifierName is:("." identifierName)* {

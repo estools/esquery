@@ -250,8 +250,12 @@
         peg$c75 = peg$literalExpectation("/", false),
         peg$c76 = /^[^\/]/,
         peg$c77 = peg$classExpectation(["/"], true, false),
-        peg$c78 = function(d, flgs) { return {
-              type: 'regexp', value: new RegExp(d.join(''), flgs ? flgs.join('') : '') };
+        peg$c78 = function(d, flgs) {
+              // https://github.com/estools/esquery/issues/68
+              const text = d.join('').replaceAll("\\\\x2F", "\\/");
+              return {
+                type: 'regexp', value: new RegExp(text, flgs ? flgs.join('') : '')
+              };
             },
         peg$c79 = function(i, is) {
           return { type: 'field', name: is.reduce(function(memo, p){ return memo + p[0] + p[1]; }, i)};
@@ -2735,6 +2739,12 @@
           }
         });
       }
+
+      // https://github.com/estools/esquery/issues/68
+      // Inside all /regexp/ literals, we replace escaped-backslashes with the \x2F equivalent.
+      input = input.replaceAll(/\/((?:[^\/\\]|\\.)*?)\//g, (match) => {
+        return match.replaceAll("\\/", "\\\\x2F");
+      });
 
 
     peg$result = peg$startRuleFunction();
