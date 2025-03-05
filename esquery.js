@@ -624,6 +624,7 @@ function query(ast, selector, options) {
     return match(ast, parse(selector), options);
 }
 
+query.getPath = getPath;
 query.parse = parse;
 query.match = match;
 query.traverse = traverse;
