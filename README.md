@@ -4,6 +4,7 @@ ESQuery is a library for querying the AST output by Esprima for patterns of synt
 
 The following selectors are supported:
 * AST node type: `ForStatement`
+* [group](https://drafts.csswg.org/selectors-4/#grouping): `ForInStatement, ForOfStatement`
 * [wildcard](http://dev.w3.org/csswg/selectors4/#universal-selector): `*`
 * [attribute existence](http://dev.w3.org/csswg/selectors4/#attribute-selectors): `[attr]`
 * [attribute value](http://dev.w3.org/csswg/selectors4/#attribute-selectors): `[attr="foo"]` or `[attr=123]`
