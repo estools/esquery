@@ -35,4 +35,15 @@ describe('Parent selector query', function () {
         const shallowChildMatches = esquery(conditional, 'IfStatement:has(> LogicalExpression.test, > Identifier[name="x"])');
         assert.equal(1, shallowChildMatches.length);
     });
+
+    // https://github.com/estools/esquery/issues/152
+    it('chained relative selector matches nested structure (no false negative)', function () {
+        const matches = esquery(conditional, 'Program:has(> IfStatement > BlockStatement)');
+        assert.equal(1, matches.length);
+    });
+
+    it('chained relative selector does not match subject itself (no false positive)', function () {
+        const matches = esquery(conditional, 'BlockStatement:has(> BlockStatement > ExpressionStatement)');
+        assert.equal(0, matches.length);
+    });
 });
