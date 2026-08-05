@@ -40,9 +40,11 @@ selectors = s:selector ss:(_ "," _ selector)* {
 
 
 hasSelector
-  = op:binaryOp? s:selector {
-    if (!op) return s;
-    return { type: op, left: { type: 'exactNode' }, right: s };
+  = op:binaryOp? a:sequence ops:(binaryOp sequence)* {
+    const first = op ? { type: op, left: { type: 'exactNode' }, right: a } : a;
+    return ops.reduce(function (memo, rhs) {
+      return { type: rhs[0], left: memo, right: rhs[1] };
+    }, first);
   }
 
 selector
